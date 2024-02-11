@@ -17,15 +17,15 @@ body{
   width: 100%;
   height: 100%;
   background: black;
-  display: none;
-  opacity: 0;
+  display: flex;
+  opacity: 1;
   color: white;
   justify-content: center;
   align-items: center;
 }
 
 .navbar{
-  background: #9995;
+  background: #555a;
   position: fixed;
   top: 0;
   left: 0;
@@ -33,6 +33,8 @@ body{
   height: 50px;
   display: flex;
   backdrop-filter: blur(10px);
+  z-index: 10;
+  box-shadow: #0005 0 0 10px;
 }
 
 .navbar .tabs{
@@ -90,11 +92,12 @@ body{
   position: fixed;
   right: 10px;
   top: 60px;
-  background: #9995;
+  background: #555a;
   height: 60px;
   width: 150px;
   border-radius: 5px;
   backdrop-filter: blur(10px);
+  z-index: 10;
 }
 
 .dropdown-button{
@@ -109,4 +112,12 @@ body{
 
 .dropdown-button:hover{
   color: #fff;
+}
+
+.photo-list{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
 }

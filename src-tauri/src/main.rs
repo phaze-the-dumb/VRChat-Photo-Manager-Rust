@@ -1,10 +1,35 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::{ CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent };
+use std::{ fs, path };
 
 #[tauri::command]
 fn start_user_auth() {
   open::that("https://id.phazed.xyz?oauth=79959294626406").unwrap();
+}
+
+#[tauri::command]
+fn load_photos() {
+  let base_dir = dirs::home_dir().unwrap().join("./Pictures/VRChat");
+
+  let mut photos: Vec<path::PathBuf> = Vec::new();
+
+  for folder in fs::read_dir(base_dir).unwrap() {
+    let f = folder.unwrap();
+
+    if f.metadata().unwrap().is_dir() {
+      for photo in fs::read_dir(f.path()).unwrap() {
+        let p = photo.unwrap();
+
+        if p.metadata().unwrap().is_file() {
+          let fname = p.path();
+          photos.push(fname);
+        }
+      }
+    }
+  }
+
+  println!("{:#?}", photos);
 }
 
 fn main() {
@@ -87,7 +112,7 @@ fn main() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![start_user_auth])
+    .invoke_handler(tauri::generate_handler![start_user_auth,load_photos])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

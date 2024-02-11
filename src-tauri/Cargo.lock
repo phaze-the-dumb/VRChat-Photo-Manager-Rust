@@ -3602,6 +3602,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 name = "vrcpm-rs"
 version = "0.0.0"
 dependencies = [
+ "dirs",
  "open 5.0.1",
  "serde",
  "serde_json",

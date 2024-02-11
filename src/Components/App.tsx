@@ -3,10 +3,11 @@ import NavBar from "./NavBar";
 import { listen } from '@tauri-apps/api/event';
 import { fetch, ResponseType } from "@tauri-apps/api/http"
 import anime from "animejs";
+import PhotoList from "./PhotoList";
 
 function App() {
   let [ loggedIn, setLoggedIn ] = createSignal({ loggedIn: false, username: '', avatar: '', id: '' });
-  let [ loadingType, setLoadingType ] = createSignal('none');
+  let [ loadingType, setLoadingType ] = createSignal('load');
 
   if(localStorage.getItem('token')){
     fetch<any>('https://photos.phazed.xyz/api/v1/account', {
@@ -27,6 +28,8 @@ function App() {
         setLoadingType('none');
         console.error(e);
       })
+  } else{
+    setLoadingType('none');
   }
 
   let loadingBlackout: HTMLElement;
@@ -93,11 +96,15 @@ function App() {
   return (
     <div class="container">
       <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} />
+      <PhotoList />
 
       <div class="loading" ref={( el ) => loadingBlackout = el}>
         <Switch>
           <Match when={loadingType() === 'auth'}>
             <p>Waiting for authentication in browser.</p>
+          </Match>
+          <Match when={loadingType() === 'load'}>
+            <p>Loading App...</p>
           </Match>
         </Switch>
       </div>
