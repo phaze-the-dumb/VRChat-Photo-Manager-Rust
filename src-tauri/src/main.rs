@@ -1,7 +1,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::{ CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent };
-use std::{ fs, path };
+mod pngmeta;
+
+use tauri::{ CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent, http::ResponseBuilder };
+use std::{ fs, io::Read, path };
+use regex::Regex;
+use pngmeta::PNGImage;
+
+#[tauri::command]
+async fn close_splashscreen(window: tauri::Window) {
+  window.get_window("main").unwrap().show().unwrap();
+}
 
 #[tauri::command]
 fn start_user_auth() {
@@ -9,8 +18,8 @@ fn start_user_auth() {
 }
 
 #[tauri::command]
-fn load_photos() {
-  let base_dir = dirs::home_dir().unwrap().join("./Pictures/VRChat");
+fn load_photos() -> Vec<path::PathBuf> {
+  let base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
 
   let mut photos: Vec<path::PathBuf> = Vec::new();
 
@@ -23,16 +32,43 @@ fn load_photos() {
 
         if p.metadata().unwrap().is_file() {
           let fname = p.path();
-          photos.push(fname);
+
+          let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
+          let re2 = Regex::new(
+            r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
+          
+          if
+            re1.is_match(p.file_name().to_str().unwrap()) ||
+            re2.is_match(p.file_name().to_str().unwrap())
+          {
+            let path = fname.to_path_buf().clone();
+            let path = path.strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf();
+
+            photos.push(path);
+          }
         }
       }
     }
   }
 
-  println!("{:#?}", photos);
+  photos
+}
+
+#[tauri::command]
+fn load_photo_meta( photo: &str ) -> PNGImage{
+  let mut base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
+  base_dir.push(photo);
+
+  let mut file =  fs::File::open(base_dir.clone()).expect("Cannot read image file.");
+  let mut buffer = Vec::new();
+
+  let _out = file.read_to_end(&mut buffer);
+  PNGImage::new(buffer)
 }
 
 fn main() {
+  std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--ignore-gpu-blacklist");
+
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
 
   let quit = CustomMenuItem::new("quit".to_string(), "Quit");
@@ -82,6 +118,29 @@ fn main() {
       }
       _ => {}
     })
+    .register_uri_scheme_protocol("photo", | _app, request | {
+      let uri = request.uri();
+
+      if request.method() != "GET" {
+        return ResponseBuilder::new()
+        .status(404)
+        .body(Vec::new());
+      }
+
+      let path = uri.replace("photo://localhost/", "");
+
+      let mut base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
+      base_dir.push(path);
+    
+      let mut file = fs::File::open(base_dir).expect("Cannot read image file.");
+      let mut buffer = Vec::new();
+    
+      let _out = file.read_to_end(&mut buffer);
+
+      ResponseBuilder::new()
+        .status(200)
+        .body(buffer)
+    })
     .setup(|app| {
       let handle = app.handle();
 
@@ -93,7 +152,6 @@ fn main() {
 
           for part in request.split('/').into_iter() {
             index += 1;
-            println!("Index {}, is {}", index, part);
 
             if index == 3 && part == "auth-callback"{
               command = 1;
@@ -112,7 +170,7 @@ fn main() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![start_user_auth,load_photos])
+    .invoke_handler(tauri::generate_handler![start_user_auth, load_photos, close_splashscreen, load_photo_meta])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

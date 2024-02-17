@@ -4,8 +4,11 @@ import { listen } from '@tauri-apps/api/event';
 import { fetch, ResponseType } from "@tauri-apps/api/http"
 import anime from "animejs";
 import PhotoList from "./PhotoList";
+import { invoke } from '@tauri-apps/api/tauri'
 
 function App() {
+  invoke('close_splashscreen')
+
   let [ loggedIn, setLoggedIn ] = createSignal({ loggedIn: false, username: '', avatar: '', id: '' });
   let [ loadingType, setLoadingType ] = createSignal('load');
 
@@ -17,20 +20,19 @@ function App() {
     })
       .then(data => {
         if(!data.data.ok){
-          console.error(data);
-          return setLoadingType('none');
+          return console.error(data);
         }
 
-        setLoadingType('none');
         setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id });
       })
       .catch(e => {
-        setLoadingType('none');
         console.error(e);
       })
-  } else{
-    setLoadingType('none');
   }
+
+  setTimeout(() => {
+    setLoadingType('none');
+  }, 500);
 
   let loadingBlackout: HTMLElement;
   let loadingShown = false;
