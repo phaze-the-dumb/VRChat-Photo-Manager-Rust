@@ -1,6 +1,6 @@
 import { createEffect, onMount } from "solid-js";
 import { invoke } from '@tauri-apps/api/tauri';
-import { listen } from '@tauri-apps/api/event'
+import { listen } from '@tauri-apps/api/event';
 
 import anime from "animejs";
 
@@ -11,8 +11,10 @@ let months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "O
 
 class PhotoListProps{
   setCurrentPhotoView!: ( view: any ) => any;
+  currentPhotoView!: () => any;
   photoNavChoice!: () => string;
   setPhotoNavChoice!: ( view: any ) => any;
+  setConfirmationBox!: ( text: string, cb: () => void ) => void;
 }
 
 let PhotoList = ( props: PhotoListProps ) => {
@@ -32,6 +34,8 @@ let PhotoList = ( props: PhotoListProps ) => {
   let scroll: number = 0;
   let targetScroll: number = 0;
 
+  let quitRender: boolean = false;
+
   class PhotoMetadata{
     width!: number;
     height!: number;
@@ -43,6 +47,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     path: string;
     loaded: boolean = false;
     loading: boolean = false;
+    metaLoaded: boolean = false;
     image?: HTMLCanvasElement;
     imageEl?: HTMLImageElement;
     width?: number;
@@ -68,7 +73,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     }
 
     loadImage(){
-      if(this.loading || this.loaded || imagesLoading >= MAX_IMAGE_LOAD)return;
+      if(this.loading || this.loaded || !this.metaLoaded || imagesLoading >= MAX_IMAGE_LOAD)return;
       this.loading = true;
 
       imagesLoading++;
@@ -76,6 +81,7 @@ let PhotoList = ( props: PhotoListProps ) => {
       this.image = document.createElement('canvas');
 
       this.imageEl = document.createElement('img');
+      this.imageEl.crossOrigin = 'anonymous';
       this.imageEl.src = 'https://photo.localhost/' + this.path;
 
       this.imageEl.onload = () => {
@@ -114,7 +120,10 @@ let PhotoList = ( props: PhotoListProps ) => {
   })
 
   let render = () => {
-    requestAnimationFrame(render);
+    if(!quitRender)
+      requestAnimationFrame(render);
+    else
+      return quitRender = false;
 
     if(!ctx)return;
     ctx.clearRect(0, 0, photoContainer.width, photoContainer.height);
@@ -237,6 +246,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     amountLoaded++;
 
     photoMetaDataLoadingBar.style.width = (amountLoaded / photos.length) * 100 + '%';
+    photo.metaLoaded = true;
 
     if(amountLoaded / photos.length === 1){
       render();
@@ -251,8 +261,57 @@ let PhotoList = ( props: PhotoListProps ) => {
           photoMetaDataLoadingContainer.style.display = 'none';
         }
       })
+
+      anime({
+        targets: '.reload-photos',
+        opacity: 1,
+        duration: 150,
+        easing: 'easeInOutQuad'
+      })
     }
   })
+
+  listen('photo_create', ( event: any ) => {
+    console.log(event);
+
+    let photo = new Photo(event.payload);
+    photos.splice(0, 0, photo);
+  })
+
+  listen('photo_remove', ( event: any ) => {
+    photos = photos.filter(x => x.path !== event.payload);
+
+    if(event.payload === props.currentPhotoView().path){
+      currentPhotoIndex = -1;
+      props.setCurrentPhotoView(null);
+    }
+  })
+
+  let reloadPhotos = () => {
+    photoTreeLoadingContainer.style.opacity = '1';
+    photoTreeLoadingContainer.style.height = '100%';
+    photoTreeLoadingContainer.style.display = 'flex';
+
+    photoMetaDataLoadingContainer.style.opacity = '1';
+    photoMetaDataLoadingContainer.style.height = '100%';
+    photoMetaDataLoadingContainer.style.display = 'flex';
+
+    photoMetaDataLoadingBar.style.width = '0%';
+    quitRender = true;
+
+    amountLoaded = 0;
+    scroll = 0;
+    photos = [];
+
+    anime({
+      targets: '.reload-photos',
+      opacity: 0,
+      duration: 150,
+      easing: 'easeInOutQuad'
+    })
+
+    invoke('load_photos');
+  }
 
   let loadPhotos = async () => {
     invoke('load_photos')
@@ -287,7 +346,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
       if(targetScroll < 0)
         targetScroll = 0;
-    })
+    });
 
     photoContainer.width = window.innerWidth;
     photoContainer.height = window.innerHeight;
@@ -323,6 +382,8 @@ let PhotoList = ( props: PhotoListProps ) => {
           <div class="loading-bar"><div class="loading-bar-inner" ref={( el ) => photoMetaDataLoadingBar = el}></div></div>
         </div>
       </div>
+
+      <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", reloadPhotos)}><i class="fa-solid fa-arrows-rotate"></i></div>
 
       <canvas class="photo-container" ref={( el ) => photoContainer = el}></canvas>
     </div>

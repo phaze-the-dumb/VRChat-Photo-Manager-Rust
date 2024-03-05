@@ -3,9 +3,11 @@
 mod pngmeta;
 
 use tauri::{ CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent, http::ResponseBuilder };
+use core::time;
 use std::{ fs, io::Read, path, thread };
 use regex::Regex;
 use pngmeta::PNGImage;
+use notify::{ EventKind, RecursiveMode, Watcher };
 
 #[derive(Clone, serde::Serialize)]
 struct PhotoLoadResponse{
@@ -23,6 +25,8 @@ fn start_user_auth() {
   open::that("https://id.phazed.xyz?oauth=79959294626406").unwrap();
 }
 
+// Scans all files under the "Pictures/VRChat" path
+// then sends the list of photos to the frontend
 #[tauri::command]
 fn load_photos(window: tauri::Window) {
   thread::spawn(move || {
@@ -43,14 +47,14 @@ fn load_photos(window: tauri::Window) {
             let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
             let re2 = Regex::new(
               r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
-  
+
             if
               re1.is_match(p.file_name().to_str().unwrap()) ||
               re2.is_match(p.file_name().to_str().unwrap())
             {
               let path = fname.to_path_buf().clone();
               let path = path.strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf();
-  
+
               photos.push(path);
             }
           }
@@ -62,6 +66,8 @@ fn load_photos(window: tauri::Window) {
   });
 }
 
+// Reads the PNG file and loads the image metadata from it
+// then sends the metadata to the frontend, returns width, height, colour depth and so on... more info "pngmeta.rs"
 #[tauri::command]
 fn load_photo_meta( photo: &str, window: tauri::Window ){
   let photo = photo.to_string();
@@ -78,11 +84,19 @@ fn load_photo_meta( photo: &str, window: tauri::Window ){
   });
 }
 
+// Delete a photo when the users confirms the prompt in the ui
+#[tauri::command]
+fn delete_photo( path: &str ){
+  let p = dirs::home_dir().unwrap().join("Pictures\\VRChat").join(path);
+  fs::remove_file(p).unwrap();
+}
+
 fn main() {
   std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--ignore-gpu-blacklist");
 
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
 
+  // Setup the tray icon and menu buttons
   let quit = CustomMenuItem::new("quit".to_string(), "Quit");
   let hide = CustomMenuItem::new("hide".to_string(), "Hide / Show");
 
@@ -92,6 +106,47 @@ fn main() {
     .add_item(hide);
 
   let tray = SystemTray::new().with_menu(tray_menu);
+
+  // Listen for file updates, store each update in an mpsc channel and send to the frontend
+  let (sender, receiver) = std::sync::mpsc::channel();
+  let mut watcher = notify::recommended_watcher(move | res: Result<notify::Event, notify::Error> | {
+    match res {
+       Ok(event) => {
+        match event.kind{
+          EventKind::Remove(_) => {
+            let path = event.paths.first().unwrap();
+
+            let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
+            let re2 = Regex::new(r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
+
+            if
+              re1.is_match(path.to_str().unwrap()) ||
+              re2.is_match(path.to_str().unwrap())
+            {
+              sender.send((2, path.clone().strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf())).unwrap();
+            }
+          },
+          EventKind::Create(_) => {
+            let path = event.paths.first().unwrap();
+
+            let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
+            let re2 = Regex::new(r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
+
+            if
+              re1.is_match(path.to_str().unwrap()) ||
+              re2.is_match(path.to_str().unwrap())
+            {
+              sender.send((1, path.clone().strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf())).unwrap();
+            }
+          },
+          _ => {}
+        }
+      },
+      Err(e) => println!("watch error: {:?}", e),
+    }
+  }).unwrap();
+
+  watcher.watch(&dirs::home_dir().unwrap().join("Pictures\\VRChat"), RecursiveMode::Recursive).unwrap();
 
   tauri::Builder::default()
     .system_tray(tray)
@@ -131,11 +186,13 @@ fn main() {
       _ => {}
     })
     .register_uri_scheme_protocol("photo", | _app, request | {
+      // Loads the requested image file, sends data back to the user
       let uri = request.uri();
 
       if request.method() != "GET" {
         return ResponseBuilder::new()
         .status(404)
+        .header("Access-Control-Allow-Origin", "*")
         .body(Vec::new());
       }
 
@@ -154,11 +211,13 @@ fn main() {
 
           ResponseBuilder::new()
             .status(200)
+            .header("Access-Control-Allow-Origin", "*")
             .body(buffer)
         },
         Err(_) => {
           ResponseBuilder::new()
             .status(404)
+            .header("Access-Control-Allow-Origin", "*")
             .body("File Not Found".into())
         }
       }
@@ -166,6 +225,7 @@ fn main() {
     .setup(|app| {
       let handle = app.handle();
 
+      // Register "deep link" for authentication via vrcpm://
       tauri_plugin_deep_link::register(
         "vrcpm",
         move | request | {
@@ -190,9 +250,28 @@ fn main() {
         }
       ).unwrap();
 
+      // I hate this approach but i have no clue how else to do this...
+      // reads the mpsc channel and sends the events to the frontend
+      let window = app.get_window("main").unwrap();
+      thread::spawn(move || {
+        thread::sleep(time::Duration::from_millis(100));
+
+        for event in receiver {
+          match event.0 {
+            1 => {
+              window.emit("photo_create", event.1).unwrap();
+            },
+            2 => {
+              window.emit("photo_remove", event.1).unwrap();
+            },
+            _ => {}
+          }
+        }
+      });
+
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![start_user_auth, load_photos, close_splashscreen, load_photo_meta])
+    .invoke_handler(tauri::generate_handler![start_user_auth, load_photos, close_splashscreen, load_photo_meta, delete_photo])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

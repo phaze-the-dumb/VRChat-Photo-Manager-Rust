@@ -197,6 +197,7 @@ body{
   user-select: none;
   cursor: pointer;
   z-index: 7;
+  box-shadow: #0008 0 0 10px;
 }
 
 .viewer-close{
@@ -253,4 +254,106 @@ body{
 
 .next-button:hover{
   background: rgba(255, 255, 255, 0.349);
+}
+
+.reload-photos{
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  color: white;
+  user-select: none;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.confirmation-box{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 15;
+  background: #0005;
+  transition: 0.25s;
+  backdrop-filter: blur(10px);
+}
+
+.confirmation-box-container{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+  background: #9995;
+  padding: 10px;
+  width: 60%;
+  border-radius: 10px;
+  box-shadow: #000 0 0 10px;
+  font-size: 18px;
+  backdrop-filter: blur(10px);
+}
+
+.button-danger{
+  display: inline-block;
+  backdrop-filter: blur(10px);
+  padding: 10px;
+  background: rgba(255, 0, 0, 0.333);
+  box-shadow: #0005 inset 0 0 10px;
+  border-radius: 50px;
+  margin: 0 10px;
+  cursor: pointer;
+  user-select: none;
+  width: 200px;
+  transition: 0.25s;
+}
+
+.button{
+  display: inline-block;
+  padding: 10px;
+  backdrop-filter: blur(10px);
+  background: #9995;
+  box-shadow: #0005 inset 0 0 10px;
+  border-radius: 50px;
+  margin: 0 10px;
+  cursor: pointer;
+  user-select: none;
+  width: 200px;
+  transition: 0.25s;
+}
+
+.button:hover{
+  box-shadow: #000a inset 0 0 10px;
+}
+
+.button-danger:hover{
+  box-shadow: #000a inset 0 0 10px;
+}
+
+.control-buttons{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+}
+
+.control-buttons div{
+  margin: 0 20px;
+}
+
+.copy-notif{
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  color: white;
+  transform: translateX(-50%) translateY(-100px);
+  background: #8885;
+  padding: 10px 40px;
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+  box-shadow: #000 0 0 10px;
+  z-index: 12;
+  opacity: 0;
+  pointer-events: none;
 }

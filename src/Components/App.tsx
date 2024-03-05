@@ -16,6 +16,14 @@ function App() {
   let [ currentPhotoView, setCurrentPhotoView ] = createSignal<any>(null);
   let [ photoNavChoice, setPhotoNavChoice ] = createSignal<string>('');
 
+  let [ confirmationBoxText, setConfirmationBoxText ] = createSignal<string>('');
+  let confirmationBoxCallback = () => {}
+
+  let setConfirmationBox = ( text: string, cb: () => void ) => {
+    setConfirmationBoxText(text);
+    confirmationBoxCallback = cb;
+  }
+
   if(localStorage.getItem('token')){
     fetch<any>('https://photos.phazed.xyz/api/v1/account', {
       method: 'GET',
@@ -40,6 +48,24 @@ function App() {
 
   let loadingBlackout: HTMLElement;
   let loadingShown = false;
+
+  let confirmationBox: HTMLElement;
+
+  createEffect(() => {
+    if(confirmationBoxText() !== ''){
+      confirmationBox.style.display = 'block';
+
+      setTimeout(() => {
+        confirmationBox.style.opacity = '1';
+      }, 1);
+    } else{
+      confirmationBox.style.opacity = '0';
+
+      setTimeout(() => {
+        confirmationBox.style.display = 'none';
+      }, 250);
+    }
+  })
 
   createEffect(() => {
     let type = loadingType();
@@ -102,8 +128,10 @@ function App() {
   return (
     <div class="container">
       <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} />
-      <PhotoList setCurrentPhotoView={setCurrentPhotoView} photoNavChoice={photoNavChoice} setPhotoNavChoice={setPhotoNavChoice} />
-      <PhotoViewer setPhotoNavChoice={setPhotoNavChoice} currentPhotoView={currentPhotoView} setCurrentPhotoView={setCurrentPhotoView} />
+      <PhotoList setCurrentPhotoView={setCurrentPhotoView} currentPhotoView={currentPhotoView} photoNavChoice={photoNavChoice} setPhotoNavChoice={setPhotoNavChoice} setConfirmationBox={setConfirmationBox} />
+      <PhotoViewer setPhotoNavChoice={setPhotoNavChoice} currentPhotoView={currentPhotoView} setCurrentPhotoView={setCurrentPhotoView} setConfirmationBox={setConfirmationBox} />
+
+      <div class="copy-notif">Image Copied!</div>
 
       <div class="loading" ref={( el ) => loadingBlackout = el}>
         <Switch>
@@ -114,6 +142,15 @@ function App() {
             <p>Loading App...</p>
           </Match>
         </Switch>
+      </div>
+
+      <div class="confirmation-box" ref={( el ) => confirmationBox = el}>
+        <div class="confirmation-box-container">
+          { confirmationBoxText() }<br /><br />
+
+          <div class="button-danger" onClick={() => { confirmationBoxCallback(); setConfirmationBoxText('') }}>Confirm</div>
+          <div class="button" onClick={() => setConfirmationBoxText('') }>Deny</div>
+        </div>
       </div>
     </div>
   );
