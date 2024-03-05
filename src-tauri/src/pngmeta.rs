@@ -1,6 +1,7 @@
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::str;
 
+#[derive(Clone)]
 pub struct PNGImage{
   width: u32,
   height: u32,
@@ -9,11 +10,12 @@ pub struct PNGImage{
   compression_method: u8,
   filter_method: u8,
   interlace_method: u8,
-  metadata: String
+  metadata: String,
+  path: String
 }
 
 impl PNGImage{
-  pub fn new(buff: Vec<u8>) -> PNGImage {
+  pub fn new(buff: Vec<u8>, path: String) -> PNGImage {
     let mut img = PNGImage {
       width: 0,
       height: 0,
@@ -22,7 +24,8 @@ impl PNGImage{
       compression_method: 0,
       filter_method: 0,
       interlace_method: 0,
-      metadata: "".to_string()
+      metadata: "".to_string(),
+      path: path
     };
 
     if
@@ -86,6 +89,7 @@ impl Serialize for PNGImage{
     s.serialize_field("filter_method", &self.filter_method)?;
     s.serialize_field("interlace_method", &self.interlace_method)?;
     s.serialize_field("metadata", &self.metadata)?;
+    s.serialize_field("path", &self.path)?;
     s.end()
   }
 }

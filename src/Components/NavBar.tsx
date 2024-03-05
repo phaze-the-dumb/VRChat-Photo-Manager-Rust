@@ -19,13 +19,14 @@ let NavBar = ( props: NavBarProps ) => {
 
   let setDropdownVisibility = ( visible: boolean ) => {
     if(inAnimation)return;
-    inAnimation = true;
 
     if(dropdownVisible !== visible){
       dropdownVisible = visible;
-      
+      inAnimation = true;
+
       if(visible){
         dropdown.style.display = 'block';
+
         anime({
           targets: dropdown,
           opacity: 1,
@@ -52,6 +53,8 @@ let NavBar = ( props: NavBarProps ) => {
     }
   }
 
+  window.CloseAllPopups.push(() => setDropdownVisibility(false));
+
   return (
     <>
       <div class="navbar">
@@ -73,12 +76,16 @@ let NavBar = ( props: NavBarProps ) => {
           <div class="dropdown-button" onClick={() => {
             localStorage.removeItem('token');
             window.location.reload();
-            
-            setDropdownVisibility(false); 
+
+            setDropdownVisibility(false);
           }}>Sign Out</div>
         }>
-          <div class="dropdown-button" onClick={() => { 
+          <div class="dropdown-button" onClick={() => {
             props.setLoadingType('auth');
+
+            setTimeout(() => {
+              props.setLoadingType('none');
+            }, 5000);
 
             invoke('start_user_auth'); 
             setDropdownVisibility(false); 

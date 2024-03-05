@@ -1,16 +1,20 @@
 import { createSignal, createEffect, Switch, Match } from "solid-js";
-import NavBar from "./NavBar";
 import { listen } from '@tauri-apps/api/event';
 import { fetch, ResponseType } from "@tauri-apps/api/http"
 import anime from "animejs";
+import { invoke } from '@tauri-apps/api/tauri';
+
+import NavBar from "./NavBar";
 import PhotoList from "./PhotoList";
-import { invoke } from '@tauri-apps/api/tauri'
+import PhotoViewer from "./PhotoViewer";
 
 function App() {
   invoke('close_splashscreen')
 
   let [ loggedIn, setLoggedIn ] = createSignal({ loggedIn: false, username: '', avatar: '', id: '' });
   let [ loadingType, setLoadingType ] = createSignal('load');
+  let [ currentPhotoView, setCurrentPhotoView ] = createSignal<any>(null);
+  let [ photoNavChoice, setPhotoNavChoice ] = createSignal<string>('');
 
   if(localStorage.getItem('token')){
     fetch<any>('https://photos.phazed.xyz/api/v1/account', {
@@ -98,7 +102,8 @@ function App() {
   return (
     <div class="container">
       <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} />
-      <PhotoList />
+      <PhotoList setCurrentPhotoView={setCurrentPhotoView} photoNavChoice={photoNavChoice} setPhotoNavChoice={setPhotoNavChoice} />
+      <PhotoViewer setPhotoNavChoice={setPhotoNavChoice} currentPhotoView={currentPhotoView} setCurrentPhotoView={setCurrentPhotoView} />
 
       <div class="loading" ref={( el ) => loadingBlackout = el}>
         <Switch>

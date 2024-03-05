@@ -3,9 +3,15 @@
 mod pngmeta;
 
 use tauri::{ CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent, http::ResponseBuilder };
-use std::{ fs, io::Read, path };
+use std::{ fs, io::Read, path, thread };
 use regex::Regex;
 use pngmeta::PNGImage;
+
+#[derive(Clone, serde::Serialize)]
+struct PhotoLoadResponse{
+  data: String,
+  path: String,
+}
 
 #[tauri::command]
 async fn close_splashscreen(window: tauri::Window) {
@@ -18,52 +24,58 @@ fn start_user_auth() {
 }
 
 #[tauri::command]
-fn load_photos() -> Vec<path::PathBuf> {
-  let base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
+fn load_photos(window: tauri::Window) {
+  thread::spawn(move || {
+    let base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
 
-  let mut photos: Vec<path::PathBuf> = Vec::new();
+    let mut photos: Vec<path::PathBuf> = Vec::new();
 
-  for folder in fs::read_dir(base_dir).unwrap() {
-    let f = folder.unwrap();
+    for folder in fs::read_dir(base_dir).unwrap() {
+      let f = folder.unwrap();
 
-    if f.metadata().unwrap().is_dir() {
-      for photo in fs::read_dir(f.path()).unwrap() {
-        let p = photo.unwrap();
-
-        if p.metadata().unwrap().is_file() {
-          let fname = p.path();
-
-          let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
-          let re2 = Regex::new(
-            r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
-          
-          if
-            re1.is_match(p.file_name().to_str().unwrap()) ||
-            re2.is_match(p.file_name().to_str().unwrap())
-          {
-            let path = fname.to_path_buf().clone();
-            let path = path.strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf();
-
-            photos.push(path);
+      if f.metadata().unwrap().is_dir() {
+        for photo in fs::read_dir(f.path()).unwrap() {
+          let p = photo.unwrap();
+  
+          if p.metadata().unwrap().is_file() {
+            let fname = p.path();
+  
+            let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
+            let re2 = Regex::new(
+              r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
+  
+            if
+              re1.is_match(p.file_name().to_str().unwrap()) ||
+              re2.is_match(p.file_name().to_str().unwrap())
+            {
+              let path = fname.to_path_buf().clone();
+              let path = path.strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf();
+  
+              photos.push(path);
+            }
           }
         }
       }
     }
-  }
 
-  photos
+    window.emit("photos_loaded", photos).unwrap();
+  });
 }
 
 #[tauri::command]
-fn load_photo_meta( photo: &str ) -> PNGImage{
-  let mut base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
-  base_dir.push(photo);
+fn load_photo_meta( photo: &str, window: tauri::Window ){
+  let photo = photo.to_string();
 
-  let mut file =  fs::File::open(base_dir.clone()).expect("Cannot read image file.");
-  let mut buffer = Vec::new();
-
-  let _out = file.read_to_end(&mut buffer);
-  PNGImage::new(buffer)
+  thread::spawn(move || {
+    let mut base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
+    base_dir.push(&photo);
+  
+    let mut file =  fs::File::open(base_dir.clone()).expect("Cannot read image file.");
+    let mut buffer = Vec::new();
+  
+    let _out = file.read_to_end(&mut buffer);
+    window.emit("photo_meta_loaded", PNGImage::new(buffer, photo)).unwrap();
+  });
 }
 
 fn main() {
@@ -131,15 +143,25 @@ fn main() {
 
       let mut base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
       base_dir.push(path);
-    
-      let mut file = fs::File::open(base_dir).expect("Cannot read image file.");
-      let mut buffer = Vec::new();
-    
-      let _out = file.read_to_end(&mut buffer);
 
-      ResponseBuilder::new()
-        .status(200)
-        .body(buffer)
+      let file = fs::File::open(base_dir);
+
+      match file{
+        Ok(mut file) => {
+          let mut buffer = Vec::new();
+
+          let _out = file.read_to_end(&mut buffer);
+
+          ResponseBuilder::new()
+            .status(200)
+            .body(buffer)
+        },
+        Err(_) => {
+          ResponseBuilder::new()
+            .status(404)
+            .body("File Not Found".into())
+        }
+      }
     })
     .setup(|app| {
       let handle = app.handle();

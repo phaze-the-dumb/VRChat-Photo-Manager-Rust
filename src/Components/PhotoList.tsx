@@ -1,23 +1,42 @@
-import { onMount } from "solid-js";
+import { createEffect, onMount } from "solid-js";
 import { invoke } from '@tauri-apps/api/tauri';
+import { listen } from '@tauri-apps/api/event'
+
+import anime from "animejs";
 
 const PHOTO_HEIGHT = 200;
 const MAX_IMAGE_LOAD = 1;
 
-let PhotoList = () => {
-  let canvas: HTMLCanvasElement;
-  let hasLoadedPhotoMeta = false;
-  let hasLoadedPhotos = false;
+let months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+
+class PhotoListProps{
+  setCurrentPhotoView!: ( view: any ) => any;
+  photoNavChoice!: () => string;
+  setPhotoNavChoice!: ( view: any ) => any;
+}
+
+let PhotoList = ( props: PhotoListProps ) => {
   let amountLoaded = 0;
   let imagesLoading = 0;
 
-  let loadingImage: HTMLImageElement = document.createElement('img');
-  loadingImage.src = 'https://cdn.phazed.xyz/vrcpm/loader.png';
+  let photoTreeLoadingContainer: HTMLElement;
+  let photoMetaDataLoadingContainer: HTMLElement;
+  let photoMetaDataLoadingBar: HTMLElement;
+
+  let photoContainer: HTMLCanvasElement;
+  let ctx: CanvasRenderingContext2D;
+
+  let photos: Photo[] = [];
+  let currentPhotoIndex: number = -1;
+
+  let scroll: number = 0;
+  let targetScroll: number = 0;
 
   class PhotoMetadata{
     width!: number;
     height!: number;
     metadata!: string;
+    path!: string;
   }
 
   class Photo{
@@ -25,36 +44,27 @@ let PhotoList = () => {
     loaded: boolean = false;
     loading: boolean = false;
     image?: HTMLCanvasElement;
+    imageEl?: HTMLImageElement;
     width?: number;
     height?: number;
     loadingRotate: number = 0;
     metadata: any;
 
+    frames: number = 0;
+    shown: boolean = false;
+
     x: number = 0;
     y: number = 0;
-    shown: boolean = false;
-    row: number = 0;
-
     scaledWidth?: number;
     scaledHeight?: number;
-    loadFrames: number = 0;
-    
+
+    dateString: string;
+
     constructor( path: string ){
       this.path = path;
+      this.dateString = this.path.split('_')[1];
 
-      invoke<PhotoMetadata>('load_photo_meta', { photo: this.path })
-        .then(data => {
-          this.width = data.width;
-          this.height = data.height;
-
-          let scale = PHOTO_HEIGHT / this.height;
-
-          this.scaledWidth = this.width * scale;
-          this.scaledHeight = PHOTO_HEIGHT;
-
-          this.metadata = data.metadata.split('\u0000').filter(x => x !== '')[1];
-          amountLoaded++;
-        });
+      invoke('load_photo_meta', { photo: this.path });
     }
 
     loadImage(){
@@ -63,16 +73,16 @@ let PhotoList = () => {
 
       imagesLoading++;
 
-      let img = document.createElement('img');
-      img.src = 'https://photo.localhost/' + this.path;
+      this.image = document.createElement('canvas');
 
-      img.onload = () => {
-        this.image = document.createElement('canvas');
+      this.imageEl = document.createElement('img');
+      this.imageEl.src = 'https://photo.localhost/' + this.path;
 
-        this.image.width = this.scaledWidth!;
-        this.image.height = this.scaledHeight!;
+      this.imageEl.onload = () => {
+        this.image!.width = this.scaledWidth!;
+        this.image!.height = this.scaledHeight!;
 
-        this.image.getContext('2d')!.drawImage(img, 0, 0, this.scaledWidth!, this.scaledHeight!);
+        this.image!.getContext('2d')!.drawImage(this.imageEl!, 0, 0, this.scaledWidth!, this.scaledHeight!);
 
         this.loaded = true;
         this.loading = false;
@@ -80,148 +90,241 @@ let PhotoList = () => {
         imagesLoading--;
       }
     }
+  }
 
-    draw(x: number, y: number, ctx: CanvasRenderingContext2D){
-      if(this.loaded){
-        ctx.globalAlpha = this.loadFrames / 10;
-        ctx.drawImage(this.image!, x, y);
+  createEffect(() => {
+    let action = props.photoNavChoice();
 
-        if(this.loadFrames < 10)
-          this.loadFrames++;
-      } else{
-        ctx.save();
-        ctx.translate(x + this.scaledWidth! / 2, y + this.scaledHeight! / 2);
-        ctx.rotate(this.loadingRotate);
-        ctx.drawImage(loadingImage, -32, -32, 64, 64);
-        ctx.restore();
+    switch(action){
+      case 'prev':
+        if(!photos[currentPhotoIndex - 1])break;
+        props.setCurrentPhotoView(photos[currentPhotoIndex - 1]);
 
-        this.loadingRotate += 0.05;
+        currentPhotoIndex--;
+        break;
+      case 'next':
+        if(!photos[currentPhotoIndex + 1])break;
+        props.setCurrentPhotoView(photos[currentPhotoIndex + 1]);
+
+        currentPhotoIndex++;
+        break;
+    }
+
+    props.setPhotoNavChoice('');
+  })
+
+  let render = () => {
+    requestAnimationFrame(render);
+
+    if(!ctx)return;
+    ctx.clearRect(0, 0, photoContainer.width, photoContainer.height);
+
+    let currentRow: Photo[] = [];
+    let currentRowWidth = 0;
+    let currentRowIndex = -1;
+
+    scroll = scroll + (targetScroll - scroll) * 0.2;
+
+    let lastPhoto;
+    for (let i = 0; i < photos.length; i++) {
+      let p = photos[i];
+
+      if(currentRowIndex * 210 - scroll > photoContainer.height){
+        p.shown = false;
+        break;
       }
+
+      if(!lastPhoto || (lastPhoto.dateString !== p.dateString)){
+        currentRowWidth -= 10;
+
+        let rowXPos = 0;
+        currentRow.forEach(photo => {
+          if(60 + currentRowIndex * 210 - scroll < -200)return photo.shown = false;
+
+          if(!photo.loaded)
+            setTimeout(() => photo.loadImage(), 1);
+          else{
+            if(!photo.shown){
+              photo.frames = 0;
+              photo.shown = true;
+            }
+
+            ctx.globalAlpha = photo.frames / 100;
+            ctx.drawImage(photo.image!, (rowXPos - currentRowWidth / 2) + photoContainer.width / 2, 60 + currentRowIndex * 210 - scroll, photo.scaledWidth!, 200);
+
+            photo.x = (rowXPos - currentRowWidth / 2) + photoContainer.width / 2;
+            photo.y = 60 + currentRowIndex * 210 - scroll;
+
+            if(photo.frames < 100)
+              photo.frames += 10;
+          }
+
+          rowXPos += photo.scaledWidth! + 10;
+        })
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#fff';
+        ctx.font = '30px Rubik';
+
+        let dateParts = p.dateString.split('-');
+        ctx.fillText(dateParts[2] + ' ' + months[parseInt(dateParts[1]) - 1] + ' ' + dateParts[0], photoContainer.width / 2, 60 + (currentRowIndex + 1.2) * 210 - scroll);
+
+        currentRowWidth = 0;
+        currentRow = [];
+        currentRowIndex += 1.4;
+      }
+
+      if(currentRowWidth + p.scaledWidth! + 10 < photoContainer.width - 20){
+        currentRowWidth += p.scaledWidth! + 10;
+        currentRow.push(p);
+      } else{
+        currentRowWidth -= 10;
+
+        let rowXPos = 0;
+        currentRow.forEach(photo => {
+          if(60 + currentRowIndex * 210 - scroll < -200)return photo.shown = false;
+
+          if(!photo.loaded)
+            setTimeout(() => photo.loadImage(), 1);
+          else{
+            if(!photo.shown){
+              photo.frames = 0;
+              photo.shown = true;
+            }
+
+            ctx.globalAlpha = photo.frames / 100;
+            ctx.drawImage(photo.image!, (rowXPos - currentRowWidth / 2) + photoContainer.width / 2, 60 + currentRowIndex * 210 - scroll, photo.scaledWidth!, 200);
+
+            photo.x = (rowXPos - currentRowWidth / 2) + photoContainer.width / 2;
+            photo.y = 60 + currentRowIndex * 210 - scroll;
+
+            if(photo.frames < 100)
+              photo.frames += 10;
+          }
+
+          rowXPos += photo.scaledWidth! + 10;
+        })
+
+        currentRowWidth = 0;
+        currentRow = [];
+        currentRowIndex++;
+
+        currentRowWidth += p.scaledWidth! + 10;
+        currentRow.push(p);
+      }
+
+      lastPhoto = p;
     }
   }
 
-  let photos: Photo[] = [];
+  listen('photo_meta_loaded', ( event: any ) => {
+    let data: PhotoMetadata = event.payload;
+    let photo = photos.find(x => x.path === data.path);
+
+    if(!photo)return;
+
+    photo.width = data.width;
+    photo.height = data.height;
+
+    let scale = PHOTO_HEIGHT / photo.height;
+
+    photo.scaledWidth = photo.width * scale;
+    photo.scaledHeight = PHOTO_HEIGHT;
+
+    photo.metadata = data.metadata.split('\u0000').filter(x => x !== '')[1];
+    amountLoaded++;
+
+    photoMetaDataLoadingBar.style.width = (amountLoaded / photos.length) * 100 + '%';
+
+    if(amountLoaded / photos.length === 1){
+      render();
+
+      anime({
+        targets: photoMetaDataLoadingContainer,
+        height: 0,
+        easing: 'easeInOutQuad',
+        duration: 500,
+        opacity: 0,
+        complete: () => {
+          photoMetaDataLoadingContainer.style.display = 'none';
+        }
+      })
+    }
+  })
 
   let loadPhotos = async () => {
-    let photoPaths = (await invoke<string[]>('load_photos')).reverse();
+    invoke('load_photos')
 
-    photoPaths.forEach(path => {
-      let photo = new Photo(path);
-      photos.push(photo);
+    listen('photos_loaded', ( event: any ) => {
+      let photoPaths = event.payload.reverse();
+
+      photoPaths.forEach(( path: string ) => {
+        let photo = new Photo(path);
+        photos.push(photo);
+      })
+
+      anime({
+        targets: photoTreeLoadingContainer,
+        height: 0,
+        easing: 'easeInOutQuad',
+        duration: 500,
+        opacity: 0,
+        complete: () => {
+          photoTreeLoadingContainer.style.display = 'none';
+        }
+      })
     })
-
-    hasLoadedPhotos = true;
   }
 
   onMount(() => {
+    ctx = photoContainer.getContext('2d')!;
     loadPhotos();
-    let scroll = 0;
-    let targetScroll = 0;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    })
-
-    canvas.addEventListener('wheel', ( e ) => {
+    photoContainer.addEventListener('wheel', ( e: WheelEvent ) => {
       targetScroll += e.deltaY;
 
       if(targetScroll < 0)
         targetScroll = 0;
     })
 
-    let ctx = canvas.getContext('2d')!;
+    photoContainer.width = window.innerWidth;
+    photoContainer.height = window.innerHeight;
 
-    let f = new FontFace('Rubik', 'url(https://cdn.phazed.xyz/fonts/rubik/Rubik-VariableFont_wght.ttf)');
-
-    f.load().then(font => {
-      document.fonts.add(font);
-      ctx.font = '20px Rubik';
+    window.addEventListener('resize', () => {
+      photoContainer.width = window.innerWidth;
+      photoContainer.height = window.innerHeight;
     })
 
-    let render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      scroll = scroll + ( targetScroll - scroll ) * 0.1;
+    photoContainer.addEventListener('click', ( e: MouseEvent ) => {
+      let photo = photos.find(x =>
+        e.clientX > x.x &&
+        e.clientY > x.y &&
+        e.clientX < x.x + x.scaledWidth! &&
+        e.clientY < x.y + x.scaledHeight! &&
+        x.shown
+      );
 
-      if(!hasLoadedPhotos){
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#fff';
-
-        ctx.fillText('Scanning Photo Tree...', canvas.width / 2, canvas.height / 2);
-      } else if(!hasLoadedPhotoMeta){
-        ctx.fillStyle = '#999';
-
-        ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 + 15, 300, 5);
-
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#fff';
-
-        ctx.fillText('Loading Photo Metadata...', canvas.width / 2, canvas.height / 2);
-        ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 + 15, 300 * ( amountLoaded / photos.length ), 5);
-
-        if(amountLoaded / photos.length == 1){
-          hasLoadedPhotoMeta = true;
-          scroll = 0;
-        }
-      } else{
-        let currentRow = 0;
-        let rowWidth = 10;
-        let maxHeight = 0;
-
-        let rowSizes: any = [];
-
-        photos.forEach(photo => {
-          if(rowWidth + photo.scaledWidth! + 10 > canvas.width - 20){
-            rowSizes.push(rowWidth);
-
-            currentRow++;
-            rowWidth = 10;
-          }
-
-          photo.x = rowWidth;
-          photo.y = (currentRow * (PHOTO_HEIGHT + 10)) + 60 - scroll;
-          photo.row = currentRow;
-
-          if(
-            (currentRow * (PHOTO_HEIGHT + 10)) + 60 - scroll < canvas.height &&
-            (currentRow * (PHOTO_HEIGHT + 10)) + PHOTO_HEIGHT + 120 - scroll > 0
-          ){
-            photo.shown = true;
-
-            if(!photo.loaded && !photo.loading)
-              photo.loadImage()
-          } else if(photo.loadFrames !== 0){
-            photo.loadFrames = 0;
-            photo.shown = false;
-          }
-
-          rowWidth += photo.scaledWidth! + 10;
-          maxHeight = photo.y;
-        })
-
-        photos.forEach(photo => {
-          if(photo.shown)
-            photo.draw(canvas.width / 2 + photo.x - rowSizes[photo.row] / 2, photo.y, ctx);
-        })
-
-        if(scroll > maxHeight)
-          scroll = maxHeight;
-      }
-
-      requestAnimationFrame(render);
-    }
-
-    render();
+      if(photo){
+        props.setCurrentPhotoView(photo);
+        currentPhotoIndex = photos.indexOf(photo);
+      } else
+        currentPhotoIndex = -1;
+    })
   })
 
   return ( 
     <div class="photo-list">
-      <canvas ref={( el ) => canvas = el}></canvas>
+      <div class="photo-tree-loading" ref={( el ) => photoTreeLoadingContainer = el}>Scanning Photo Tree...</div>
+      <div class="photo-tree-loading" ref={( el ) => photoMetaDataLoadingContainer = el}>
+        <div>
+          Loading MetaData...
+          <div class="loading-bar"><div class="loading-bar-inner" ref={( el ) => photoMetaDataLoadingBar = el}></div></div>
+        </div>
+      </div>
+
+      <canvas class="photo-container" ref={( el ) => photoContainer = el}></canvas>
     </div>
   )
 }
