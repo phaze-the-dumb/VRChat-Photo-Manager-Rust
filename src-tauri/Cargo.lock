@@ -3675,6 +3675,7 @@ dependencies = [
  "notify",
  "open 5.0.1",
  "regex",
+ "reqwest",
  "serde",
  "serde_json",
  "tauri",

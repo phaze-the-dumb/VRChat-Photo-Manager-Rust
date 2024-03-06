@@ -1,12 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod pngmeta;
+mod worldscraper;
 
 use tauri::{ CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent, http::ResponseBuilder };
 use core::time;
 use std::{ fs, io::Read, path, thread };
 use regex::Regex;
 use pngmeta::PNGImage;
+use worldscraper::World;
 use notify::{ EventKind, RecursiveMode, Watcher };
 
 #[derive(Clone, serde::Serialize)]
@@ -23,6 +25,20 @@ async fn close_splashscreen(window: tauri::Window) {
 #[tauri::command]
 fn start_user_auth() {
   open::that("https://id.phazed.xyz?oauth=79959294626406").unwrap();
+}
+
+#[tauri::command]
+fn open_url( url: &str ) {
+  open::that(url).unwrap();
+}
+
+// Load vrchat world data
+#[tauri::command]
+fn find_world_by_id( world_id: String, window: tauri::Window ){
+  thread::spawn(move || {
+    let world = World::new(world_id);
+    window.emit("world_data", world).unwrap();
+  });
 }
 
 // Scans all files under the "Pictures/VRChat" path
@@ -271,7 +287,7 @@ fn main() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![start_user_auth, load_photos, close_splashscreen, load_photo_meta, delete_photo])
+    .invoke_handler(tauri::generate_handler![start_user_auth, load_photos, close_splashscreen, load_photo_meta, delete_photo, open_url, find_world_by_id])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

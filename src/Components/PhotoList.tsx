@@ -5,9 +5,9 @@ import { listen } from '@tauri-apps/api/event';
 import anime from "animejs";
 
 const PHOTO_HEIGHT = 200;
-const MAX_IMAGE_LOAD = 1;
+const MAX_IMAGE_LOAD = 3;
 
-let months = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+let months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
 class PhotoListProps{
   setCurrentPhotoView!: ( view: any ) => any;

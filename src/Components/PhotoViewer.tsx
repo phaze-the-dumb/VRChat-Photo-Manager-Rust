@@ -1,5 +1,6 @@
-import { createEffect, onMount } from "solid-js";
+import { For, Show, createEffect, onMount } from "solid-js";
 import { invoke } from '@tauri-apps/api/tauri';
+import { listen } from '@tauri-apps/api/event';
 import anime from 'animejs';
 
 class PhotoViewerProps{
@@ -9,12 +10,98 @@ class PhotoViewerProps{
   setConfirmationBox!: ( text: string, cb: () => void ) => void;
 }
 
+class WorldCache{
+  expiresOn!: number;
+  worldData!: {
+    id: string,
+    name: string,
+    author: string,
+    authorId: string,
+    desc: string,
+    img: string,
+    maxUsers: number,
+    visits: number,
+    favourites: number,
+    tags: any,
+    from: string,
+    fromSite: string
+  }
+}
+
+let worldCache: WorldCache[] = JSON.parse(localStorage.getItem('worldCache') || "[]");
+
 let PhotoViewer = ( props: PhotoViewerProps ) => {
   let viewer: HTMLElement;
   let imageViewer: HTMLElement;
   let isOpen = false;
+  let trayOpen = false;
+
+  let trayButton: HTMLElement;
+
+  let photoTray: HTMLElement;
+  let photoControls: HTMLElement;
+  let photoTrayCloseBtn: HTMLElement;
+
+  let worldInfoContainer: HTMLElement;
+
+  let openTray = () => {
+    if(trayOpen)return;
+    trayOpen = true;
+
+    anime({ targets: photoTray, bottom: '0px', duration: 500 });
+
+    anime({
+      targets: photoControls,
+      bottom: '160px',
+      scale: '0.75',
+      opacity: 0,
+      duration: 500,
+      complete: () => {
+        photoControls.style.display = 'none';
+      }
+    });
+
+    photoTrayCloseBtn.style.display = 'flex';
+    anime({
+      targets: photoTrayCloseBtn,
+      bottom: '160px',
+      opacity: 1,
+      scale: 1,
+      duration: 500
+    })
+  }
+
+  let closeTray = () => {
+    if(!trayOpen)return;
+
+    anime({ targets: photoTray, bottom: '-150px', duration: 500 });
+
+    anime({
+      targets: photoTrayCloseBtn,
+      bottom: '10px',
+      scale: '0.75',
+      opacity: 0,
+      duration: 500,
+      complete: () => {
+        photoTrayCloseBtn.style.display = 'none';
+        trayOpen = false;
+      }
+    });
+
+    photoControls.style.display = 'flex';
+    anime({
+      targets: photoControls,
+      bottom: '10px',
+      opacity: 1,
+      scale: 1,
+      duration: 500,
+    })
+  }
 
   onMount(() => {
+    anime.set(photoControls, { translateX: '-50%' });
+    anime.set(photoTrayCloseBtn, { translateX: '-50%', opacity: 0, scale: '0.75', bottom: '10px' });
+
     createEffect(() => {
       let photo = props.currentPhotoView();
 
@@ -30,6 +117,48 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           duration: 150,
           easing: 'easeInOutQuad'
         })
+
+        if(photo.metadata){
+          let meta = JSON.parse(photo.metadata);
+
+          let worldData = worldCache.find(x => x.worldData.id === meta.world.id);
+
+          photoTray.innerHTML = '';
+          photoTray.appendChild(
+            <div class="photo-tray-columns">
+              <div class="photo-tray-column" style={{ width: '20%' }}><br />
+                <div class="tray-heading">People</div>
+
+                <For each={meta.players}>
+                  {( item ) =>
+                    <div>
+                      { item.displayName }
+                      <Show when={item.id}>
+                        <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/user/' + item.id })} style={{ "margin-left": '10px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i>
+                      </Show>
+                    </div>
+                  }
+                </For><br />
+              </div>
+              <div class="photo-tray-column"><br />
+                <div class="tray-heading">World</div>
+
+                <div ref={( el ) => worldInfoContainer = el}>Loading World Data...</div>
+              </div>
+            </div> as Node
+          );
+
+          if(!worldData)
+            invoke('find_world_by_id', { worldId: meta.world.id });
+          else if(worldData.expiresOn < Date.now())
+            invoke('find_world_by_id', { worldId: meta.world.id });
+          else
+            loadWorldData(worldData);
+
+          trayButton.style.display = 'flex';
+        } else{
+          trayButton.style.display = 'none';
+        }
       }
 
       if(photo && !isOpen){
@@ -80,6 +209,52 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
     })
   })
 
+  let loadWorldData = ( data: WorldCache ) => {
+    let tags: string[] = JSON.parse(data.worldData.tags.split('\\\\').join("").split('\\').join("").slice(1, -1));
+
+    worldInfoContainer.innerHTML = '';
+    worldInfoContainer.appendChild(
+      <div>
+        <div class="world-name">{ data.worldData.name } <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i></div>
+        <div style={{ width: '75%', margin: 'auto' }}>{ data.worldData.desc }</div>
+
+        <br />
+        <div class="world-tags">
+          <For each={tags}>
+            {( tag ) =>
+              <div>{ tag.replace("author_tag_", "").replace("system_", "") }</div>
+            }
+          </For>
+        </div>
+      </div> as Node
+    )
+  }
+
+  listen('world_data', ( event: any ) => {
+    let worldData = {
+      expiresOn: Date.now() + 1.2096E+09,
+      worldData: {
+        id: event.payload.id,
+        name: event.payload.name.split('\\').join('').slice(1, -1),
+        author: event.payload.author.split('\\').join('').slice(1, -1),
+        authorId: event.payload.authorId.split('\\').join('').slice(1, -1),
+        desc: event.payload.desc.split('\\').join('').slice(1, -1),
+        img: event.payload.img.split('\\').join('').slice(1, -1),
+        maxUsers: event.payload.maxUsers,
+        visits: event.payload.visits,
+        favourites: event.payload.favourites,
+        tags: event.payload.tags,
+        from: event.payload.from,
+        fromSite: event.payload.fromSite
+      }
+    }
+
+    loadWorldData(worldData);
+
+    worldCache.push(worldData);
+    localStorage.setItem("worldCache", JSON.stringify(worldCache));
+  })
+
   return (
     <div class="photo-viewer" ref={( el ) => viewer = el}>
       <div class="viewer-close viewer-button" onClick={() => props.setCurrentPhotoView(null)}><i class="fa-solid fa-x"></i></div>
@@ -88,7 +263,14 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       <div class="prev-button" onClick={() => props.setPhotoNavChoice('prev')}><i class="fa-solid fa-arrow-left"></i></div>
       <div class="next-button" onClick={() => props.setPhotoNavChoice('next')}><i class="fa-solid fa-arrow-right"></i></div>
 
-      <div class="control-buttons">
+      <div class="photo-tray" ref={( el ) => photoTray = el}></div>
+
+      <div class="photo-tray-close"
+        onClick={() => closeTray()}
+        ref={( el ) => photoTrayCloseBtn = el}
+      ><i class="fa-solid fa-angle-down"></i></div>
+
+      <div class="control-buttons" ref={( el ) => photoControls = el}>
         <div class="viewer-button"
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
@@ -129,23 +311,13 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         >
           <i class="fa-solid fa-copy"></i>
         </div>
-        <div class="viewer-button"
-          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
-          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
+        <div class="viewer-button" style={{ width: '50px' }}
+          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '70px', height: '30px', 'margin-left': '10px', 'margin-right': '10px' })}
+          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '50px', height: '30px', 'margin-left': '20px', 'margin-right': '20px' })}
+          ref={( el ) => trayButton = el}
+          onClick={() => openTray()}
         >
-          <i class="fa-solid fa-info"></i>
-        </div>
-        <div class="viewer-button"
-          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
-          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
-        >
-          <i class="fa-solid fa-users"></i>
-        </div>
-        <div class="viewer-button"
-          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
-          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
-        >
-          <i class="fa-solid fa-file"></i>
+          <i class="fa-solid fa-angle-up"></i>
         </div>
         <div class="viewer-button"
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
