@@ -43,12 +43,19 @@ fn find_world_by_id( world_id: String, window: tauri::Window ){
 
 // Scans all files under the "Pictures/VRChat" path
 // then sends the list of photos to the frontend
+#[derive(Clone, serde::Serialize)]
+struct PhotosLoadedResponse{
+  photos: Vec<path::PathBuf>,
+  size: usize
+}
+
 #[tauri::command]
 fn load_photos(window: tauri::Window) {
   thread::spawn(move || {
     let base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
 
     let mut photos: Vec<path::PathBuf> = Vec::new();
+    let mut size: usize = 0;
 
     for folder in fs::read_dir(base_dir).unwrap() {
       let f = folder.unwrap();
@@ -69,16 +76,21 @@ fn load_photos(window: tauri::Window) {
               re2.is_match(p.file_name().to_str().unwrap())
             {
               let path = fname.to_path_buf().clone();
-              let path = path.strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf();
+              let metadata = fs::metadata(&path).unwrap();
 
-              photos.push(path);
+              if metadata.is_file() {
+                size += metadata.len() as usize;
+
+                let path = path.strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf();
+                photos.push(path);
+              }
             }
           }
         }
       }
     }
 
-    window.emit("photos_loaded", photos).unwrap();
+    window.emit("photos_loaded", PhotosLoadedResponse{ photos, size }).unwrap();
   });
 }
 

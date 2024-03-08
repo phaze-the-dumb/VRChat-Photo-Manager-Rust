@@ -20,6 +20,9 @@ function App() {
   let [ confirmationBoxText, setConfirmationBoxText ] = createSignal<string>('');
   let confirmationBoxCallback = () => {}
 
+  let [ photoCount, setPhotoCount ] = createSignal(0);
+  let [ photoSize, setPhotoSize ] = createSignal(0);
+
   let setConfirmationBox = ( text: string, cb: () => void ) => {
     setConfirmationBoxText(text);
     confirmationBoxCallback = cb;
@@ -138,10 +141,24 @@ function App() {
   return (
     <div class="container">
       <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} />
-      <PhotoList setCurrentPhotoView={setCurrentPhotoView} currentPhotoView={currentPhotoView} photoNavChoice={photoNavChoice} setPhotoNavChoice={setPhotoNavChoice} setConfirmationBox={setConfirmationBox} />
-      <PhotoViewer setPhotoNavChoice={setPhotoNavChoice} currentPhotoView={currentPhotoView} setCurrentPhotoView={setCurrentPhotoView} setConfirmationBox={setConfirmationBox} />
+      <PhotoList
+        setCurrentPhotoView={setCurrentPhotoView}
+        currentPhotoView={currentPhotoView}
+        photoNavChoice={photoNavChoice}
+        setPhotoNavChoice={setPhotoNavChoice}
+        setConfirmationBox={setConfirmationBox}
+        setPhotoCount={setPhotoCount}
+        setPhotoSize={setPhotoSize} />
 
-      <SettingsMenu />
+      <PhotoViewer
+        setPhotoNavChoice={setPhotoNavChoice}
+        currentPhotoView={currentPhotoView}
+        setCurrentPhotoView={setCurrentPhotoView}
+        setConfirmationBox={setConfirmationBox} />
+
+      <SettingsMenu
+        photoCount={photoCount}
+        photoSize={photoSize} />
 
       <div class="copy-notif">Image Copied!</div>
 

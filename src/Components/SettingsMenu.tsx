@@ -1,7 +1,13 @@
 import { onMount } from "solid-js";
+import { bytesToFormatted } from "../utils";
 import anime from "animejs";
 
-let SettingsMenu = () => {
+class SettingsMenuProps{
+  photoCount!: () => number;
+  photoSize!: () => number;
+}
+
+let SettingsMenu = ( props: SettingsMenuProps ) => {
   let sliderBar: HTMLElement;
   let settingsContainer: HTMLElement;
   let currentButton = 0;
@@ -130,7 +136,9 @@ let SettingsMenu = () => {
     <div class="settings">
       <div class="settings-container" ref={( el ) => settingsContainer = el}>
         <div class="settings-block">
-          <h1>Program Settings</h1>
+          <h1>Storage Settings</h1>
+
+          <p>{ props.photoCount() } Photos ({ bytesToFormatted(props.photoSize(), 0) })</p>
         </div>
         <div class="settings-block">
           <h1>Account Settings</h1>

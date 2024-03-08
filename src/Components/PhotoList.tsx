@@ -11,6 +11,8 @@ let months = [ "January", "February", "March", "April", "May", "June", "July", "
 
 class PhotoListProps{
   setCurrentPhotoView!: ( view: any ) => any;
+  setPhotoCount!: ( value: any ) => any;
+  setPhotoSize!: ( value: any ) => any;
   currentPhotoView!: () => any;
   photoNavChoice!: () => string;
   setPhotoNavChoice!: ( view: any ) => any;
@@ -317,7 +319,10 @@ let PhotoList = ( props: PhotoListProps ) => {
     invoke('load_photos')
 
     listen('photos_loaded', ( event: any ) => {
-      let photoPaths = event.payload.reverse();
+      let photoPaths = event.payload.photos.reverse();
+
+      props.setPhotoCount(photoPaths.length);
+      props.setPhotoSize(event.payload.size);
 
       photoPaths.forEach(( path: string ) => {
         let photo = new Photo(path);
