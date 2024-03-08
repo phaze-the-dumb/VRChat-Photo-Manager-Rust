@@ -110,7 +110,7 @@ let SettingsMenu = () => {
     window.addEventListener('resize', () => {
       width = window.innerWidth;
       sliderPos = width / 2 - buttons[currentButton];
-      sliderScale = (buttons[1] - buttons[0]) / width;
+      sliderScale = width / (buttons[1] - buttons[0]);
 
       anime.set(sliderBar, { translateX: sliderPos  });
     })
