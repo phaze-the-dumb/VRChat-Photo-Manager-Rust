@@ -59,7 +59,19 @@ let NavBar = ( props: NavBarProps ) => {
     <>
       <div class="navbar">
         <div class="tabs">
-          <div class="nav-tab">Photos</div>
+          <div class="nav-tab" onClick={() => {
+            anime(
+              {
+                targets: '.settings',
+                opacity: 0,
+                translateX: '500px',
+                easing: 'easeInOutQuad',
+                duration: 250,
+                complete: () => {
+                  anime.set('.settings', { display: 'none' });
+                }
+              })
+          }}>Photos</div>
         </div>
         <div class="account" onClick={() => setDropdownVisibility(!dropdownVisible)}>
           <Show when={props.loggedIn().loggedIn}>
@@ -70,7 +82,19 @@ let NavBar = ( props: NavBarProps ) => {
       </div>
 
       <div class="dropdown" ref={( el ) => dropdown = el}>
-        <div class="dropdown-button">Settings</div>
+        <div class="dropdown-button" onClick={() => {
+          anime.set('.settings', { display: 'block' });
+          anime(
+          {
+            targets: '.settings',
+            opacity: 1,
+            translateX: '0px',
+            easing: 'easeInOutQuad',
+            duration: 250
+          })
+
+          setDropdownVisibility(false);
+        }}>Settings</div>
 
         <Show when={props.loggedIn().loggedIn == false} fallback={
           <div class="dropdown-button" onClick={() => {

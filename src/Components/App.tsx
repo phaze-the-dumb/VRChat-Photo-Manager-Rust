@@ -1,4 +1,4 @@
-import { createSignal, createEffect, Switch, Match } from "solid-js";
+import { createSignal, createEffect, Switch, Match, onMount } from "solid-js";
 import { listen } from '@tauri-apps/api/event';
 import { fetch, ResponseType } from "@tauri-apps/api/http"
 import anime from "animejs";
@@ -7,6 +7,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import NavBar from "./NavBar";
 import PhotoList from "./PhotoList";
 import PhotoViewer from "./PhotoViewer";
+import SettingsMenu from "./SettingsMenu";
 
 function App() {
   invoke('close_splashscreen')
@@ -125,11 +126,22 @@ function App() {
     console.warn('Authetication Denied');
   })
 
+  onMount(() => {
+    anime.set('.settings',
+    {
+      display: 'none',
+      opacity: 0,
+      translateX: '500px'
+    })
+  })
+
   return (
     <div class="container">
       <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} />
       <PhotoList setCurrentPhotoView={setCurrentPhotoView} currentPhotoView={currentPhotoView} photoNavChoice={photoNavChoice} setPhotoNavChoice={setPhotoNavChoice} setConfirmationBox={setConfirmationBox} />
       <PhotoViewer setPhotoNavChoice={setPhotoNavChoice} currentPhotoView={currentPhotoView} setCurrentPhotoView={setCurrentPhotoView} setConfirmationBox={setConfirmationBox} />
+
+      <SettingsMenu />
 
       <div class="copy-notif">Image Copied!</div>
 
