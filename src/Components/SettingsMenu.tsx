@@ -11,6 +11,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
   let sliderBar: HTMLElement;
   let settingsContainer: HTMLElement;
   let currentButton = 0;
+  let lastClickedButton = -1;
 
   onMount(() => {
     let sliderMouseDown = false;
@@ -60,6 +61,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
 
         buttons.forEach(( pos, indx ) => {
           let dis = Math.abs(sliderPos - (width / 2 - pos));
+          if(currentButton === indx)return;
 
           if(selectedButton === -1){
             shortestDistance = dis;
@@ -91,25 +93,30 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
       if(sliderMouseDown){
         sliderPos = sliderPos - (mouseStartX - e.clientX);
 
-        anime.set(sliderBar, { translateX: sliderPos });
+        anime.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
         sliderMouseDown = false;
 
-        let shortestDistance = 0;
-        let selectedButton = -1;
+        if(Math.abs(mouseStartX - e.clientX) > 50){
+          let shortestDistance = 0;
+          let selectedButton = -1;
 
-        buttons.forEach(( pos, indx ) => {
-          let dis = Math.abs(sliderPos - (width / 2 - pos));
+          buttons.forEach(( pos, indx ) => {
+            let dis = Math.abs(sliderPos - (width / 2 - pos));
 
-          if(selectedButton === -1){
-            shortestDistance = dis;
-            selectedButton = indx;
-          } else if(shortestDistance > dis){
-            shortestDistance = dis;
-            selectedButton = indx;
-          }
-        })
+            if(selectedButton === -1){
+              shortestDistance = dis;
+              selectedButton = indx;
+            } else if(shortestDistance > dis){
+              shortestDistance = dis;
+              selectedButton = indx;
+            }
+          })
 
-        currentButton = selectedButton;
+          currentButton = selectedButton;
+        } else if(lastClickedButton != -1){
+          currentButton = lastClickedButton;
+          lastClickedButton = -1
+        }
       }
     })
 
@@ -153,10 +160,10 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>
-          <div class="slider-text" onClick={() => currentButton = 0}>Program Settings</div>
+          <div class="slider-text" onMouseDown={() => lastClickedButton = 0}>Program Settings</div>
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>
-          <div class="slider-text" onClick={() => currentButton = 1}>Account Settings</div>
+          <div class="slider-text" onMouseDown={() => lastClickedButton = 1}>Account Settings</div>
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>
