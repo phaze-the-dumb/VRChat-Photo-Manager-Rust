@@ -1,5 +1,6 @@
 import { onMount } from "solid-js";
 import { bytesToFormatted } from "../utils";
+import { invoke } from '@tauri-apps/api/tauri';
 import anime from "animejs";
 
 class SettingsMenuProps{
@@ -27,7 +28,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
       requestAnimationFrame(render);
 
       if(!sliderMouseDown){
-        sliderPos = sliderPos + (width / 2 - buttons[currentButton] - sliderPos) * 0.2;
+        sliderPos = sliderPos + (width / 2 - buttons[currentButton] - sliderPos) * 0.25;
         anime.set(sliderBar, { translateX: sliderPos });
 
         settingsContainer.style.left = (sliderPos - (width / 2 - buttons[0])) * sliderScale + 'px';
@@ -53,26 +54,30 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
       if(sliderMouseDown){
         sliderPos = sliderPos - (mouseStartX - e.touches[0].clientX);
 
-        anime.set(sliderBar, { translateX: sliderPos });
+        anime.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
         sliderMouseDown = false;
 
-        let shortestDistance = 0;
-        let selectedButton = -1;
+        if(Math.abs(mouseStartX - e.touches[0].clientX) > 50){
+          let shortestDistance = 0;
+          let selectedButton = -1;
 
-        buttons.forEach(( pos, indx ) => {
-          let dis = Math.abs(sliderPos - (width / 2 - pos));
-          if(currentButton === indx)return;
+          buttons.forEach(( pos, indx ) => {
+            let dis = Math.abs(sliderPos - (width / 2 - pos));
 
-          if(selectedButton === -1){
-            shortestDistance = dis;
-            selectedButton = indx;
-          } else if(shortestDistance > dis){
-            shortestDistance = dis;
-            selectedButton = indx;
-          }
-        })
+            if(selectedButton === -1){
+              shortestDistance = dis;
+              selectedButton = indx;
+            } else if(shortestDistance > dis){
+              shortestDistance = dis;
+              selectedButton = indx;
+            }
+          })
 
-        currentButton = selectedButton;
+          currentButton = selectedButton;
+        } else if(lastClickedButton != -1){
+          currentButton = lastClickedButton;
+          lastClickedButton = -1
+        }
       }
     })
 
@@ -144,8 +149,47 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
       <div class="settings-container" ref={( el ) => settingsContainer = el}>
         <div class="settings-block">
           <h1>Storage Settings</h1>
-
           <p>{ props.photoCount() } Photos ({ bytesToFormatted(props.photoSize(), 0) })</p>
+
+          <div class="selector">
+            <input type="checkbox" id="start-in-bg-check" ref={( el ) => {
+              el.checked = localStorage.getItem('start-in-bg') ? true : false;
+            }} onChange={( el ) => {
+              if(el.target.checked){
+                localStorage.setItem('start-in-bg', 'true');
+              } else{
+                localStorage.removeItem('start-in-bg')
+              }
+            }} />
+            Start in background
+
+            <label for="start-in-bg-check">
+              <div class="selection-box">
+                <i class="fa-solid fa-check"></i>
+              </div>
+            </label>
+          </div>
+
+          <div class="selector">
+            <input type="checkbox" id="start-with-win-check" ref={( el ) => {
+              el.checked = localStorage.getItem('start-with-win') ? true : false;
+            }} onChange={( el ) => {
+              if(el.target.checked){
+                localStorage.setItem('start-with-win', 'true');
+                invoke("start_with_win", { start: true });
+              } else{
+                localStorage.removeItem('start-with-win')
+                invoke("start_with_win", { start: false });
+              }
+            }} />
+            Start with windows
+
+            <label for="start-with-win-check">
+              <div class="selection-box">
+                <i class="fa-solid fa-check"></i>
+              </div>
+            </label>
+          </div>
         </div>
         <div class="settings-block">
           <h1>Account Settings</h1>

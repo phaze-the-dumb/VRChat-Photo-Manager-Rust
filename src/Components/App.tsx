@@ -10,7 +10,9 @@ import PhotoViewer from "./PhotoViewer";
 import SettingsMenu from "./SettingsMenu";
 
 function App() {
-  invoke('close_splashscreen')
+  if(!localStorage.getItem('start-in-bg')){
+    invoke('close_splashscreen')
+  }
 
   let [ loggedIn, setLoggedIn ] = createSignal({ loggedIn: false, username: '', avatar: '', id: '' });
   let [ loadingType, setLoadingType ] = createSignal('load');

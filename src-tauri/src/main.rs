@@ -9,6 +9,7 @@ use std::{ fs, io::Read, path, thread };
 use regex::Regex;
 use pngmeta::PNGImage;
 use worldscraper::World;
+use mslnk::ShellLink;
 use notify::{ EventKind, RecursiveMode, Watcher };
 
 #[derive(Clone, serde::Serialize)]
@@ -30,6 +31,27 @@ fn start_user_auth() {
 #[tauri::command]
 fn open_url( url: &str ) {
   open::that(url).unwrap();
+}
+
+#[tauri::command]
+fn start_with_win( start: bool, window: tauri::Window ){
+  thread::spawn(move || {
+    if start{
+      let target = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\vrchat-photo-manager.exe");
+      match fs::metadata(&target){
+        Ok(_) => {
+          let lnk = dirs::home_dir().unwrap().join("AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\VRChat Photo Manager.lnk");
+
+          let sl = ShellLink::new(target).unwrap();
+          sl.create_lnk(lnk).unwrap();
+        },
+        Err(_) => {}
+      }
+    } else{
+      let lnk = dirs::home_dir().unwrap().join("AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\VRChat Photo Manager.lnk");
+      fs::remove_file(lnk).unwrap();
+    }
+  });
 }
 
 // Load vrchat world data
@@ -299,7 +321,7 @@ fn main() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![start_user_auth, load_photos, close_splashscreen, load_photo_meta, delete_photo, open_url, find_world_by_id])
+    .invoke_handler(tauri::generate_handler![start_user_auth, load_photos, close_splashscreen, load_photo_meta, delete_photo, open_url, find_world_by_id, start_with_win])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

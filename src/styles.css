@@ -519,3 +519,42 @@ body{
   color: white;
   text-align: center;
 }
+
+.selector{
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: #000a;
+  display: inline-block;
+  margin: 10px;
+}
+
+.selector .selection-box{
+  height: 20px;
+  background: #777a;
+  margin: 5px -10px 0 -10px;
+  border-radius: 8px;
+  user-select: none;
+  cursor: pointer;
+  transition: 0.25s;
+  color: #fff1;
+}
+
+.selector .selection-box:hover{
+  height: 20px;
+  background: #777a;
+  margin: 5px -10px 0 -10px;
+  border-radius: 8px;
+  user-select: none;
+  cursor: pointer;
+  transition: 0.25s;
+  color: #fff5;
+}
+
+.selector input{
+  display: none;
+}
+
+.selector input:checked ~ label .selection-box{
+  background: rgba(0, 146, 204, 0.705);
+  color: #fff;
+}
