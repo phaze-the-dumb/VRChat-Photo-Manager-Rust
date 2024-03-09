@@ -558,3 +558,10 @@ body{
   background: rgba(0, 146, 204, 0.705);
   color: #fff;
 }
+
+.path{
+  padding: 5px 10px;
+  background: #000a;
+  border-radius: 5px;
+  margin-left: 5px;
+}

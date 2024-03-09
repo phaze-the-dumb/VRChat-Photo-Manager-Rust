@@ -190,6 +190,10 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
               </div>
             </label>
           </div>
+
+          <br />
+          <p>VRChat Photo Path: <span class="path" ref={( el ) => invoke('get_user_photos_path').then(( path: any ) => { el.innerHTML = path; console.log(path) })}>Loading...</span></p>
+          <p>Final Photo Path: <span class="path" ref={( el ) => invoke('get_user_photos_path').then(( path: any ) => { el.innerHTML = path; console.log(path) })}>Loading...</span></p>
         </div>
         <div class="settings-block">
           <h1>Account Settings</h1>

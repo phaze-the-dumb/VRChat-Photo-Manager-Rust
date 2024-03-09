@@ -33,6 +33,11 @@ fn open_url( url: &str ) {
   open::that(url).unwrap();
 }
 
+#[tauri::command]
+fn get_user_photos_path() -> path::PathBuf {
+  dirs::picture_dir().unwrap().join("VRChat")
+}
+
 // When the user changes the start with windows toggle
 // create and delete the shortcut from the startup folder
 #[tauri::command]
@@ -76,7 +81,7 @@ struct PhotosLoadedResponse{
 #[tauri::command]
 fn load_photos(window: tauri::Window) {
   thread::spawn(move || {
-    let base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
+    let base_dir = dirs::picture_dir().unwrap().join("VRChat");
 
     let mut photos: Vec<path::PathBuf> = Vec::new();
     let mut size: usize = 0;
@@ -105,7 +110,7 @@ fn load_photos(window: tauri::Window) {
               if metadata.is_file() {
                 size += metadata.len() as usize;
 
-                let path = path.strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf();
+                let path = path.strip_prefix(dirs::picture_dir().unwrap().join("VRChat")).unwrap().to_path_buf();
                 photos.push(path);
               }
             }
@@ -125,7 +130,7 @@ fn load_photo_meta( photo: &str, window: tauri::Window ){
   let photo = photo.to_string();
 
   thread::spawn(move || {
-    let mut base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
+    let mut base_dir = dirs::picture_dir().unwrap().join("VRChat");
     base_dir.push(&photo);
   
     let mut file =  fs::File::open(base_dir.clone()).expect("Cannot read image file.");
@@ -139,7 +144,7 @@ fn load_photo_meta( photo: &str, window: tauri::Window ){
 // Delete a photo when the users confirms the prompt in the ui
 #[tauri::command]
 fn delete_photo( path: &str ){
-  let p = dirs::home_dir().unwrap().join("Pictures\\VRChat").join(path);
+  let p = dirs::picture_dir().unwrap().join("VRChat").join(path);
   fs::remove_file(p).unwrap();
 }
 
@@ -175,7 +180,7 @@ fn main() {
               re1.is_match(path.to_str().unwrap()) ||
               re2.is_match(path.to_str().unwrap())
             {
-              sender.send((2, path.clone().strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf())).unwrap();
+              sender.send((2, path.clone().strip_prefix(dirs::picture_dir().unwrap().join("VRChat")).unwrap().to_path_buf())).unwrap();
             }
           },
           EventKind::Create(_) => {
@@ -188,7 +193,7 @@ fn main() {
               re1.is_match(path.to_str().unwrap()) ||
               re2.is_match(path.to_str().unwrap())
             {
-              sender.send((1, path.clone().strip_prefix(dirs::home_dir().unwrap().join("Pictures\\VRChat")).unwrap().to_path_buf())).unwrap();
+              sender.send((1, path.clone().strip_prefix(dirs::picture_dir().unwrap().join("VRChat")).unwrap().to_path_buf())).unwrap();
             }
           },
           _ => {}
@@ -198,7 +203,7 @@ fn main() {
     }
   }).unwrap();
 
-  watcher.watch(&dirs::home_dir().unwrap().join("Pictures\\VRChat"), RecursiveMode::Recursive).unwrap();
+  watcher.watch(&dirs::picture_dir().unwrap().join("VRChat"), RecursiveMode::Recursive).unwrap();
 
   tauri::Builder::default()
     .system_tray(tray)
@@ -250,7 +255,7 @@ fn main() {
 
       let path = uri.replace("photo://localhost/", "");
 
-      let mut base_dir = dirs::home_dir().unwrap().join("Pictures\\VRChat");
+      let mut base_dir = dirs::picture_dir().unwrap().join("VRChat");
       base_dir.push(path);
 
       let file = fs::File::open(base_dir);
@@ -323,7 +328,11 @@ fn main() {
 
       Ok(())
     })
-    .invoke_handler(tauri::generate_handler![start_user_auth, load_photos, close_splashscreen, load_photo_meta, delete_photo, open_url, find_world_by_id, start_with_win])
+    .invoke_handler(tauri::generate_handler![
+      start_user_auth, load_photos, close_splashscreen,
+      load_photo_meta, delete_photo, open_url,
+      find_world_by_id, start_with_win, get_user_photos_path
+    ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
