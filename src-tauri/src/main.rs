@@ -33,8 +33,10 @@ fn open_url( url: &str ) {
   open::that(url).unwrap();
 }
 
+// When the user changes the start with windows toggle
+// create and delete the shortcut from the startup folder
 #[tauri::command]
-fn start_with_win( start: bool, window: tauri::Window ){
+fn start_with_win( start: bool ){
   thread::spawn(move || {
     if start{
       let target = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\vrchat-photo-manager.exe");
