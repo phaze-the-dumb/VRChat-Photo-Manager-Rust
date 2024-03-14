@@ -148,10 +148,30 @@ fn delete_photo( path: &str ){
   fs::remove_file(p).unwrap();
 }
 
+#[tauri::command]
+fn change_final_path( new_path: &str ){
+  let config_path = dirs::picture_dir().unwrap().join(".vrchat_photos");
+  fs::write(&config_path, new_path.as_bytes()).unwrap();
+}
+
 fn main() {
   std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--ignore-gpu-blacklist");
-
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
+
+  // Double check the app has an install directory
+  let container_folder = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager");
+  match fs::metadata(&container_folder){
+    Ok(meta) => {
+      if meta.is_file(){
+        panic!("Cannot launch app as the container path is a file not a directory");
+      }
+    },
+    Err(_) => {
+      fs::create_dir(&container_folder).unwrap();
+    }
+  }
+
+  // Do auto update stuff here (once im publishing builds)
 
   // Setup the tray icon and menu buttons
   let quit = CustomMenuItem::new("quit".to_string(), "Quit");
@@ -193,6 +213,7 @@ fn main() {
               re1.is_match(path.to_str().unwrap()) ||
               re2.is_match(path.to_str().unwrap())
             {
+              thread::sleep(time::Duration::from_millis(1000));
               sender.send((1, path.clone().strip_prefix(dirs::picture_dir().unwrap().join("VRChat")).unwrap().to_path_buf())).unwrap();
             }
           },
@@ -331,7 +352,8 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
       start_user_auth, load_photos, close_splashscreen,
       load_photo_meta, delete_photo, open_url,
-      find_world_by_id, start_with_win, get_user_photos_path
+      find_world_by_id, start_with_win, get_user_photos_path,
+      change_final_path
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

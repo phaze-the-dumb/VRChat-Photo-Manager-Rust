@@ -14,7 +14,8 @@ pub struct World{
   favourites: u64,
   tags: String,
   from: String,
-  from_site: String
+  from_site: String,
+  found: bool
 }
 
 impl World{
@@ -22,7 +23,7 @@ impl World{
     println!("Fetching world data for {}", &world_id);
 
     let mut world = World {
-      id: "".into(),
+      id: world_id.clone(),
       name: "".into(),
       author: "".into(),
       author_id: "".into(),
@@ -33,7 +34,8 @@ impl World{
       favourites: 0,
       tags: "".into(),
       from: "https://vrclist.com/worlds/".into(),
-      from_site: "vrclist.com".into()
+      from_site: "vrclist.com".into(),
+      found: false
     };
 
     let client = reqwest::blocking::Client::new();
@@ -48,6 +50,12 @@ impl World{
       .text()
       .unwrap();
 
+    if &fixed_id_req == "" {
+      return world;
+    }
+
+    world.found = true;
+
     let fixed_id: serde_json::Value = serde_json::from_str(&fixed_id_req).unwrap();
     world.from = format!("https://vrclist.com/worlds/{}", fixed_id["id"].to_string());
 
@@ -60,7 +68,6 @@ impl World{
       .json()
       .unwrap();
 
-    world.id = world_id.clone();
     world.name = world_data["name"].to_string();
     world.author = world_data["authorName"].to_string();
     world.author_id = world_data["authorId"].to_string();
@@ -101,6 +108,7 @@ impl Serialize for World{
     s.serialize_field("tags", &self.tags)?;
     s.serialize_field("from", &self.from)?;
     s.serialize_field("fromSite", &self.from_site)?;
+    s.serialize_field("found", &self.found)?;
 
     s.end()
   }

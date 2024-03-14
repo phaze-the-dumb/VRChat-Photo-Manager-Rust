@@ -24,7 +24,8 @@ class WorldCache{
     favourites: number,
     tags: any,
     from: string,
-    fromSite: string
+    fromSite: string,
+    found: boolean
   }
 }
 
@@ -204,28 +205,34 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         anime({ targets: '.prev-button', top: '75%', easing: 'easeInOutQuad', duration: 100 });
         anime({ targets: '.next-button', top: '75%', easing: 'easeInOutQuad', duration: 100 });
       }
-  
+
       isOpen = photo != null;
     })
   })
 
   let loadWorldData = ( data: WorldCache ) => {
-    let tags: string[] = JSON.parse(data.worldData.tags.split('\\\\').join("").split('\\').join("").slice(1, -1));
-
     worldInfoContainer.innerHTML = '';
     worldInfoContainer.appendChild(
       <div>
-        <div class="world-name">{ data.worldData.name } <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i></div>
-        <div style={{ width: '75%', margin: 'auto' }}>{ data.worldData.desc }</div>
+        <Show when={ data.worldData.found == false && props.currentPhotoView().metadata }>
+          <div>
+            <div class="world-name">{ JSON.parse(props.currentPhotoView().metadata).world.name } <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i></div>
+            <div style={{ width: '75%', margin: 'auto' }}>Could not fetch world information... Is the world private?</div>
+          </div>
+        </Show>
+        <Show when={ data.worldData.found == true }>
+          <div class="world-name">{ data.worldData.name } <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i></div>
+          <div style={{ width: '75%', margin: 'auto' }}>{ data.worldData.desc }</div>
 
-        <br />
-        <div class="world-tags">
-          <For each={tags}>
-            {( tag ) =>
-              <div>{ tag.replace("author_tag_", "").replace("system_", "") }</div>
-            }
-          </For>
-        </div>
+          <br />
+          <div class="world-tags">
+            <For each={JSON.parse(data.worldData.tags.split('\\\\').join("").split('\\').join("").slice(1, -1))}>
+              {( tag ) =>
+                <div>{ tag.replace("author_tag_", "").replace("system_", "") }</div>
+              }
+            </For>
+          </div>
+        </Show>
       </div> as Node
     )
   }
@@ -245,14 +252,15 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         favourites: event.payload.favourites,
         tags: event.payload.tags,
         from: event.payload.from,
-        fromSite: event.payload.fromSite
+        fromSite: event.payload.fromSite,
+        found: event.payload.found
       }
     }
 
-    loadWorldData(worldData);
-
     worldCache.push(worldData);
     localStorage.setItem("worldCache", JSON.stringify(worldCache));
+
+    loadWorldData(worldData);
   })
 
   return (

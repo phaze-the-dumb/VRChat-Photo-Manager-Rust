@@ -13,6 +13,10 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
   let settingsContainer: HTMLElement;
   let currentButton = 0;
   let lastClickedButton = -1;
+  let finalPathConfirm: HTMLElement;
+  let finalPathInput: HTMLElement;
+  let finalPathData: string;
+  let finalPathPreviousData: string;
 
   onMount(() => {
     let sliderMouseDown = false;
@@ -192,8 +196,35 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
           </div>
 
           <br />
-          <p>VRChat Photo Path: <span class="path" ref={( el ) => invoke('get_user_photos_path').then(( path: any ) => { el.innerHTML = path; console.log(path) })}>Loading...</span></p>
-          <p>Final Photo Path: <span class="path" ref={( el ) => invoke('get_user_photos_path').then(( path: any ) => { el.innerHTML = path; console.log(path) })}>Loading...</span></p>
+          <p>VRChat Photo Path: <span class="path" ref={( el ) => invoke('get_user_photos_path').then(( path: any ) => el.innerHTML = path)}>Loading...</span></p>
+          <p>
+            Final Photo Path:
+            <span class="path" ref={( el ) =>
+              invoke('get_user_photos_path').then(( path: any ) => {
+                el.innerHTML = '';
+                el.appendChild(<span style={{ outline: 'none' }} ref={( el ) => finalPathInput = el} onInput={( el ) => {
+                  finalPathConfirm.style.display = 'inline-block';
+                  finalPathData = el.target.innerHTML;
+                }} contenteditable>{path}</span> as Node);
+
+                finalPathPreviousData = path;
+              })
+            }>
+              Loading...
+            </span>
+            <span style={{ display: 'none' }} ref={( el ) => finalPathConfirm = el}>
+              <span class="path" style={{ color: 'green' }} onClick={() => {
+                finalPathPreviousData = finalPathData;
+                finalPathConfirm.style.display = 'none';
+              }}><i class="fa-solid fa-check"></i></span>
+
+              <span class="path" style={{ color: 'red' }} onClick={() => {
+                finalPathData = finalPathPreviousData;
+                finalPathInput.innerHTML = finalPathPreviousData;
+                finalPathConfirm.style.display = 'none';
+              }}><i class="fa-solid fa-xmark"></i></span>
+            </span>
+          </p>
         </div>
         <div class="settings-block">
           <h1>Account Settings</h1>
