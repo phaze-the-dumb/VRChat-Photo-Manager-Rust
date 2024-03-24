@@ -6,6 +6,7 @@ import anime from "animejs";
 class SettingsMenuProps{
   photoCount!: () => number;
   photoSize!: () => number;
+  setRequestPhotoReload!: ( val: boolean ) => boolean;
 }
 
 let SettingsMenu = ( props: SettingsMenuProps ) => {
@@ -196,9 +197,8 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
           </div>
 
           <br />
-          <p>VRChat Photo Path: <span class="path" ref={( el ) => invoke('get_user_photos_path').then(( path: any ) => el.innerHTML = path)}>Loading...</span></p>
           <p>
-            Final Photo Path:
+            VRChat Photo Path:
             <span class="path" ref={( el ) =>
               invoke('get_user_photos_path').then(( path: any ) => {
                 el.innerHTML = '';
@@ -216,6 +216,20 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
               <span class="path" style={{ color: 'green' }} onClick={() => {
                 finalPathPreviousData = finalPathData;
                 finalPathConfirm.style.display = 'none';
+                invoke('change_final_path', { newPath: finalPathData });
+
+                anime({
+                  targets: '.settings',
+                  opacity: 0,
+                  translateX: '500px',
+                  easing: 'easeInOutQuad',
+                  duration: 250,
+                  complete: () => {
+                    anime.set('.settings', { display: 'none' });
+                  }
+                })
+
+                props.setRequestPhotoReload(true);
               }}><i class="fa-solid fa-check"></i></span>
 
               <span class="path" style={{ color: 'red' }} onClick={() => {

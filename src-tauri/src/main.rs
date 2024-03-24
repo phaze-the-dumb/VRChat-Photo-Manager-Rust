@@ -3,7 +3,7 @@
 mod pngmeta;
 mod worldscraper;
 
-use tauri::{ CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent, http::ResponseBuilder };
+use tauri::{ http::ResponseBuilder, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent };
 use core::time;
 use std::{ fs, io::Read, path, thread };
 use regex::Regex;
@@ -16,6 +16,55 @@ use notify::{ EventKind, RecursiveMode, Watcher };
 struct PhotoLoadResponse{
   data: String,
   path: String,
+}
+
+// Scans all files under the "Pictures/VRChat" path
+// then sends the list of photos to the frontend
+#[derive(Clone, serde::Serialize)]
+struct PhotosLoadedResponse{
+  photos: Vec<path::PathBuf>,
+  size: usize
+}
+
+pub fn get_photo_path() -> path::PathBuf{
+  let config_path = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\.photos_path");
+
+  match fs::read_to_string(config_path){
+    Ok(path) => {
+      if path != dirs::picture_dir().unwrap().join("VRChat").to_str().unwrap().to_owned(){
+        let dir = path::PathBuf::from(path);
+        match fs::metadata(&dir){
+          Ok(_) => {}
+          Err(_) => {
+            fs::create_dir(&dir).unwrap();
+          }
+        };
+
+        dir
+      } else{
+        let dir =  dirs::picture_dir().unwrap().join("VRChat");
+        match fs::metadata(&dir){
+          Ok(_) => {}
+          Err(_) => {
+            fs::create_dir(&dir).unwrap();
+          }
+        };
+
+        dir
+      }
+    }
+    Err(_) => {
+      let dir =  dirs::picture_dir().unwrap().join("VRChat");
+      match fs::metadata(&dir){
+        Ok(_) => {}
+        Err(_) => {
+          fs::create_dir(&dir).unwrap();
+        }
+      };
+
+      dir
+    }
+  }
 }
 
 #[tauri::command]
@@ -33,9 +82,11 @@ fn open_url( url: &str ) {
   open::that(url).unwrap();
 }
 
+// Check if the photo config file exists
+// if not just return the default vrchat path
 #[tauri::command]
 fn get_user_photos_path() -> path::PathBuf {
-  dirs::picture_dir().unwrap().join("VRChat")
+  get_photo_path()
 }
 
 // When the user changes the start with windows toggle
@@ -70,23 +121,15 @@ fn find_world_by_id( world_id: String, window: tauri::Window ){
   });
 }
 
-// Scans all files under the "Pictures/VRChat" path
-// then sends the list of photos to the frontend
-#[derive(Clone, serde::Serialize)]
-struct PhotosLoadedResponse{
-  photos: Vec<path::PathBuf>,
-  size: usize
-}
-
 #[tauri::command]
 fn load_photos(window: tauri::Window) {
   thread::spawn(move || {
-    let base_dir = dirs::picture_dir().unwrap().join("VRChat");
+    let base_dir = get_photo_path();
 
     let mut photos: Vec<path::PathBuf> = Vec::new();
     let mut size: usize = 0;
 
-    for folder in fs::read_dir(base_dir).unwrap() {
+    for folder in fs::read_dir(&base_dir).unwrap() {
       let f = folder.unwrap();
 
       if f.metadata().unwrap().is_dir() {
@@ -110,7 +153,7 @@ fn load_photos(window: tauri::Window) {
               if metadata.is_file() {
                 size += metadata.len() as usize;
 
-                let path = path.strip_prefix(dirs::picture_dir().unwrap().join("VRChat")).unwrap().to_path_buf();
+                let path = path.strip_prefix(&base_dir).unwrap().to_path_buf();
                 photos.push(path);
               }
             }
@@ -130,12 +173,11 @@ fn load_photo_meta( photo: &str, window: tauri::Window ){
   let photo = photo.to_string();
 
   thread::spawn(move || {
-    let mut base_dir = dirs::picture_dir().unwrap().join("VRChat");
-    base_dir.push(&photo);
-  
+    let base_dir = get_photo_path().join(&photo);
+
     let mut file =  fs::File::open(base_dir.clone()).expect("Cannot read image file.");
     let mut buffer = Vec::new();
-  
+
     let _out = file.read_to_end(&mut buffer);
     window.emit("photo_meta_loaded", PNGImage::new(buffer, photo)).unwrap();
   });
@@ -144,19 +186,21 @@ fn load_photo_meta( photo: &str, window: tauri::Window ){
 // Delete a photo when the users confirms the prompt in the ui
 #[tauri::command]
 fn delete_photo( path: &str ){
-  let p = dirs::picture_dir().unwrap().join("VRChat").join(path);
+  let p = get_photo_path().join(path);
   fs::remove_file(p).unwrap();
 }
 
 #[tauri::command]
 fn change_final_path( new_path: &str ){
-  let config_path = dirs::picture_dir().unwrap().join(".vrchat_photos");
+  let config_path = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\.photos_path");
   fs::write(&config_path, new_path.as_bytes()).unwrap();
 }
 
 fn main() {
   std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--ignore-gpu-blacklist");
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
+
+  println!("Loading App...");
 
   // Double check the app has an install directory
   let container_folder = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager");
@@ -200,7 +244,7 @@ fn main() {
               re1.is_match(path.to_str().unwrap()) ||
               re2.is_match(path.to_str().unwrap())
             {
-              sender.send((2, path.clone().strip_prefix(dirs::picture_dir().unwrap().join("VRChat")).unwrap().to_path_buf())).unwrap();
+              sender.send((2, path.clone().strip_prefix(get_photo_path()).unwrap().to_path_buf())).unwrap();
             }
           },
           EventKind::Create(_) => {
@@ -214,7 +258,7 @@ fn main() {
               re2.is_match(path.to_str().unwrap())
             {
               thread::sleep(time::Duration::from_millis(1000));
-              sender.send((1, path.clone().strip_prefix(dirs::picture_dir().unwrap().join("VRChat")).unwrap().to_path_buf())).unwrap();
+              sender.send((1, path.clone().strip_prefix(get_photo_path()).unwrap().to_path_buf())).unwrap();
             }
           },
           _ => {}
@@ -224,7 +268,7 @@ fn main() {
     }
   }).unwrap();
 
-  watcher.watch(&dirs::picture_dir().unwrap().join("VRChat"), RecursiveMode::Recursive).unwrap();
+  watcher.watch(&get_photo_path(), RecursiveMode::Recursive).unwrap();
 
   tauri::Builder::default()
     .system_tray(tray)
@@ -275,11 +319,7 @@ fn main() {
       }
 
       let path = uri.replace("photo://localhost/", "");
-
-      let mut base_dir = dirs::picture_dir().unwrap().join("VRChat");
-      base_dir.push(path);
-
-      let file = fs::File::open(base_dir);
+      let file = fs::File::open(path);
 
       match file{
         Ok(mut file) => {

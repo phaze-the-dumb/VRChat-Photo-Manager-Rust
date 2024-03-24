@@ -25,11 +25,14 @@ function App() {
   let [ photoCount, setPhotoCount ] = createSignal(0);
   let [ photoSize, setPhotoSize ] = createSignal(0);
 
+  let [ requestPhotoReload, setRequestPhotoReload ] = createSignal(false);
+
   let setConfirmationBox = ( text: string, cb: () => void ) => {
     setConfirmationBoxText(text);
     confirmationBoxCallback = cb;
   }
 
+  console.log(localStorage.getItem('token'));
   if(localStorage.getItem('token')){
     fetch<any>('https://photos.phazed.xyz/api/v1/account', {
       method: 'GET',
@@ -41,6 +44,7 @@ function App() {
           return console.error(data);
         }
 
+        console.log(data.data);
         setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id });
       })
       .catch(e => {
@@ -115,6 +119,7 @@ function App() {
           return setLoadingType('none');
         }
 
+        console.log(data.data);
         localStorage.setItem('token', token);
 
         setLoadingType('none');
@@ -150,7 +155,9 @@ function App() {
         setPhotoNavChoice={setPhotoNavChoice}
         setConfirmationBox={setConfirmationBox}
         setPhotoCount={setPhotoCount}
-        setPhotoSize={setPhotoSize} />
+        setPhotoSize={setPhotoSize}
+        requestPhotoReload={requestPhotoReload}
+        setRequestPhotoReload={setRequestPhotoReload} />
 
       <PhotoViewer
         setPhotoNavChoice={setPhotoNavChoice}
@@ -160,7 +167,8 @@ function App() {
 
       <SettingsMenu
         photoCount={photoCount}
-        photoSize={photoSize} />
+        photoSize={photoSize}
+        setRequestPhotoReload={setRequestPhotoReload} />
 
       <div class="copy-notif">Image Copied!</div>
 

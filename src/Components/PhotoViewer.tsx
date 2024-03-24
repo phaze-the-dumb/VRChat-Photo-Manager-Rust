@@ -44,6 +44,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   let photoTrayCloseBtn: HTMLElement;
 
   let worldInfoContainer: HTMLElement;
+  let photoPath: string;
 
   let openTray = () => {
     if(trayOpen)return;
@@ -109,7 +110,12 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       imageViewer.style.opacity = '0';
 
       if(photo){
-        imageViewer.style.background = 'url(\'https://photo.localhost/' + props.currentPhotoView().path.replace('\\', '/') +'\')';
+        (async () => {
+          if(!photoPath)
+            photoPath = await invoke('get_user_photos_path') + '/';
+
+          imageViewer.style.background = 'url(\'https://photo.localhost/' + (photoPath + props.currentPhotoView().path).split('\\').join('/') +'\')';
+        })();
 
         anime({
           targets: imageViewer,

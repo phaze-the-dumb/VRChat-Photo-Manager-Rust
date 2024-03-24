@@ -17,6 +17,8 @@ class PhotoListProps{
   photoNavChoice!: () => string;
   setPhotoNavChoice!: ( view: any ) => any;
   setConfirmationBox!: ( text: string, cb: () => void ) => void;
+  requestPhotoReload!: () => boolean;
+  setRequestPhotoReload!: ( val: boolean ) => boolean;
 }
 
 let PhotoList = ( props: PhotoListProps ) => {
@@ -26,6 +28,9 @@ let PhotoList = ( props: PhotoListProps ) => {
   let photoTreeLoadingContainer: HTMLElement;
   let photoMetaDataLoadingContainer: HTMLElement;
   let photoMetaDataLoadingBar: HTMLElement;
+
+  let scrollToTop: HTMLElement;
+  let scrollToTopActive = false;
 
   let photoContainer: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -37,6 +42,14 @@ let PhotoList = ( props: PhotoListProps ) => {
   let targetScroll: number = 0;
 
   let quitRender: boolean = false;
+  let photoPath: string;
+
+  createEffect(() => {
+    if(props.requestPhotoReload()){
+      props.setRequestPhotoReload(false);
+      reloadPhotos();
+    }
+  })
 
   class PhotoMetadata{
     width!: number;
@@ -84,7 +97,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
       this.imageEl = document.createElement('img');
       this.imageEl.crossOrigin = 'anonymous';
-      this.imageEl.src = 'https://photo.localhost/' + this.path;
+      this.imageEl.src = 'https://photo.localhost/' + photoPath + this.path;
 
       this.imageEl.onload = () => {
         this.image!.width = this.scaledWidth!;
@@ -127,6 +140,16 @@ let PhotoList = ( props: PhotoListProps ) => {
     else
       return quitRender = false;
 
+    if(!scrollToTopActive && scroll > photoContainer.height){
+      scrollToTop.style.display = 'flex';
+      anime({ targets: scrollToTop, opacity: 1, translateY: '0px', easing: 'easeInOutQuad', duration: 100 });
+
+      scrollToTopActive = true;
+    } else if(scrollToTopActive && scroll < photoContainer.height){
+      anime({ targets: scrollToTop, opacity: 0, translateY: '-10px', complete: () => scrollToTop.style.display = 'none', easing: 'easeInOutQuad', duration: 100 });
+      scrollToTopActive = false;
+    }
+
     if(!ctx)return;
     ctx.clearRect(0, 0, photoContainer.width, photoContainer.height);
 
@@ -142,7 +165,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
       if(currentRowIndex * 210 - scroll > photoContainer.height){
         p.shown = false;
-        break;
+        continue;
       }
 
       if(!lastPhoto || (lastPhoto.dateString !== p.dateString)){
@@ -228,12 +251,22 @@ let PhotoList = ( props: PhotoListProps ) => {
 
       lastPhoto = p;
     }
+
+    if(photos.length == 0){
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#fff';
+      ctx.font = '50px Rubik';
+
+      ctx.fillText("You have no bitches", photoContainer.width / 2, photoContainer.height / 2);
+    }
   }
 
   listen('photo_meta_loaded', ( event: any ) => {
     let data: PhotoMetadata = event.payload;
-    let photo = photos.find(x => x.path === data.path);
 
+    let photo = photos.find(x => x.path === data.path);
     if(!photo)return;
 
     photo.width = data.width;
@@ -274,8 +307,6 @@ let PhotoList = ( props: PhotoListProps ) => {
   })
 
   listen('photo_create', ( event: any ) => {
-    console.log(event);
-
     let photo = new Photo(event.payload);
     photos.splice(0, 0, photo);
   })
@@ -289,7 +320,9 @@ let PhotoList = ( props: PhotoListProps ) => {
     }
   })
 
-  let reloadPhotos = () => {
+  let reloadPhotos = async () => {
+    photoPath = await invoke('get_user_photos_path') + '/';
+
     photoTreeLoadingContainer.style.opacity = '1';
     photoTreeLoadingContainer.style.height = '100%';
     photoTreeLoadingContainer.style.display = 'flex';
@@ -316,6 +349,7 @@ let PhotoList = ( props: PhotoListProps ) => {
   }
 
   let loadPhotos = async () => {
+    photoPath = await invoke('get_user_photos_path') + '/';
     invoke('load_photos')
 
     listen('photos_loaded', ( event: any ) => {
@@ -328,6 +362,18 @@ let PhotoList = ( props: PhotoListProps ) => {
         let photo = new Photo(path);
         photos.push(photo);
       })
+
+      if(photoPaths.length == 0){
+        anime.set(photoMetaDataLoadingContainer, { height: 0, opacity: 0, display: 'none' });
+        render();
+
+        anime({
+          targets: '.reload-photos',
+          opacity: 1,
+          duration: 150,
+          easing: 'easeInOutQuad'
+        })
+      }
 
       anime({
         targets: photoTreeLoadingContainer,
@@ -345,6 +391,8 @@ let PhotoList = ( props: PhotoListProps ) => {
   onMount(() => {
     ctx = photoContainer.getContext('2d')!;
     loadPhotos();
+
+    anime.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
 
     photoContainer.addEventListener('wheel', ( e: WheelEvent ) => {
       targetScroll += e.deltaY;
@@ -388,6 +436,7 @@ let PhotoList = ( props: PhotoListProps ) => {
         </div>
       </div>
 
+      <div class="scroll-to-top" ref={( el ) => scrollToTop = el} onClick={() => targetScroll = 0}><i class="fa-solid fa-angle-up"></i></div>
       <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", reloadPhotos)}><i class="fa-solid fa-arrows-rotate"></i></div>
 
       <canvas class="photo-container" ref={( el ) => photoContainer = el}></canvas>
