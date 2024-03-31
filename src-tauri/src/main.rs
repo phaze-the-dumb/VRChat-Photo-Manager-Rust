@@ -2,6 +2,7 @@
 
 mod pngmeta;
 mod worldscraper;
+mod photosync;
 
 use tauri::{ http::ResponseBuilder, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent };
 use core::time;
@@ -32,37 +33,13 @@ pub fn get_photo_path() -> path::PathBuf{
   match fs::read_to_string(config_path){
     Ok(path) => {
       if path != dirs::picture_dir().unwrap().join("VRChat").to_str().unwrap().to_owned(){
-        let dir = path::PathBuf::from(path);
-        match fs::metadata(&dir){
-          Ok(_) => {}
-          Err(_) => {
-            fs::create_dir(&dir).unwrap();
-          }
-        };
-
-        dir
+        path::PathBuf::from(path)
       } else{
-        let dir =  dirs::picture_dir().unwrap().join("VRChat");
-        match fs::metadata(&dir){
-          Ok(_) => {}
-          Err(_) => {
-            fs::create_dir(&dir).unwrap();
-          }
-        };
-
-        dir
+        dirs::picture_dir().unwrap().join("VRChat")
       }
     }
     Err(_) => {
-      let dir =  dirs::picture_dir().unwrap().join("VRChat");
-      match fs::metadata(&dir){
-        Ok(_) => {}
-        Err(_) => {
-          fs::create_dir(&dir).unwrap();
-        }
-      };
-
-      dir
+      dirs::picture_dir().unwrap().join("VRChat")
     }
   }
 }
@@ -121,6 +98,14 @@ fn find_world_by_id( world_id: String, window: tauri::Window ){
   });
 }
 
+// On requested sync the photos to the cloud
+#[tauri::command]
+fn sync_photos( token: String ){
+  thread::spawn(move || {
+    photosync::sync_photos(token, get_photo_path());
+  });
+}
+
 #[tauri::command]
 fn load_photos(window: tauri::Window) {
   thread::spawn(move || {
@@ -138,7 +123,7 @@ fn load_photos(window: tauri::Window) {
   
           if p.metadata().unwrap().is_file() {
             let fname = p.path();
-  
+
             let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
             let re2 = Regex::new(
               r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
@@ -194,6 +179,13 @@ fn delete_photo( path: &str ){
 fn change_final_path( new_path: &str ){
   let config_path = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\.photos_path");
   fs::write(&config_path, new_path.as_bytes()).unwrap();
+
+  match fs::metadata(&new_path){
+    Ok(_) => {}
+    Err(_) => {
+      fs::create_dir(&new_path).unwrap();
+    }
+  };
 }
 
 fn main() {
@@ -201,6 +193,14 @@ fn main() {
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
 
   println!("Loading App...");
+  let photos_path = get_photo_path();
+
+  match fs::metadata(&photos_path){
+    Ok(_) => {}
+    Err(_) => {
+      fs::create_dir(&photos_path).unwrap();
+    }
+  };
 
   // Double check the app has an install directory
   let container_folder = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager");
@@ -393,7 +393,7 @@ fn main() {
       start_user_auth, load_photos, close_splashscreen,
       load_photo_meta, delete_photo, open_url,
       find_world_by_id, start_with_win, get_user_photos_path,
-      change_final_path
+      change_final_path, sync_photos
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

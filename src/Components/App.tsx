@@ -14,7 +14,8 @@ function App() {
     invoke('close_splashscreen')
   }
 
-  let [ loggedIn, setLoggedIn ] = createSignal({ loggedIn: false, username: '', avatar: '', id: '' });
+  let [ loggedIn, setLoggedIn ] = createSignal({ loggedIn: false, username: '', avatar: '', id: '', serverVersion: '0.0' });
+  let [ storageInfo, setStorageInfo ] = createSignal({ storage: 0, used: 0, sync: false });
   let [ loadingType, setLoadingType ] = createSignal('load');
   let [ currentPhotoView, setCurrentPhotoView ] = createSignal<any>(null);
   let [ photoNavChoice, setPhotoNavChoice ] = createSignal<string>('');
@@ -32,7 +33,6 @@ function App() {
     confirmationBoxCallback = cb;
   }
 
-  console.log(localStorage.getItem('token'));
   if(localStorage.getItem('token')){
     fetch<any>('https://photos.phazed.xyz/api/v1/account', {
       method: 'GET',
@@ -45,7 +45,10 @@ function App() {
         }
 
         console.log(data.data);
-        setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id });
+        setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
+        setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
+
+        invoke('sync_photos', { token: localStorage.getItem('token') });
       })
       .catch(e => {
         console.error(e);
@@ -123,7 +126,10 @@ function App() {
         localStorage.setItem('token', token);
 
         setLoadingType('none');
-        setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id });
+        setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
+        setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
+
+        invoke('sync_photos', { token: localStorage.getItem('token') });
       })
       .catch(e => {
         setLoadingType('none');
@@ -154,6 +160,7 @@ function App() {
         photoNavChoice={photoNavChoice}
         setPhotoNavChoice={setPhotoNavChoice}
         setConfirmationBox={setConfirmationBox}
+        loggedIn={loggedIn}
         setPhotoCount={setPhotoCount}
         setPhotoSize={setPhotoSize}
         requestPhotoReload={requestPhotoReload}
@@ -168,7 +175,9 @@ function App() {
       <SettingsMenu
         photoCount={photoCount}
         photoSize={photoSize}
-        setRequestPhotoReload={setRequestPhotoReload} />
+        setRequestPhotoReload={setRequestPhotoReload}
+        loggedIn={loggedIn}
+        storageInfo={storageInfo} />
 
       <div class="copy-notif">Image Copied!</div>
 

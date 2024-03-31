@@ -24,6 +24,9 @@
         "all": true, 
         "request": true,
         "scope": [ "https://photos.phazed.xyz/*" ]
+      },
+      "process": {
+        "relaunch": true
       }
     },
     "windows": [

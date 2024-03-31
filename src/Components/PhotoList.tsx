@@ -19,6 +19,7 @@ class PhotoListProps{
   setConfirmationBox!: ( text: string, cb: () => void ) => void;
   requestPhotoReload!: () => boolean;
   setRequestPhotoReload!: ( val: boolean ) => boolean;
+  loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
 }
 
 let PhotoList = ( props: PhotoListProps ) => {

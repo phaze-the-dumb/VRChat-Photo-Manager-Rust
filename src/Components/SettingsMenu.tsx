@@ -1,5 +1,6 @@
-import { onMount } from "solid-js";
+import { onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
+import { relaunch } from '@tauri-apps/api/process';
 import { invoke } from '@tauri-apps/api/tauri';
 import anime from "animejs";
 
@@ -7,6 +8,8 @@ class SettingsMenuProps{
   photoCount!: () => number;
   photoSize!: () => number;
   setRequestPhotoReload!: ( val: boolean ) => boolean;
+  loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
+  storageInfo!: () => { storage: number, used: number, sync: boolean };
 }
 
 let SettingsMenu = ( props: SettingsMenuProps ) => {
@@ -213,10 +216,12 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
               Loading...
             </span>
             <span style={{ display: 'none' }} ref={( el ) => finalPathConfirm = el}>
-              <span class="path" style={{ color: 'green' }} onClick={() => {
+              <span class="path" style={{ color: 'green' }} onClick={async () => {
                 finalPathPreviousData = finalPathData;
                 finalPathConfirm.style.display = 'none';
-                invoke('change_final_path', { newPath: finalPathData });
+
+                await invoke('change_final_path', { newPath: finalPathData });
+                await relaunch();
 
                 anime({
                   targets: '.settings',
@@ -239,9 +244,38 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
               }}><i class="fa-solid fa-xmark"></i></span>
             </span>
           </p>
+
+          <br /><br />
+          <p>To change the directory VRChat outputs photos to, you can change the "picture_output_folder" key in the <span style={{ color: '#00ccff', cursor: 'pointer' }} onClick={() => invoke('open_url', { url: 'https://docs.vrchat.com/docs/configuration-file#camera-and-screenshot-settings' })}>config.json file</span><br />Alternitavely, you can use VRCX to edit the config file.</p>
+
+          <br />
+          <p>VRChat Photo Manager supports photos with extra metadata provided by VRCX.</p>
         </div>
         <div class="settings-block">
           <h1>Account Settings</h1>
+
+          <Show when={props.loggedIn().loggedIn}>
+            <div class="account-profile">
+              <div class="account-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
+              <div class="account-desc">
+                <h2>{ props.loggedIn().username }</h2>
+
+                <Show when={props.storageInfo().sync}>
+                  <div class="storage-bar">
+                    <div class="storage-bar-inner" style={{ width: ((props.storageInfo().used / props.storageInfo().storage) * 100) + '%' }}></div>
+                  </div>
+
+                  <div>
+                    { bytesToFormatted(props.storageInfo().used, 0) } / { bytesToFormatted(props.storageInfo().storage, 0) }<br /><br />
+
+                    <span style={{ 'font-size': '10px' }}>Server Version: { props.loggedIn().serverVersion }</span>
+                  </div>
+                </Show>
+              </div>
+            </div>
+
+            <div class="account-notice">To enable cloud storage or get more storage please contact "_phaz" on discord</div>
+          </Show>
         </div>
       </div>
 

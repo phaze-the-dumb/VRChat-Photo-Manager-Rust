@@ -4,7 +4,7 @@ import { Show, onMount } from 'solid-js';
 
 class NavBarProps{
   setLoadingType!: ( type: string ) => string;
-  loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string };
+  loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
 }
 
 let NavBar = ( props: NavBarProps ) => {

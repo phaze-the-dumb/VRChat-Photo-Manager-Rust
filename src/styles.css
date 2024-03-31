@@ -581,3 +581,61 @@ body{
   justify-content: center;
   align-items: center;
 }
+
+.account-profile{
+  margin: auto;
+  width: 50%;
+  height: 200px;
+  display: flex;
+}
+
+.account-pfp{
+  width: 200px;
+  height: 200px;
+  background-position: center !important;
+  background-size: cover !important;
+  border-radius: 50%;
+  box-shadow: #0005 0 0 10px;
+  position: relative;
+  z-index: 10;
+}
+
+.account-desc{
+  width: calc(100% - 200px);
+  padding-left: 100px;
+  height: 150px;
+  margin: 25px 0;
+  margin-left: -100px;
+  background: #0009;
+  border-radius: 10px;
+  box-shadow: #0005 0 0 10px;
+}
+
+.storage-bar{
+  width: calc(100% - 20px);
+  height: 10px;
+  margin-left: 10px;
+  background: #555;
+  border-radius: 10px;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.storage-bar-inner{
+  margin: 2px;
+  height: 6px;
+  background: #00ccff;
+  border-radius: 10px;
+}
+
+.account-notice{
+  background: #0007;
+  border-radius: 5px;
+  box-shadow: #0005 0 0 10px;
+  padding: 10px;
+  margin: auto;
+  width: calc(50% - 20px);
+  margin-top: 25px;
+}
