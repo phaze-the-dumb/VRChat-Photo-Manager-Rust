@@ -28,7 +28,7 @@ function App() {
 
   let [ requestPhotoReload, setRequestPhotoReload ] = createSignal(false);
 
-  let isPhotosSyncing = false;
+  let [ isPhotosSyncing, setIsPhotosSyncing ] = createSignal(false);
 
   let setConfirmationBox = ( text: string, cb: () => void ) => {
     setConfirmationBoxText(text);
@@ -50,8 +50,8 @@ function App() {
         setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
         setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
 
-        if(!isPhotosSyncing){
-          isPhotosSyncing = true;
+        if(!isPhotosSyncing()){
+          setIsPhotosSyncing(true);
           invoke('sync_photos', { token: localStorage.getItem('token') });
         }
       })
@@ -134,8 +134,8 @@ function App() {
         setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
         setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
 
-        if(!isPhotosSyncing){
-          isPhotosSyncing = true;
+        if(!isPhotosSyncing()){
+          setIsPhotosSyncing(true);
           invoke('sync_photos', { token: localStorage.getItem('token') });
         }
       })
@@ -150,10 +150,6 @@ function App() {
     console.warn('Authetication Denied');
   })
 
-  listen('sync-finished', () => {
-    isPhotosSyncing = false;
-  })
-
   onMount(() => {
     anime.set('.settings',
     {
@@ -165,9 +161,10 @@ function App() {
 
   return (
     <div class="container">
-      <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} setStorageInfo={setStorageInfo} />
+      <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} setStorageInfo={setStorageInfo} setIsPhotosSyncing={setIsPhotosSyncing} />
       <PhotoList
         isPhotosSyncing={isPhotosSyncing}
+        setIsPhotosSyncing={setIsPhotosSyncing}
         setCurrentPhotoView={setCurrentPhotoView}
         currentPhotoView={currentPhotoView}
         photoNavChoice={photoNavChoice}

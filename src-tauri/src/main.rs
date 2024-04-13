@@ -6,7 +6,7 @@ mod photosync;
 
 use tauri::{ http::ResponseBuilder, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent };
 use core::time;
-use std::{ fs, io::Read, path, thread };
+use std::{ fs, io::Read, path, thread, time::Duration };
 use regex::Regex;
 use pngmeta::PNGImage;
 use worldscraper::World;
@@ -45,7 +45,7 @@ pub fn get_photo_path() -> path::PathBuf{
 }
 
 #[tauri::command]
-async fn close_splashscreen(window: tauri::Window) {
+fn close_splashscreen(window: tauri::Window) {
   window.get_window("main").unwrap().show().unwrap();
 }
 
@@ -170,9 +170,19 @@ fn load_photo_meta( photo: &str, window: tauri::Window ){
 
 // Delete a photo when the users confirms the prompt in the ui
 #[tauri::command]
-fn delete_photo( path: &str ){
-  let p = get_photo_path().join(path);
-  fs::remove_file(p).unwrap();
+fn delete_photo( path: String, token: String ){
+  thread::spawn(move || {
+    let client = reqwest::blocking::Client::new();
+
+    let p = get_photo_path().join(&path);
+    fs::remove_file(p).unwrap();
+
+    let photo = path.split("\\").last().unwrap();
+
+    client.delete(format!("https://photos.phazed.xyz/api/v1/photos?token={}&photo={}", token, photo))
+      .timeout(Duration::from_secs(120))
+      .send().unwrap();
+  });
 }
 
 #[tauri::command]
@@ -191,6 +201,12 @@ fn change_final_path( new_path: &str ){
 fn main() {
   std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--ignore-gpu-blacklist");
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
+
+  let sync_lock_path = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\.sync_lock");
+  match fs::metadata(&sync_lock_path){
+   Ok(_) => { fs::remove_file(&sync_lock_path).unwrap(); }
+   Err(_) => {}
+  }
 
   println!("Loading App...");
   let photos_path = get_photo_path();

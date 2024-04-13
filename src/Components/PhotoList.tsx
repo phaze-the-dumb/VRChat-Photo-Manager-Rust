@@ -20,7 +20,8 @@ class PhotoListProps{
   requestPhotoReload!: () => boolean;
   setRequestPhotoReload!: ( val: boolean ) => boolean;
   loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
-  isPhotosSyncing!: boolean;
+  isPhotosSyncing!: () => boolean;
+  setIsPhotosSyncing!: ( syncing: boolean ) => boolean;
 }
 
 let PhotoList = ( props: PhotoListProps ) => {
@@ -45,6 +46,8 @@ let PhotoList = ( props: PhotoListProps ) => {
 
   let quitRender: boolean = false;
   let photoPath: string;
+
+  let finishedFirstLoad = false;
 
   createEffect(() => {
     if(props.requestPhotoReload()){
@@ -285,7 +288,8 @@ let PhotoList = ( props: PhotoListProps ) => {
     photoMetaDataLoadingBar.style.width = (amountLoaded / photos.length) * 100 + '%';
     photo.metaLoaded = true;
 
-    if(amountLoaded / photos.length === 1){
+    if(amountLoaded / photos.length === 1 && !finishedFirstLoad){
+      finishedFirstLoad = true;
       render();
 
       anime({
@@ -312,8 +316,9 @@ let PhotoList = ( props: PhotoListProps ) => {
     let photo = new Photo(event.payload);
     photos.splice(0, 0, photo);
 
-    if(!props.isPhotosSyncing){
-      props.isPhotosSyncing = true;
+    console.log(props.isPhotosSyncing());
+    if(!props.isPhotosSyncing()){
+      props.setIsPhotosSyncing(true);
       invoke('sync_photos', { token: localStorage.getItem('token') });
     }
   })

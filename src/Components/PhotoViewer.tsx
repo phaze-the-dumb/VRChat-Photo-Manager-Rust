@@ -339,7 +339,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         <div class="viewer-button"
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
-          onClick={() => props.setConfirmationBox("Are you sure you want to delete this photo?", () => { invoke("delete_photo", { path: props.currentPhotoView().path }); })}
+          onClick={() => props.setConfirmationBox("Are you sure you want to delete this photo?", () => { invoke("delete_photo", { path: props.currentPhotoView().path, token: localStorage.getItem("token")! }); })}
         >
           <i class="fa-solid fa-trash"></i>
         </div>

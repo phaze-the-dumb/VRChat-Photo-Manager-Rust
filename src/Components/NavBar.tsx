@@ -8,6 +8,7 @@ class NavBarProps{
   setLoadingType!: ( type: string ) => string;
   loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
   setStorageInfo!: ( info: { storage: number, used: number, sync: boolean } ) => { storage: number, used: number, sync: boolean };
+  setIsPhotosSyncing!: ( syncing: boolean ) => boolean;
 }
 
 let NavBar = ( props: NavBarProps ) => {
@@ -19,6 +20,7 @@ let NavBar = ( props: NavBarProps ) => {
   let [ syncPhotoTotal, setSyncPhotoTotal ] = createSignal(0);
   let [ syncPhotoUploading, setSyncPhotoUploading ] = createSignal(0);
   let [ syncError, setSyncError ] = createSignal("");
+  let [ syncType, setSyncType ] = createSignal("Upload");
 
   onMount(() => {
     anime.set(dropdown, { opacity: 0,  translateX: -10 });
@@ -29,8 +31,23 @@ let NavBar = ( props: NavBarProps ) => {
     setIsSyncing(true);
     setSyncPhotoTotal(e.payload.photos_total);
     setSyncPhotoUploading(e.payload.photos_total - e.payload.photos_uploading);
+    setSyncType('Upload');
 
     console.log(e.payload)
+  })
+
+  listen('photos-download-meta', ( e: any ) => {
+    setIsSyncing(true);
+    setSyncPhotoTotal(e.payload.photos_total);
+    setSyncPhotoUploading(e.payload.photos_total - e.payload.photos_uploading);
+    setSyncType('Download');
+
+    console.log(e.payload)
+  })
+
+  listen('sync-finished', () => {
+    props.setIsPhotosSyncing(false);
+    setIsSyncing(false);
   })
 
   let setDropdownVisibility = ( visible: boolean ) => {
@@ -98,7 +115,7 @@ let NavBar = ( props: NavBarProps ) => {
           <Show when={isSyncing()}>
             <Show when={ syncError() == "" } fallback={ "Error: " + syncError() }>
               <div style={{ width: '100%', "text-align": 'center', 'font-size': '14px' }}>
-                Uploading: { syncPhotoUploading() } / { syncPhotoTotal() }<br />
+                { syncType() }ing: { syncPhotoUploading() } / { syncPhotoTotal() }<br />
                 <div style={{ width: '80%', height: '2px', margin: 'auto', "margin-top": '5px', background: '#111' }}>
                   <div style={{ height: '2px', width: (syncPhotoUploading() / syncPhotoTotal()) * 100 + '%', background: '#00ccff' }}></div>
                 </div>
