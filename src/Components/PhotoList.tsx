@@ -19,6 +19,7 @@ class PhotoListProps{
   setConfirmationBox!: ( text: string, cb: () => void ) => void;
   requestPhotoReload!: () => boolean;
   setRequestPhotoReload!: ( val: boolean ) => boolean;
+  storageInfo!: () => { storage: number, used: number, sync: boolean };
   loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
   isPhotosSyncing!: () => boolean;
   setIsPhotosSyncing!: ( syncing: boolean ) => boolean;
@@ -316,8 +317,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     let photo = new Photo(event.payload);
     photos.splice(0, 0, photo);
 
-    console.log(props.isPhotosSyncing());
-    if(!props.isPhotosSyncing()){
+    if(!props.isPhotosSyncing() && props.storageInfo().sync){
       props.setIsPhotosSyncing(true);
       invoke('sync_photos', { token: localStorage.getItem('token') });
     }

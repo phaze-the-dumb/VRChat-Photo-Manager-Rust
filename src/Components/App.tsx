@@ -50,7 +50,7 @@ function App() {
         setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
         setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
 
-        if(!isPhotosSyncing()){
+        if(!isPhotosSyncing() && data.data.user.settings.enableSync){
           setIsPhotosSyncing(true);
           invoke('sync_photos', { token: localStorage.getItem('token') });
         }
@@ -134,7 +134,7 @@ function App() {
         setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
         setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
 
-        if(!isPhotosSyncing()){
+        if(!isPhotosSyncing() && data.data.user.settings.enableSync){
           setIsPhotosSyncing(true);
           invoke('sync_photos', { token: localStorage.getItem('token') });
         }
@@ -163,6 +163,7 @@ function App() {
     <div class="container">
       <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} setStorageInfo={setStorageInfo} setIsPhotosSyncing={setIsPhotosSyncing} />
       <PhotoList
+        storageInfo={storageInfo}
         isPhotosSyncing={isPhotosSyncing}
         setIsPhotosSyncing={setIsPhotosSyncing}
         setCurrentPhotoView={setCurrentPhotoView}

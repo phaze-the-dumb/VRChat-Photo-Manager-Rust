@@ -1,4 +1,4 @@
-import { onMount, Show } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
 import { relaunch } from '@tauri-apps/api/process';
 import { invoke } from '@tauri-apps/api/tauri';
@@ -24,6 +24,8 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
   let finalPathInput: HTMLElement;
   let finalPathData: string;
   let finalPathPreviousData: string;
+
+  let [ deletingPhotos, setDeletingPhotos ] = createSignal(false);
 
   onMount(() => {
     let sliderMouseDown = false;
@@ -301,7 +303,22 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
             <div class="account-notice">To enable cloud storage or get more storage please contact "_phaz" on discord</div>
 
             <div class="account-notice" style={{ display: 'flex' }}>
-              <div class="button-danger" onClick={() => props.setConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", () => {})}>Delete All Photos.</div> <div>This deletes all photos stored in the cloud and disables syncing.</div>
+              <Show when={!deletingPhotos()} fallback={ "We are deleting your photos, please leave this window open while we delete them." }>
+                <div class="button-danger" onClick={() => props.setConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", () => {
+                  props.setStorageInfo({ used: 0, storage: 0, sync: false });
+                  setDeletingPhotos(true);
+
+                  fetch<any>('https://photos.phazed.xyz/api/v1/allphotos', {
+                    method: 'DELETE',
+                    headers: { auth: localStorage.getItem("token")! },
+                    responseType: ResponseType.JSON
+                  })
+                    .then(data => {
+                      console.log(data);
+                      setDeletingPhotos(false);
+                    })
+                })}>Delete All Photos.</div> <div>This deletes all photos stored in the cloud and disables syncing.</div>
+              </Show>
             </div>
           </Show>
         </div>
