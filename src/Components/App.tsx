@@ -28,6 +28,8 @@ function App() {
 
   let [ requestPhotoReload, setRequestPhotoReload ] = createSignal(false);
 
+  let isPhotosSyncing = false;
+
   let setConfirmationBox = ( text: string, cb: () => void ) => {
     setConfirmationBoxText(text);
     confirmationBoxCallback = cb;
@@ -48,7 +50,10 @@ function App() {
         setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
         setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
 
-        invoke('sync_photos', { token: localStorage.getItem('token') });
+        if(!isPhotosSyncing){
+          isPhotosSyncing = true;
+          invoke('sync_photos', { token: localStorage.getItem('token') });
+        }
       })
       .catch(e => {
         console.error(e);
@@ -129,7 +134,10 @@ function App() {
         setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
         setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
 
-        invoke('sync_photos', { token: localStorage.getItem('token') });
+        if(!isPhotosSyncing){
+          isPhotosSyncing = true;
+          invoke('sync_photos', { token: localStorage.getItem('token') });
+        }
       })
       .catch(e => {
         setLoadingType('none');
@@ -140,6 +148,10 @@ function App() {
   listen('auth-denied', () => {
     setLoadingType('none');
     console.warn('Authetication Denied');
+  })
+
+  listen('sync-finished', () => {
+    isPhotosSyncing = false;
   })
 
   onMount(() => {
@@ -153,8 +165,9 @@ function App() {
 
   return (
     <div class="container">
-      <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} />
+      <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} setStorageInfo={setStorageInfo} />
       <PhotoList
+        isPhotosSyncing={isPhotosSyncing}
         setCurrentPhotoView={setCurrentPhotoView}
         currentPhotoView={currentPhotoView}
         photoNavChoice={photoNavChoice}
@@ -177,7 +190,9 @@ function App() {
         photoSize={photoSize}
         setRequestPhotoReload={setRequestPhotoReload}
         loggedIn={loggedIn}
-        storageInfo={storageInfo} />
+        storageInfo={storageInfo}
+        setStorageInfo={setStorageInfo}
+        setConfirmationBox={setConfirmationBox} />
 
       <div class="copy-notif">Image Copied!</div>
 

@@ -127,7 +127,6 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
         if(photo.metadata){
           let meta = JSON.parse(photo.metadata);
-
           let worldData = worldCache.find(x => x.worldData.id === meta.world.id);
 
           photoTray.innerHTML = '';
@@ -157,9 +156,10 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
           if(!worldData)
             invoke('find_world_by_id', { worldId: meta.world.id });
-          else if(worldData.expiresOn < Date.now())
+          else if(worldData.expiresOn < Date.now()){
+            worldCache = worldCache.filter(x => x !== worldData)
             invoke('find_world_by_id', { worldId: meta.world.id });
-          else
+          } else
             loadWorldData(worldData);
 
           trayButton.style.display = 'flex';
@@ -217,12 +217,15 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   })
 
   let loadWorldData = ( data: WorldCache ) => {
+    let meta = props.currentPhotoView().metadata;
+    if(!meta)return;
+
     worldInfoContainer.innerHTML = '';
     worldInfoContainer.appendChild(
       <div>
-        <Show when={ data.worldData.found == false && props.currentPhotoView().metadata }>
+        <Show when={ data.worldData.found == false && meta }>
           <div>
-            <div class="world-name">{ JSON.parse(props.currentPhotoView().metadata).world.name } <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i></div>
+            <div class="world-name">{ JSON.parse(meta).world.name } <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i></div>
             <div style={{ width: '75%', margin: 'auto' }}>Could not fetch world information... Is the world private?</div>
           </div>
         </Show>
@@ -237,7 +240,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
                 <div>{ tag.replace("author_tag_", "").replace("system_", "") }</div>
               }
             </For>
-          </div>
+          </div><br />
         </Show>
       </div> as Node
     )

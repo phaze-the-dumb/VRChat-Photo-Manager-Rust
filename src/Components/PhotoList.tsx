@@ -20,6 +20,7 @@ class PhotoListProps{
   requestPhotoReload!: () => boolean;
   setRequestPhotoReload!: ( val: boolean ) => boolean;
   loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
+  isPhotosSyncing!: boolean;
 }
 
 let PhotoList = ( props: PhotoListProps ) => {
@@ -310,6 +311,11 @@ let PhotoList = ( props: PhotoListProps ) => {
   listen('photo_create', ( event: any ) => {
     let photo = new Photo(event.payload);
     photos.splice(0, 0, photo);
+
+    if(!props.isPhotosSyncing){
+      props.isPhotosSyncing = true;
+      invoke('sync_photos', { token: localStorage.getItem('token') });
+    }
   })
 
   listen('photo_remove', ( event: any ) => {

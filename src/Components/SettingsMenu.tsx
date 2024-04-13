@@ -3,6 +3,7 @@ import { bytesToFormatted } from "../utils";
 import { relaunch } from '@tauri-apps/api/process';
 import { invoke } from '@tauri-apps/api/tauri';
 import anime from "animejs";
+import { fetch, ResponseType } from "@tauri-apps/api/http"
 
 class SettingsMenuProps{
   photoCount!: () => number;
@@ -10,6 +11,8 @@ class SettingsMenuProps{
   setRequestPhotoReload!: ( val: boolean ) => boolean;
   loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
   storageInfo!: () => { storage: number, used: number, sync: boolean };
+  setStorageInfo!: ( info: { storage: number, used: number, sync: boolean } ) => { storage: number, used: number, sync: boolean };
+  setConfirmationBox!: ( text: string, cb: () => void ) => void;
 }
 
 let SettingsMenu = ( props: SettingsMenuProps ) => {
@@ -152,6 +155,26 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
     })
   })
 
+  let refreshAccount = () => {
+    fetch<any>('https://photos.phazed.xyz/api/v1/account', {
+      method: 'GET',
+      headers: { auth: localStorage.getItem('token')! },
+      responseType: ResponseType.JSON
+    })
+      .then(data => {
+        if(!data.data.ok){
+          console.error(data);
+          return;
+        }
+
+        console.log(data.data);
+        props.setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
+      })
+      .catch(e => {
+        console.error(e);
+      })
+  }
+
   return (
     <div class="settings">
       <div class="settings-container" ref={( el ) => settingsContainer = el}>
@@ -258,6 +281,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
             <div class="account-profile">
               <div class="account-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
               <div class="account-desc">
+                <div class="reload-photos" onClick={() => refreshAccount()}><i class="fa-solid fa-arrows-rotate"></i></div>
                 <h2>{ props.loggedIn().username }</h2>
 
                 <Show when={props.storageInfo().sync}>
@@ -275,6 +299,10 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
             </div>
 
             <div class="account-notice">To enable cloud storage or get more storage please contact "_phaz" on discord</div>
+
+            <div class="account-notice" style={{ display: 'flex' }}>
+              <div class="button-danger" onClick={() => props.setConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", () => {})}>Delete All Photos.</div> <div>This deletes all photos stored in the cloud and disables syncing.</div>
+            </div>
           </Show>
         </div>
       </div>

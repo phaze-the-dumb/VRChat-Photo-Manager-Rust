@@ -1,10 +1,13 @@
 import { invoke } from '@tauri-apps/api/tauri';
+import { listen } from '@tauri-apps/api/event';
+import { fetch, ResponseType } from "@tauri-apps/api/http"
 import anime from 'animejs';
-import { Show, onMount } from 'solid-js';
+import { Show, createSignal, onMount } from 'solid-js';
 
 class NavBarProps{
   setLoadingType!: ( type: string ) => string;
   loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
+  setStorageInfo!: ( info: { storage: number, used: number, sync: boolean } ) => { storage: number, used: number, sync: boolean };
 }
 
 let NavBar = ( props: NavBarProps ) => {
@@ -12,9 +15,22 @@ let NavBar = ( props: NavBarProps ) => {
   let inAnimation = false;
   let dropdown: HTMLElement;
 
+  let [ isSyncing, setIsSyncing ] = createSignal(false);
+  let [ syncPhotoTotal, setSyncPhotoTotal ] = createSignal(0);
+  let [ syncPhotoUploading, setSyncPhotoUploading ] = createSignal(0);
+  let [ syncError, setSyncError ] = createSignal("");
+
   onMount(() => {
     anime.set(dropdown, { opacity: 0,  translateX: -10 });
     dropdown.style.display = 'none';
+  })
+
+  listen('photos-upload-meta', ( e: any ) => {
+    setIsSyncing(true);
+    setSyncPhotoTotal(e.payload.photos_total);
+    setSyncPhotoUploading(e.payload.photos_total - e.payload.photos_uploading);
+
+    console.log(e.payload)
   })
 
   let setDropdownVisibility = ( visible: boolean ) => {
@@ -53,6 +69,11 @@ let NavBar = ( props: NavBarProps ) => {
     }
   }
 
+
+  listen('sync-failed', ( e: any ) => {
+    setSyncError(e.payload);
+  })
+
   window.CloseAllPopups.push(() => setDropdownVisibility(false));
 
   return (
@@ -73,6 +94,18 @@ let NavBar = ( props: NavBarProps ) => {
               })
           }}>Photos</div>
         </div>
+        <div class="nav-tab" style={{ width: '200px', "text-align": 'center' }}>
+          <Show when={isSyncing()}>
+            <Show when={ syncError() == "" } fallback={ "Error: " + syncError() }>
+              <div style={{ width: '100%', "text-align": 'center', 'font-size': '14px' }}>
+                Uploading: { syncPhotoUploading() } / { syncPhotoTotal() }<br />
+                <div style={{ width: '80%', height: '2px', margin: 'auto', "margin-top": '5px', background: '#111' }}>
+                  <div style={{ height: '2px', width: (syncPhotoUploading() / syncPhotoTotal()) * 100 + '%', background: '#00ccff' }}></div>
+                </div>
+              </div>
+            </Show>
+          </Show>
+        </div>
         <div class="account" onClick={() => setDropdownVisibility(!dropdownVisible)}>
           <Show when={props.loggedIn().loggedIn}>
             <div class="user-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
@@ -92,6 +125,24 @@ let NavBar = ( props: NavBarProps ) => {
             easing: 'easeInOutQuad',
             duration: 250
           })
+
+          fetch<any>('https://photos.phazed.xyz/api/v1/account', {
+            method: 'GET',
+            headers: { auth: localStorage.getItem('token')! },
+            responseType: ResponseType.JSON
+          })
+            .then(data => {
+              if(!data.data.ok){
+                console.error(data);
+                return;
+              }
+
+              console.log(data.data);
+              props.setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
+            })
+            .catch(e => {
+              console.error(e);
+            })
 
           setDropdownVisibility(false);
         }}>Settings</div>

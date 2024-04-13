@@ -100,9 +100,9 @@ fn find_world_by_id( world_id: String, window: tauri::Window ){
 
 // On requested sync the photos to the cloud
 #[tauri::command]
-fn sync_photos( token: String ){
+fn sync_photos( token: String, window: tauri::Window ){
   thread::spawn(move || {
-    photosync::sync_photos(token, get_photo_path());
+    photosync::sync_photos(token, get_photo_path(), window);
   });
 }
 
