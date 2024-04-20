@@ -1,8 +1,8 @@
 use std::{ fs, io::Write, path, time::Duration };
 use regex::Regex;
-use reqwest::{ self, Error };
+use reqwest;
 use serde::Serialize;
-use serde_json::Value;
+use serde_json::{ Value, Error };
 use tauri::Manager;
 
 #[derive(Clone, Serialize)]
@@ -55,8 +55,10 @@ pub fn sync_photos( token: String, path: path::PathBuf, window: tauri::Window ){
     }
   }
 
-  let body: Value = reqwest::blocking::get(format!("https://photos.phazed.xyz/api/v1/photos/exists?token={}", &token)).unwrap()
-    .json().unwrap();
+  let body = reqwest::blocking::get(format!("https://photos.phazed.xyz/api/v1/photos/exists?token={}", &token)).unwrap()
+    .text().unwrap();
+
+  let body: Value = serde_json::from_str(&body).unwrap();
 
   let mut photos_to_upload: Vec<String> = Vec::new();
   let uploaded_photos = body["files"].as_array().unwrap();
@@ -95,12 +97,14 @@ pub fn sync_photos( token: String, path: path::PathBuf, window: tauri::Window ){
 
         match file{
           Ok(file) => {
-            let res: Result<Value, Error> = client.put(format!("https://photos.phazed.xyz/api/v1/photos?token={}", &token))
+            let res = client.put(format!("https://photos.phazed.xyz/api/v1/photos?token={}", &token))
               .header("Content-Type", "image/png")
               .header("filename", photo)
               .body(file)
               .timeout(Duration::from_secs(120))
-              .send().unwrap().json();
+              .send().unwrap().text().unwrap();
+
+            let res: Result<Value, Error> = serde_json::from_str(&res);
 
             match res {
               Ok(res) => {

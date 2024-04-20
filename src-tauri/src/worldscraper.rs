@@ -59,14 +59,16 @@ impl World{
     let fixed_id: serde_json::Value = serde_json::from_str(&fixed_id_req).unwrap();
     world.from = format!("https://vrclist.com/worlds/{}", fixed_id["id"].to_string());
 
-    let world_data: serde_json::Value = client.post("https://api.vrclist.com/worlds/single")
+    let world_data = client.post("https://api.vrclist.com/worlds/single")
       .header("Content-Type", "application/json")
       .header("User-Agent", "VRChat-Photo-Manager-Rust/0.0.1")
       .body(json!({ "id": fixed_id["id"].to_string() }).to_string())
       .send()
       .unwrap()
-      .json()
+      .text()
       .unwrap();
+
+    let world_data: serde_json::Value = serde_json::from_str(&world_data).unwrap();
 
     world.name = world_data["name"].to_string();
     world.author = world_data["authorName"].to_string();

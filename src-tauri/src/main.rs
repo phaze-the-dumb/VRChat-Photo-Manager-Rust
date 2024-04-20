@@ -155,7 +155,7 @@ fn load_photos(window: tauri::Window) {
       }
     }
 
-    println!("Found {} photos", size);
+    println!("Found {} photos", photos.len());
     window.emit("photos_loaded", PhotosLoadedResponse{ photos, size }).unwrap();
   });
 }
