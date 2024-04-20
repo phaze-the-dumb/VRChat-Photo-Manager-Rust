@@ -120,13 +120,15 @@ fn load_photos(window: tauri::Window) {
       if f.metadata().unwrap().is_dir() {
         for photo in fs::read_dir(f.path()).unwrap() {
           let p = photo.unwrap();
-  
+
           if p.metadata().unwrap().is_file() {
             let fname = p.path();
 
             let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
             let re2 = Regex::new(
-              r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
+              r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap();
+
+            dbg!(re1.is_match(p.file_name().to_str().unwrap()), re2.is_match(p.file_name().to_str().unwrap()), p.file_name().to_str().unwrap());
 
             if
               re1.is_match(p.file_name().to_str().unwrap()) ||
@@ -136,17 +138,24 @@ fn load_photos(window: tauri::Window) {
               let metadata = fs::metadata(&path).unwrap();
 
               if metadata.is_file() {
-                size += metadata.len() as usize;
+                size += 1;
 
                 let path = path.strip_prefix(&base_dir).unwrap().to_path_buf();
                 photos.push(path);
               }
+            } else{
+              println!("Ignoring {:#?} as it doesn't match regex", p.file_name());
             }
+          } else {
+            println!("Ignoring {:#?} as it is a directory", p.file_name());
           }
         }
+      } else {
+        println!("Ignoring {:#?} as it isn't a directory", f.file_name());
       }
     }
 
+    println!("Found {} photos", size);
     window.emit("photos_loaded", PhotosLoadedResponse{ photos, size }).unwrap();
   });
 }

@@ -262,6 +262,35 @@ let PhotoList = ( props: PhotoListProps ) => {
       lastPhoto = p;
     }
 
+    if(currentRow.length > 0){
+      currentRowWidth -= 10;
+
+      let rowXPos = 0;
+      currentRow.forEach(photo => {
+        if(60 + currentRowIndex * 210 - scroll < -200)return photo.shown = false;
+
+        if(!photo.loaded)
+          setTimeout(() => photo.loadImage(), 1);
+        else{
+          if(!photo.shown){
+            photo.frames = 0;
+            photo.shown = true;
+          }
+
+          ctx.globalAlpha = photo.frames / 100;
+          ctx.drawImage(photo.image!, (rowXPos - currentRowWidth / 2) + photoContainer.width / 2, 60 + currentRowIndex * 210 - scroll, photo.scaledWidth!, 200);
+
+          photo.x = (rowXPos - currentRowWidth / 2) + photoContainer.width / 2;
+          photo.y = 60 + currentRowIndex * 210 - scroll;
+
+          if(photo.frames < 100)
+            photo.frames += 10;
+        }
+
+        rowXPos += photo.scaledWidth! + 10;
+      })
+    }
+
     if(photos.length == 0){
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -374,6 +403,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
     listen('photos_loaded', ( event: any ) => {
       let photoPaths = event.payload.photos.reverse();
+      console.log(photoPaths);
 
       props.setPhotoCount(photoPaths.length);
       props.setPhotoSize(event.payload.size);
@@ -412,7 +442,6 @@ let PhotoList = ( props: PhotoListProps ) => {
     ctx = photoContainer.getContext('2d')!;
     ctxBG = photoContainerBG.getContext('2d')!;
     loadPhotos();
-
 
     anime.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
 

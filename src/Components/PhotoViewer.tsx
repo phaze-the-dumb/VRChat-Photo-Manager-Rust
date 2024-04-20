@@ -165,6 +165,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           trayButton.style.display = 'flex';
         } else{
           trayButton.style.display = 'none';
+          closeTray();
         }
       }
 
