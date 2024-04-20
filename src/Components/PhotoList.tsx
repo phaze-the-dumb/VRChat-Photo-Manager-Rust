@@ -37,7 +37,10 @@ let PhotoList = ( props: PhotoListProps ) => {
   let scrollToTopActive = false;
 
   let photoContainer: HTMLCanvasElement;
+  let photoContainerBG: HTMLCanvasElement;
+
   let ctx: CanvasRenderingContext2D;
+  let ctxBG: CanvasRenderingContext2D;
 
   let photos: Photo[] = [];
   let currentPhotoIndex: number = -1;
@@ -156,8 +159,9 @@ let PhotoList = ( props: PhotoListProps ) => {
       scrollToTopActive = false;
     }
 
-    if(!ctx)return;
+    if(!ctx || !ctxBG)return;
     ctx.clearRect(0, 0, photoContainer.width, photoContainer.height);
+    ctxBG.clearRect(0, 0, photoContainerBG.width, photoContainerBG.height);
 
     let currentRow: Photo[] = [];
     let currentRowWidth = 0;
@@ -267,6 +271,9 @@ let PhotoList = ( props: PhotoListProps ) => {
 
       ctx.fillText("You have no bitches", photoContainer.width / 2, photoContainer.height / 2);
     }
+
+    ctxBG.filter = 'blur(100px)';
+    ctxBG.drawImage(photoContainer, 0, 0);
   }
 
   listen('photo_meta_loaded', ( event: any ) => {
@@ -402,7 +409,9 @@ let PhotoList = ( props: PhotoListProps ) => {
 
   onMount(() => {
     ctx = photoContainer.getContext('2d')!;
+    ctxBG = photoContainerBG.getContext('2d')!;
     loadPhotos();
+
 
     anime.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
 
@@ -416,9 +425,15 @@ let PhotoList = ( props: PhotoListProps ) => {
     photoContainer.width = window.innerWidth;
     photoContainer.height = window.innerHeight;
 
+    photoContainerBG.width = window.innerWidth;
+    photoContainerBG.height = window.innerHeight;
+
     window.addEventListener('resize', () => {
       photoContainer.width = window.innerWidth;
       photoContainer.height = window.innerHeight;
+
+      photoContainerBG.width = window.innerWidth;
+      photoContainerBG.height = window.innerHeight;
     })
 
     photoContainer.addEventListener('click', ( e: MouseEvent ) => {
@@ -452,6 +467,7 @@ let PhotoList = ( props: PhotoListProps ) => {
       <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", reloadPhotos)}><i class="fa-solid fa-arrows-rotate"></i></div>
 
       <canvas class="photo-container" ref={( el ) => photoContainer = el}></canvas>
+      <canvas class="photo-container-bg" ref={( el ) => photoContainerBG = el}></canvas>
     </div>
   )
 }

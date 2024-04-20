@@ -28,6 +28,18 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
   let [ deletingPhotos, setDeletingPhotos ] = createSignal(false);
 
   onMount(() => {
+    if(localStorage.getItem('transparent')){
+      localStorage.setItem('transparent', 'true');
+
+      anime({ targets: document.body, background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
+      anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
+    } else{
+      localStorage.removeItem('transparent')
+
+      anime({ targets: document.body, background: 'rgba(0, 0, 0, 1)', easing: 'linear', duration: 100 });
+      anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
+    }
+
     let sliderMouseDown = false;
     let mouseStartX = 0;
 
@@ -218,6 +230,31 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
             Start with windows
 
             <label for="start-with-win-check">
+              <div class="selection-box">
+                <i class="fa-solid fa-check"></i>
+              </div>
+            </label>
+          </div>
+
+          <div class="selector">
+            <input type="checkbox" id="transparent-check" ref={( el ) => {
+              el.checked = localStorage.getItem('transparent') ? true : false;
+            }} onChange={( el ) => {
+              if(el.target.checked){
+                localStorage.setItem('transparent', 'true');
+
+                anime({ targets: document.body, background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
+                anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
+              } else{
+                localStorage.removeItem('transparent')
+
+                anime({ targets: document.body, background: 'rgba(0, 0, 0, 1)', easing: 'linear', duration: 100 });
+                anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
+              }
+            }} />
+            Window Transparency
+
+            <label for="transparent-check">
               <div class="selection-box">
                 <i class="fa-solid fa-check"></i>
               </div>

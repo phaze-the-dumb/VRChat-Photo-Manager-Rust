@@ -25,6 +25,16 @@
         "request": true,
         "scope": [ "https://photos.phazed.xyz/*" ]
       },
+      "window": {
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
+      },
       "process": {
         "relaunch": true
       }
@@ -38,7 +48,9 @@
         "height": 580,
         "minWidth": 600,
         "minHeight": 400,
-        "visible": false
+        "visible": false,
+        "decorations": false,
+        "transparent": true
       }
     ],
     "security": {

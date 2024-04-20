@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { listen } from '@tauri-apps/api/event';
-import { fetch, ResponseType } from "@tauri-apps/api/http"
+import { fetch, ResponseType } from "@tauri-apps/api/http";
+import { appWindow } from '@tauri-apps/api/window';
 import anime from 'animejs';
 import { Show, createSignal, onMount } from 'solid-js';
 
@@ -95,8 +96,8 @@ let NavBar = ( props: NavBarProps ) => {
 
   return (
     <>
-      <div class="navbar">
-        <div class="tabs">
+      <div class="navbar" data-tauri-drag-region>
+        <div class="tabs" data-tauri-drag-region >
           <div class="nav-tab" onClick={() => {
             anime(
               {
@@ -111,7 +112,7 @@ let NavBar = ( props: NavBarProps ) => {
               })
           }}>Photos</div>
         </div>
-        <div class="nav-tab" style={{ width: '200px', "text-align": 'center' }}>
+        <div class="nav-tab" style={{ width: '200px', "text-align": 'center', background: 'transparent' }} data-tauri-drag-region>
           <Show when={isSyncing()}>
             <Show when={ syncError() == "" } fallback={ "Error: " + syncError() }>
               <div style={{ width: '100%', "text-align": 'center', 'font-size': '14px' }}>
@@ -129,13 +130,17 @@ let NavBar = ( props: NavBarProps ) => {
           </Show>
           <i class="fa-solid fa-caret-down account-dropdown"></i>
         </div>
+        <div class="control-lights">
+          <i class="fa-solid fa-minus" onClick={() => appWindow.minimize()}></i>
+          <i class="fa-regular fa-square" onClick={() => appWindow.toggleMaximize()}></i>
+          <i class="fa-solid fa-x" onClick={() => appWindow.hide()}></i>
+        </div>
       </div>
 
       <div class="dropdown" ref={( el ) => dropdown = el}>
         <div class="dropdown-button" onClick={() => {
           anime.set('.settings', { display: 'block' });
-          anime(
-          {
+          anime({
             targets: '.settings',
             opacity: 1,
             translateX: '0px',
