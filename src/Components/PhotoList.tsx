@@ -351,8 +351,9 @@ let PhotoList = ( props: PhotoListProps ) => {
     photoMetaDataLoadingContainer.style.display = 'flex';
 
     photoMetaDataLoadingBar.style.width = '0%';
-    quitRender = true;
 
+    quitRender = true;
+    finishedFirstLoad = false;
     amountLoaded = 0;
     scroll = 0;
     photos = [];
