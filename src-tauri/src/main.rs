@@ -138,7 +138,7 @@ fn load_photos(window: tauri::Window) {
               let metadata = fs::metadata(&path).unwrap();
 
               if metadata.is_file() {
-                size += 1;
+                size += metadata.len() as usize;
 
                 let path = path.strip_prefix(&base_dir).unwrap().to_path_buf();
                 photos.push(path);
