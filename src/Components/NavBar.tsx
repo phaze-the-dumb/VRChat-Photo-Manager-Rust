@@ -201,7 +201,7 @@ let NavBar = ( props: NavBarProps ) => {
               props.setLoadingType('none');
             }, 5000);
 
-            invoke('start_user_auth'); 
+            invoke('start_user_auth');
             setDropdownVisibility(false); 
           }}>Sign In</div>
         </Show>

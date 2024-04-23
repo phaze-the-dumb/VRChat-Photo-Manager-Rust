@@ -161,7 +161,12 @@ function App() {
 
   return (
     <div class="container">
-      <NavBar setLoadingType={setLoadingType} loggedIn={loggedIn} setStorageInfo={setStorageInfo} setIsPhotosSyncing={setIsPhotosSyncing} />
+      <NavBar
+        setLoadingType={setLoadingType}
+        loggedIn={loggedIn}
+        setStorageInfo={setStorageInfo}
+        setIsPhotosSyncing={setIsPhotosSyncing} />
+
       <PhotoList
         storageInfo={storageInfo}
         isPhotosSyncing={isPhotosSyncing}
@@ -184,6 +189,8 @@ function App() {
         setConfirmationBox={setConfirmationBox} />
 
       <SettingsMenu
+        setLoggedIn={setLoggedIn}
+        setLoadingType={setLoadingType}
         photoCount={photoCount}
         photoSize={photoSize}
         setRequestPhotoReload={setRequestPhotoReload}

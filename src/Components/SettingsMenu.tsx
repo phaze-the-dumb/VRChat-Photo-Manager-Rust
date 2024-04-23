@@ -6,6 +6,7 @@ import anime from "animejs";
 import { fetch, ResponseType } from "@tauri-apps/api/http"
 
 class SettingsMenuProps{
+  setLoadingType!: ( type: string ) => string;
   photoCount!: () => number;
   photoSize!: () => number;
   setRequestPhotoReload!: ( val: boolean ) => boolean;
@@ -13,6 +14,7 @@ class SettingsMenuProps{
   storageInfo!: () => { storage: number, used: number, sync: boolean };
   setStorageInfo!: ( info: { storage: number, used: number, sync: boolean } ) => { storage: number, used: number, sync: boolean };
   setConfirmationBox!: ( text: string, cb: () => void ) => void;
+  setLoggedIn!: ( val: { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string } ) => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
 }
 
 let SettingsMenu = ( props: SettingsMenuProps ) => {
@@ -182,6 +184,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
         }
 
         console.log(data.data);
+        props.setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
         props.setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
       })
       .catch(e => {
@@ -318,11 +321,24 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
         <div class="settings-block">
           <h1>Account Settings</h1>
 
-          <Show when={props.loggedIn().loggedIn}>
+          <Show when={props.loggedIn().loggedIn} fallback={
+            <div>
+              You aren't logged in. To enable cloud sync and sharing features you need to login to your PhazeID.<br /><br />
+              <div class="button" onClick={() => {
+                props.setLoadingType('auth');
+
+                setTimeout(() => {
+                  props.setLoadingType('none');
+                }, 5000);
+    
+                invoke('start_user_auth');
+              }}>Login</div>
+            </div>
+          }>
             <div class="account-profile">
               <div class="account-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
               <div class="account-desc">
-                <div class="reload-photos" onClick={() => refreshAccount()}><i class="fa-solid fa-arrows-rotate"></i></div>
+                <div class="reload-photos" onClick={() => refreshAccount()} style={{ opacity: 1 }}><i class="fa-solid fa-arrows-rotate"></i></div>
                 <h2>{ props.loggedIn().username }</h2>
 
                 <Show when={props.storageInfo().sync}>
