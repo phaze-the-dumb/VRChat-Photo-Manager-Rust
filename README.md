@@ -1,6 +1,8 @@
-# VRChat Photo Manager
+# VRChat Photo Manager (BETA)
 
 This is the rust rewrite.
+
+Please give me feedback in the issues section of this repo. Any feedback is welcome, bug reports too! (since there's probably quite a few bugs)
 
 ## A photo manager for VRChat.
 
