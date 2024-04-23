@@ -6,7 +6,7 @@ mod photosync;
 
 use tauri::{ http::ResponseBuilder, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent };
 use core::time;
-use std::{ fs, io::Read, path, thread, time::Duration };
+use std::{ fs, io::Read, path, process::{ self, Command }, thread, time::Duration };
 use regex::Regex;
 use pngmeta::PNGImage;
 use worldscraper::World;
@@ -26,6 +26,8 @@ struct PhotosLoadedResponse{
   photos: Vec<path::PathBuf>,
   size: usize
 }
+
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn get_photo_path() -> path::PathBuf{
   let config_path = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\.photos_path");
@@ -128,8 +130,6 @@ fn load_photos(window: tauri::Window) {
             let re2 = Regex::new(
               r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap();
 
-            dbg!(re1.is_match(p.file_name().to_str().unwrap()), re2.is_match(p.file_name().to_str().unwrap()), p.file_name().to_str().unwrap());
-
             if
               re1.is_match(p.file_name().to_str().unwrap()) ||
               re2.is_match(p.file_name().to_str().unwrap())
@@ -207,9 +207,27 @@ fn change_final_path( new_path: &str ){
   };
 }
 
+#[tauri::command]
+fn get_version() -> String{
+  String::from(VERSION)
+}
+
 fn main() {
   std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--ignore-gpu-blacklist");
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
+
+  // Double check the app has an install directory
+  let container_folder = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager");
+  match fs::metadata(&container_folder){
+    Ok(meta) => {
+      if meta.is_file(){
+        panic!("Cannot launch app as the container path is a file not a directory");
+      }
+    },
+    Err(_) => {
+      fs::create_dir(&container_folder).unwrap();
+    }
+  }
 
   let sync_lock_path = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\.sync_lock");
   match fs::metadata(&sync_lock_path){
@@ -227,20 +245,32 @@ fn main() {
     }
   };
 
-  // Double check the app has an install directory
-  let container_folder = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager");
-  match fs::metadata(&container_folder){
-    Ok(meta) => {
-      if meta.is_file(){
-        panic!("Cannot launch app as the container path is a file not a directory");
-      }
-    },
-    Err(_) => {
-      fs::create_dir(&container_folder).unwrap();
-    }
-  }
+  // Auto update
+  thread::spawn(move || {
+    let client = reqwest::blocking::Client::new();
 
-  // Do auto update stuff here (once im publishing builds)
+    let latest_version = client.get("https://cdn.phaz.uk/vrcpm/latest")
+      .send().unwrap().text().unwrap();
+
+    if latest_version != VERSION{
+      match fs::metadata(&container_folder.join("./updater.exe")){
+        Ok(_) => {}
+        Err(_) => {
+          let latest_installer = client.get("https://cdn.phaz.uk/vrcpm/vrcpm-installer.exe")
+            .timeout(Duration::from_secs(120))
+            .send().unwrap().bytes().unwrap();
+
+          fs::write(&container_folder.join("./updater.exe"), latest_installer).unwrap();
+        }
+      }
+
+      let mut cmd = Command::new(&container_folder.join("./updater.exe"));
+      cmd.current_dir(container_folder);
+      cmd.spawn().expect("Cannot run VRChat Photo Manager");
+
+      process::exit(0);
+    }
+  });
 
   // Setup the tray icon and menu buttons
   let quit = CustomMenuItem::new("quit".to_string(), "Quit");
@@ -418,7 +448,7 @@ fn main() {
       start_user_auth, load_photos, close_splashscreen,
       load_photo_meta, delete_photo, open_url,
       find_world_by_id, start_with_win, get_user_photos_path,
-      change_final_path, sync_photos
+      change_final_path, sync_photos, get_version
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

@@ -304,10 +304,12 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
                 finalPathInput.innerHTML = finalPathPreviousData;
                 finalPathConfirm.style.display = 'none';
               }}><i class="fa-solid fa-xmark"></i></span>
-            </span>
+            </span><br /><br />
+
+            VRCPM Version: <span ref={( el ) => invoke('get_version').then((ver: any) => el.innerHTML = ver)}>Loading...</span>
           </p>
 
-          <br /><br />
+          <br />
           <p>To change the directory VRChat outputs photos to, you can change the "picture_output_folder" key in the <span style={{ color: '#00ccff', cursor: 'pointer' }} onClick={() => invoke('open_url', { url: 'https://docs.vrchat.com/docs/configuration-file#camera-and-screenshot-settings' })}>config.json file</span><br />Alternitavely, you can use VRCX to edit the config file.</p>
 
           <br />
