@@ -171,10 +171,27 @@ let NavBar = ( props: NavBarProps ) => {
 
         <Show when={props.loggedIn().loggedIn == false} fallback={
           <div class="dropdown-button" onClick={() => {
-            localStorage.removeItem('token');
-            window.location.reload();
+            fetch<any>('https://photos.phazed.xyz/api/v1/deauth', {
+              method: 'DELETE',
+              headers: { auth: localStorage.getItem('token')! },
+              responseType: ResponseType.JSON
+            })
+              .then(data => {
+                console.log(data);
 
-            setDropdownVisibility(false);
+                localStorage.removeItem('token');
+                window.location.reload();
+
+                setDropdownVisibility(false);
+              })
+              .catch(e => {
+                console.error(e);
+
+                localStorage.removeItem('token');
+                window.location.reload();
+
+                setDropdownVisibility(false);
+              })
           }}>Sign Out</div>
         }>
           <div class="dropdown-button" onClick={() => {
