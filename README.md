@@ -13,4 +13,4 @@ Install [here](https://cdn.phaz.uk/vrcpm/vrcpm-installer.exe)
 Support for:
 - Files with VRCX metadata ![image](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Rust/assets/57566773/06f44b67-083f-487e-b8b4-84c87d07604f)
 - Cloud backups ![image](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Rust/assets/57566773/db703c66-09cc-4120-9ba6-81fe3ef8c87d)
-- Much more in the works!
+- And much more in the works!
