@@ -53,7 +53,7 @@ fn close_splashscreen(window: tauri::Window) {
 
 #[tauri::command]
 fn start_user_auth() {
-  open::that("https://id.phazed.xyz?oauth=79959294626406").unwrap();
+  open::that("https://photos.phazed.xyz/api/v1/auth").unwrap();
 }
 
 #[tauri::command]
@@ -266,7 +266,7 @@ fn main() {
 
       let mut cmd = Command::new(&container_folder.join("./updater.exe"));
       cmd.current_dir(container_folder);
-      cmd.spawn().expect("Cannot run VRChat Photo Manager");
+      cmd.spawn().expect("Cannot run updater");
 
       process::exit(0);
     }

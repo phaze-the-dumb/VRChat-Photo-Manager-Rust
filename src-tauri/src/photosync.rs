@@ -41,7 +41,7 @@ pub fn sync_photos( token: String, path: path::PathBuf, window: tauri::Window ){
             let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
             let re2 = Regex::new(
               r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap();
-    
+
             if
               re1.is_match(p.file_name().to_str().unwrap()) ||
               re2.is_match(p.file_name().to_str().unwrap())
@@ -55,7 +55,7 @@ pub fn sync_photos( token: String, path: path::PathBuf, window: tauri::Window ){
     }
   }
 
-  let body = reqwest::blocking::get(format!("https://photos.phazed.xyz/api/v1/photos/exists?token={}", &token)).unwrap()
+  let body = reqwest::blocking::get(format!("https://photos-cdn.phazed.xyz/api/v1/photos/exists?token={}", &token)).unwrap()
     .text().unwrap();
 
   let body: Value = serde_json::from_str(&body).unwrap();
@@ -97,7 +97,7 @@ pub fn sync_photos( token: String, path: path::PathBuf, window: tauri::Window ){
 
         match file{
           Ok(file) => {
-            let res = client.put(format!("https://photos.phazed.xyz/api/v1/photos?token={}", &token))
+            let res = client.put(format!("https://photos-cdn.phazed.xyz/api/v1/photos?token={}", &token))
               .header("Content-Type", "image/png")
               .header("filename", photo)
               .body(file)
@@ -164,7 +164,7 @@ pub fn sync_photos( token: String, path: path::PathBuf, window: tauri::Window ){
 
         let full_path = format!("{}\\{}\\{}", path.to_str().unwrap(), folder_name, photo);
 
-        let res = client.get(format!("https://photos.phazed.xyz/api/v1/photos?token={}&photo={}", &token, &photo))
+        let res = client.get(format!("https://photos-cdn.phazed.xyz/api/v1/photos?token={}&photo={}", &token, &photo))
           .timeout(Duration::from_secs(120))
           .send().unwrap().bytes();
 

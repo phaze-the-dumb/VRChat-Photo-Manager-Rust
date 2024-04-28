@@ -23,7 +23,7 @@
       "http": {
         "all": true, 
         "request": true,
-        "scope": [ "https://photos.phazed.xyz/*" ]
+        "scope": [ "https://photos.phazed.xyz/*", "https://photos-cdn.phazed.xyz/*" ]
       },
       "window": {
         "close": true,

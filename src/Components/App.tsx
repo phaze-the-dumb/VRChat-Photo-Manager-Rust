@@ -36,9 +36,8 @@ function App() {
   }
 
   if(localStorage.getItem('token')){
-    fetch<any>('https://photos.phazed.xyz/api/v1/account', {
+    fetch<any>('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token'), {
       method: 'GET',
-      headers: { auth: localStorage.getItem('token' )},
       responseType: ResponseType.JSON
     })
       .then(data => {
@@ -116,9 +115,8 @@ function App() {
   listen('auth-callback', ( event: any ) => {
     let token = event.payload;
 
-    fetch<any>('https://photos.phazed.xyz/api/v1/account', {
+    fetch<any>('https://photos.phazed.xyz/api/v1/account?token='+token, {
       method: 'GET',
-      headers: { auth: token },
       responseType: ResponseType.JSON
     })
       .then(data => {

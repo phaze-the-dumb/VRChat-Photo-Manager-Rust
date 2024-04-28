@@ -148,9 +148,8 @@ let NavBar = ( props: NavBarProps ) => {
             duration: 250
           })
 
-          fetch<any>('https://photos.phazed.xyz/api/v1/account', {
+          fetch<any>('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!, {
             method: 'GET',
-            headers: { auth: localStorage.getItem('token')! },
             responseType: ResponseType.JSON
           })
             .then(data => {
@@ -171,9 +170,8 @@ let NavBar = ( props: NavBarProps ) => {
 
         <Show when={props.loggedIn().loggedIn == false} fallback={
           <div class="dropdown-button" onClick={() => {
-            fetch<any>('https://photos.phazed.xyz/api/v1/deauth', {
+            fetch<any>('https://photos.phazed.xyz/api/v1/deauth?token='+localStorage.getItem('token')!, {
               method: 'DELETE',
-              headers: { auth: localStorage.getItem('token')! },
               responseType: ResponseType.JSON
             })
               .then(data => {

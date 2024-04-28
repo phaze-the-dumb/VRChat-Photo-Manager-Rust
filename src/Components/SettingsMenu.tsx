@@ -172,9 +172,8 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
   })
 
   let refreshAccount = () => {
-    fetch<any>('https://photos.phazed.xyz/api/v1/account', {
+    fetch<any>('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!, {
       method: 'GET',
-      headers: { auth: localStorage.getItem('token')! },
       responseType: ResponseType.JSON
     })
       .then(data => {
@@ -363,7 +362,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
                   props.setStorageInfo({ used: 0, storage: 0, sync: false });
                   setDeletingPhotos(true);
 
-                  fetch<any>('https://photos.phazed.xyz/api/v1/allphotos', {
+                  fetch<any>('https://photos-cdn.phazed.xyz/api/v1/allphotos', {
                     method: 'DELETE',
                     headers: { auth: localStorage.getItem("token")! },
                     responseType: ResponseType.JSON
