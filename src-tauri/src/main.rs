@@ -169,11 +169,19 @@ fn load_photo_meta( photo: &str, window: tauri::Window ){
   thread::spawn(move || {
     let base_dir = get_photo_path().join(&photo);
 
-    let mut file =  fs::File::open(base_dir.clone()).expect("Cannot read image file.");
-    let mut buffer = Vec::new();
+    let file =  fs::File::open(base_dir.clone());
 
-    let _out = file.read_to_end(&mut buffer);
-    window.emit("photo_meta_loaded", PNGImage::new(buffer, photo)).unwrap();
+    match file{
+      Ok(mut file) => {
+        let mut buffer = Vec::new();
+
+        let _out = file.read_to_end(&mut buffer);
+        window.emit("photo_meta_loaded", PNGImage::new(buffer, photo)).unwrap();
+      }
+      Err(_) => {
+        println!("Cannot read image file");
+      }
+    }
   });
 }
 

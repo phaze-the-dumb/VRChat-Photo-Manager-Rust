@@ -6,3 +6,6 @@ v0.1.5:
   - Fixed app not relaunching when changing the folder directory
 
   - Added the "--no-update" flag to disable auto updating
+
+v0.1.6:
+  - Fixed VRCX putting the fucking worldids on the end of file names
