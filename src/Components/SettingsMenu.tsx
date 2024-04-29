@@ -1,6 +1,5 @@
 import { createSignal, onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
-import { relaunch } from '@tauri-apps/api/process';
 import { invoke } from '@tauri-apps/api/tauri';
 import anime from "animejs";
 import { fetch, ResponseType } from "@tauri-apps/api/http"
@@ -291,7 +290,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
                 finalPathConfirm.style.display = 'none';
 
                 await invoke('change_final_path', { newPath: finalPathData });
-                await relaunch();
+                await invoke('relaunch');
 
                 anime({
                   targets: '.settings',
@@ -305,13 +304,17 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
                 })
 
                 props.setRequestPhotoReload(true);
-              }}><i class="fa-solid fa-check"></i></span>
+              }}>
+                Save
+              </span>
 
               <span class="path" style={{ color: 'red' }} onClick={() => {
                 finalPathData = finalPathPreviousData;
                 finalPathInput.innerHTML = finalPathPreviousData;
                 finalPathConfirm.style.display = 'none';
-              }}><i class="fa-solid fa-xmark"></i></span>
+              }}>
+                Cancel
+              </span>
             </span><br /><br />
 
             VRCPM Version: <span ref={( el ) => invoke('get_version').then((ver: any) => el.innerHTML = ver)}>Loading...</span>

@@ -6,7 +6,7 @@ mod photosync;
 
 use tauri::{ http::ResponseBuilder, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, WindowEvent };
 use core::time;
-use std::{ fs, io::Read, path, process::{ self, Command }, thread, time::Duration };
+use std::{ env, fs, io::Read, path, process::{ self, Command }, thread, time::Duration };
 use regex::Regex;
 use pngmeta::PNGImage;
 use worldscraper::World;
@@ -213,6 +213,17 @@ fn get_version() -> String{
   String::from(VERSION)
 }
 
+#[tauri::command]
+fn relaunch(){
+  let container_folder = dirs::home_dir().unwrap().join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager");
+
+  let mut cmd = Command::new(&container_folder.join("./vrchat-photo-manager.exe"));
+  cmd.current_dir(container_folder);
+  cmd.spawn().expect("Cannot run updater");
+
+  process::exit(0);
+}
+
 fn main() {
   std::env::set_var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--ignore-gpu-blacklist");
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
@@ -246,32 +257,43 @@ fn main() {
     }
   };
 
-  // Auto update
-  thread::spawn(move || {
-    let client = reqwest::blocking::Client::new();
+  let args: Vec<String> = env::args().collect();
 
-    let latest_version = client.get("https://cdn.phaz.uk/vrcpm/latest")
-      .send().unwrap().text().unwrap();
-
-    if latest_version != VERSION{
-      match fs::metadata(&container_folder.join("./updater.exe")){
-        Ok(_) => {}
-        Err(_) => {
-          let latest_installer = client.get("https://cdn.phaz.uk/vrcpm/vrcpm-installer.exe")
-            .timeout(Duration::from_secs(120))
-            .send().unwrap().bytes().unwrap();
-
-          fs::write(&container_folder.join("./updater.exe"), latest_installer).unwrap();
-        }
-      }
-
-      let mut cmd = Command::new(&container_folder.join("./updater.exe"));
-      cmd.current_dir(container_folder);
-      cmd.spawn().expect("Cannot run updater");
-
-      process::exit(0);
+  let mut update = true;
+  for arg in args{
+    if arg == "--no-update"{
+      update = false;
     }
-  });
+  }
+
+  if update{
+    // Auto update
+    thread::spawn(move || {
+      let client = reqwest::blocking::Client::new();
+
+      let latest_version = client.get("https://cdn.phaz.uk/vrcpm/latest")
+        .send().unwrap().text().unwrap();
+
+      if latest_version != VERSION{
+        match fs::metadata(&container_folder.join("./updater.exe")){
+          Ok(_) => {}
+          Err(_) => {
+            let latest_installer = client.get("https://cdn.phaz.uk/vrcpm/vrcpm-installer.exe")
+              .timeout(Duration::from_secs(120))
+              .send().unwrap().bytes().unwrap();
+
+            fs::write(&container_folder.join("./updater.exe"), latest_installer).unwrap();
+          }
+        }
+
+        let mut cmd = Command::new(&container_folder.join("./updater.exe"));
+        cmd.current_dir(container_folder);
+        cmd.spawn().expect("Cannot run updater");
+
+        process::exit(0);
+      }
+    });
+  }
 
   // Setup the tray icon and menu buttons
   let quit = CustomMenuItem::new("quit".to_string(), "Quit");
@@ -449,7 +471,7 @@ fn main() {
       start_user_auth, load_photos, close_splashscreen,
       load_photo_meta, delete_photo, open_url,
       find_world_by_id, start_with_win, get_user_photos_path,
-      change_final_path, sync_photos, get_version
+      change_final_path, sync_photos, get_version, relaunch
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

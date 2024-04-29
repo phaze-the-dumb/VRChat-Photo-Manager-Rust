@@ -1,0 +1,8 @@
+v0.1.5:
+  - Gonna start a changelog now
+
+  - Fixed photos not deleting correctly
+  - Fixed save / cancel buttons in settings being blank
+  - Fixed app not relaunching when changing the folder directory
+
+  - Added the "--no-update" flag to disable auto updating
