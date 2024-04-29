@@ -184,6 +184,8 @@ function App() {
         setPhotoNavChoice={setPhotoNavChoice}
         currentPhotoView={currentPhotoView}
         setCurrentPhotoView={setCurrentPhotoView}
+        storageInfo={storageInfo}
+        loggedIn={loggedIn}
         setConfirmationBox={setConfirmationBox} />
 
       <SettingsMenu
