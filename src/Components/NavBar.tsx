@@ -128,12 +128,20 @@ let NavBar = ( props: NavBarProps ) => {
           <Show when={props.loggedIn().loggedIn}>
             <div class="user-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
           </Show>
-          <i class="fa-solid fa-caret-down account-dropdown"></i>
+          <div class="icon">
+            <img draggable="false" src="/icon/caret-down-solid.svg"></img>
+          </div>
         </div>
         <div class="control-lights">
-          <i class="fa-solid fa-minus" onClick={() => appWindow.minimize()}></i>
-          <i class="fa-regular fa-square" onClick={() => appWindow.toggleMaximize()}></i>
-          <i class="fa-solid fa-x" onClick={() => appWindow.hide()}></i>
+          <div class="light">
+            <img draggable="false" src="/icon/minus-solid.svg" onClick={() => appWindow.minimize()}></img>
+          </div>
+          <div class="light">
+            <img draggable="false" src="/icon/square-regular.svg" onClick={() => appWindow.toggleMaximize()}></img>
+          </div>
+          <div class="light">
+            <img draggable="false" src="/icon/x-solid.svg" onClick={() => appWindow.hide()}></img>
+          </div>
         </div>
       </div>
 

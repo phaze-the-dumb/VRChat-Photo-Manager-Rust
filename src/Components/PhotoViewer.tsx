@@ -275,18 +275,35 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
   return (
     <div class="photo-viewer" ref={( el ) => viewer = el}>
-      <div class="viewer-close viewer-button" onClick={() => props.setCurrentPhotoView(null)}><i class="fa-solid fa-x"></i></div>
+      <div class="viewer-close viewer-button" onClick={() => props.setCurrentPhotoView(null)}>
+        <div class="icon" style={{ width: '10px', margin: '0' }}>
+          <img draggable="false" src="/icon/x-solid.svg"></img>
+        </div>
+      </div>
       <div class="image-container" ref={( el ) => imageViewer = el}></div>
 
-      <div class="prev-button" onClick={() => props.setPhotoNavChoice('prev')}><i class="fa-solid fa-arrow-left"></i></div>
-      <div class="next-button" onClick={() => props.setPhotoNavChoice('next')}><i class="fa-solid fa-arrow-right"></i></div>
+      <div class="prev-button" onClick={() => props.setPhotoNavChoice('prev')}>
+        <div class="icon" style={{ width: '15px', margin: '0' }}>
+          <img draggable="false" src="/icon/arrow-left-solid.svg"></img>
+        </div>
+      </div>
+
+      <div class="next-button" onClick={() => props.setPhotoNavChoice('next')}>
+        <div class="icon" style={{ width: '15px', margin: '0' }}>
+          <img draggable="false" src="/icon/arrow-right-solid.svg"></img>
+        </div>
+      </div>
 
       <div class="photo-tray" ref={( el ) => photoTray = el}></div>
 
       <div class="photo-tray-close"
         onClick={() => closeTray()}
         ref={( el ) => photoTrayCloseBtn = el}
-      ><i class="fa-solid fa-angle-down"></i></div>
+      >
+        <div class="icon" style={{ width: '12px', margin: '0' }}>
+          <img draggable="false" src="/icon/angle-down-solid.svg"></img>
+        </div>
+      </div>
 
       <div class="control-buttons" ref={( el ) => photoControls = el}>
         <div class="viewer-button"
@@ -327,7 +344,9 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
             });
           }}
         >
-          <i class="fa-solid fa-copy"></i>
+          <div class="icon" style={{ width: '12px', margin: '0' }}>
+            <img draggable="false" src="/icon/copy-solid.svg"></img>
+          </div>
         </div>
         <div class="viewer-button" style={{ width: '50px' }}
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '70px', height: '30px', 'margin-left': '10px', 'margin-right': '10px' })}
@@ -335,14 +354,18 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           ref={( el ) => trayButton = el}
           onClick={() => openTray()}
         >
-          <i class="fa-solid fa-angle-up"></i>
+          <div class="icon" style={{ width: '12px', margin: '0' }}>
+            <img draggable="false" src="/icon/angle-up-solid.svg"></img>
+          </div>
         </div>
         <div class="viewer-button"
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
           onClick={() => props.setConfirmationBox("Are you sure you want to delete this photo?", () => { invoke("delete_photo", { path: props.currentPhotoView().path, token: localStorage.getItem("token")! }); })}
         >
-          <i class="fa-solid fa-trash"></i>
+          <div class="icon" style={{ width: '12px', margin: '0' }}>
+            <img draggable="false" src="/icon/trash-solid.svg"></img>
+          </div>
         </div>
       </div>
     </div>

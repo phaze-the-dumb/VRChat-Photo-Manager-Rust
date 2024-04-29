@@ -68,7 +68,7 @@ body{
   align-items: center;
 }
 
-.control-lights i{
+.control-lights .light{
   font-size: 20px;
   text-align: center;
   color: white;
@@ -78,10 +78,24 @@ body{
   justify-content: center;
   align-items: center;
   height: 50px;
+  filter: invert(100%);
 }
 
-.control-lights i:hover{
-  background: #0005;
+.control-lights .light:hover{
+  background: #fff5;
+}
+
+.control-lights .light img{
+  width: 25%;
+}
+
+.icon{
+  width: 15px;
+  filter: invert(100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .user-pfp{

@@ -212,7 +212,9 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
 
             <label for="start-in-bg-check">
               <div class="selection-box">
-                <i class="fa-solid fa-check"></i>
+                <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
+                  <img draggable="false" src="/icon/check-solid.svg"></img>
+                </div>
               </div>
             </label>
           </div>
@@ -233,7 +235,9 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
 
             <label for="start-with-win-check">
               <div class="selection-box">
-                <i class="fa-solid fa-check"></i>
+                <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
+                  <img draggable="false" src="/icon/check-solid.svg"></img>
+                </div>
               </div>
             </label>
           </div>
@@ -258,7 +262,9 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
 
             <label for="transparent-check">
               <div class="selection-box">
-                <i class="fa-solid fa-check"></i>
+                <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
+                  <img draggable="false" src="/icon/check-solid.svg"></img>
+                </div>
               </div>
             </label>
           </div>
@@ -337,7 +343,11 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
             <div class="account-profile">
               <div class="account-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
               <div class="account-desc">
-                <div class="reload-photos" onClick={() => refreshAccount()} style={{ opacity: 1 }}><i class="fa-solid fa-arrows-rotate"></i></div>
+                <div class="reload-photos" onClick={() => refreshAccount()} style={{ opacity: 1 }}>
+                  <div class="icon" style={{ width: '17px' }}>
+                    <img draggable="false" src="/icon/arrows-rotate-solid.svg"></img>
+                  </div>
+                </div>
                 <h2>{ props.loggedIn().username }</h2>
 
                 <Show when={props.storageInfo().sync}>

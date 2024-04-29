@@ -493,8 +493,16 @@ let PhotoList = ( props: PhotoListProps ) => {
         </div>
       </div>
 
-      <div class="scroll-to-top" ref={( el ) => scrollToTop = el} onClick={() => targetScroll = 0}><i class="fa-solid fa-angle-up"></i></div>
-      <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", reloadPhotos)}><i class="fa-solid fa-arrows-rotate"></i></div>
+      <div class="scroll-to-top" ref={( el ) => scrollToTop = el} onClick={() => targetScroll = 0}>
+        <div class="icon">
+          <img draggable="false" src="/icon/angle-up-solid.svg"></img>
+        </div>
+      </div>
+      <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", reloadPhotos)}>
+        <div class="icon" style={{ width: '17px' }}>
+          <img draggable="false" src="/icon/arrows-rotate-solid.svg"></img>
+        </div>
+      </div>
 
       <canvas class="photo-container" ref={( el ) => photoContainer = el}></canvas>
       <canvas class="photo-container-bg" ref={( el ) => photoContainerBG = el}></canvas>
