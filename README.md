@@ -2,7 +2,16 @@
 
 This is the rust rewrite.
 
+## Feedback / Bug Reports
+
 Please give me feedback in the issues section of this repo. Any feedback is welcome, bug reports too! (since there's probably quite a few bugs)
+
+Also for bug reports if you can, please try replicating the issue with a debug variant of the app and sending the logs along with your issue
+
+You can download the debug EXEs using this url format:
+https://cdn.phaz.uk/vrcpm/builds/debug/vrcpm-<YOUR-APP-VERSION>-debug.exe
+
+You can find your app version under appllication settings.
 
 ## A photo manager for VRChat.
 
