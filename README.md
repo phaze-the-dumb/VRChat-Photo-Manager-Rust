@@ -9,9 +9,11 @@ Please give me feedback in the issues section of this repo. Any feedback is welc
 Also for bug reports if you can, please try replicating the issue with a debug variant of the app and sending the logs along with your issue
 
 You can download the debug EXEs using this url format:
-https://cdn.phaz.uk/vrcpm/builds/debug/vrcpm-<YOUR-APP-VERSION>-debug.exe
+https://cdn.phaz.uk/vrcpm/builds/debug/vrcpm-[YOUR-APP-VERSION]-debug.exe
 
 You can find your app version under appllication settings.
+
+(Please note that there are not debug releases for versions: 0.1.0, 0.1.1, 0.1.2, 0.1.3)
 
 ## A photo manager for VRChat.
 
