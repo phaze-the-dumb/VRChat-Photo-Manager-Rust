@@ -365,7 +365,9 @@ fn main() {
         ..
       } => {
         let window = app.get_window("main").unwrap();
+
         window.show().unwrap();
+        window.set_focus().unwrap();
       }
       SystemTrayEvent::MenuItemClick { id, .. } => {
         match id.as_str() {
@@ -379,6 +381,7 @@ fn main() {
               window.hide().unwrap();
             } else{
               window.show().unwrap();
+              window.set_focus().unwrap();
             }
           }
           _ => {}

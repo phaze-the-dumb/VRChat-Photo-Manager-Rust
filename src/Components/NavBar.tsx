@@ -133,14 +133,14 @@ let NavBar = ( props: NavBarProps ) => {
           </div>
         </div>
         <div class="control-lights">
-          <div class="light">
-            <img draggable="false" src="/icon/minus-solid.svg" onClick={() => appWindow.minimize()}></img>
+          <div class="light" onClick={() => appWindow.minimize()}>
+            <img draggable="false" src="/icon/minus-solid.svg"></img>
           </div>
-          <div class="light">
-            <img draggable="false" src="/icon/square-regular.svg" onClick={() => appWindow.toggleMaximize()}></img>
+          <div class="light" onClick={() => appWindow.toggleMaximize()}>
+            <img draggable="false" src="/icon/square-regular.svg"></img>
           </div>
-          <div class="light">
-            <img draggable="false" src="/icon/x-solid.svg" onClick={() => appWindow.hide()}></img>
+          <div class="light" onClick={() => appWindow.hide()}>
+            <img draggable="false" src="/icon/x-solid.svg"></img>
           </div>
         </div>
       </div>

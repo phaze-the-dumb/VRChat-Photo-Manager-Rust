@@ -9,3 +9,7 @@ v0.1.5:
 
 v0.1.6:
   - Fixed VRCX putting the fucking worldids on the end of file names
+
+v0.1.7:
+  - Fixed the control icons do they actually do what they're supposed to do
+  - Fixed window not focusing when opening from tray
