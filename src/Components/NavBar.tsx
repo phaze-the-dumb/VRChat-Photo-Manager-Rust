@@ -1,9 +1,10 @@
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { fetch, ResponseType } from "@tauri-apps/api/http";
-import { appWindow } from '@tauri-apps/api/window';
+import { fetch } from "@tauri-apps/plugin-http";
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import anime from 'animejs';
 import { Show, createSignal, onMount } from 'solid-js';
+const appWindow = getCurrentWebviewWindow()
 
 class NavBarProps{
   setLoadingType!: ( type: string ) => string;
@@ -156,10 +157,8 @@ let NavBar = ( props: NavBarProps ) => {
             duration: 250
           })
 
-          fetch<any>('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!, {
-            method: 'GET',
-            responseType: ResponseType.JSON
-          })
+          fetch('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!)
+            .then(data => data.json())
             .then(data => {
               if(!data.data.ok){
                 console.error(data);
@@ -178,10 +177,8 @@ let NavBar = ( props: NavBarProps ) => {
 
         <Show when={props.loggedIn().loggedIn == false} fallback={
           <div class="dropdown-button" onClick={() => {
-            fetch<any>('https://photos.phazed.xyz/api/v1/deauth?token='+localStorage.getItem('token')!, {
-              method: 'DELETE',
-              responseType: ResponseType.JSON
-            })
+            fetch('https://photos.phazed.xyz/api/v1/deauth?token='+localStorage.getItem('token')!)
+              .then(data => data.json())
               .then(data => {
                 console.log(data);
 

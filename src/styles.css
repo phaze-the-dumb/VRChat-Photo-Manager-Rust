@@ -69,6 +69,7 @@ body{
 }
 
 .control-lights .light{
+  user-select: none;
   font-size: 20px;
   text-align: center;
   color: white;

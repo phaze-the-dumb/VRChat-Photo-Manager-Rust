@@ -2,42 +2,30 @@
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "vrchat-photo-manager",
-    "version": "0.0.1"
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ]
   },
-  "tauri": {
-    "systemTray": {
+  "productName": "vrchat-photo-manager",
+  "version": "0.0.1",
+  "identifier": "uk.phaz.vrcpm",
+  "plugins": {},
+  "app": {
+    "security": {
+      "csp": "https://photos.phazed.xyz; connect-src ipc: http://ipc.localhost"
+    },
+    "trayIcon": {
       "iconPath": "./icons/icon.ico",
       "title": "VRChat Photo Manager"
-    },
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "http": {
-        "all": true, 
-        "request": true,
-        "scope": [ "https://photos.phazed.xyz/*", "https://photos-cdn.phazed.xyz/*" ]
-      },
-      "window": {
-        "close": true,
-        "hide": true,
-        "show": true,
-        "maximize": true,
-        "minimize": true,
-        "unmaximize": true,
-        "unminimize": true,
-        "startDragging": true
-      },
-      "process": {
-        "relaunch": true
-      }
     },
     "windows": [
       {
@@ -52,20 +40,6 @@
         "decorations": false,
         "transparent": true
       }
-    ],
-    "security": {
-      "csp": "https://photos.phazed.xyz"
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "uk.phaz.vrcpm",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.ico"
-      ]
-    }
+    ]
   }
 }

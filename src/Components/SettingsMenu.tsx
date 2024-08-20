@@ -1,8 +1,8 @@
 import { createSignal, onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import anime from "animejs";
-import { fetch, ResponseType } from "@tauri-apps/api/http"
+import { fetch } from "@tauri-apps/plugin-http"
 
 class SettingsMenuProps{
   setLoadingType!: ( type: string ) => string;
@@ -171,19 +171,17 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
   })
 
   let refreshAccount = () => {
-    fetch<any>('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!, {
-      method: 'GET',
-      responseType: ResponseType.JSON
-    })
+    fetch('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!)
+      .then(data => data.json())
       .then(data => {
-        if(!data.data.ok){
+        if(!data.ok){
           console.error(data);
           return;
         }
 
         console.log(data.data);
-        props.setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
-        props.setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
+        props.setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
+        props.setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
       })
       .catch(e => {
         console.error(e);
@@ -375,11 +373,11 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
                   props.setStorageInfo({ used: 0, storage: 0, sync: false });
                   setDeletingPhotos(true);
 
-                  fetch<any>('https://photos-cdn.phazed.xyz/api/v1/allphotos', {
+                  fetch('https://photos-cdn.phazed.xyz/api/v1/allphotos', {
                     method: 'DELETE',
-                    headers: { auth: localStorage.getItem("token")! },
-                    responseType: ResponseType.JSON
+                    headers: { auth: localStorage.getItem("token")! }
                   })
+                    .then(data => data.json())
                     .then(data => {
                       console.log(data);
                       setDeletingPhotos(false);

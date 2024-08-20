@@ -1,5 +1,5 @@
 import { For, Show, createEffect, onMount } from "solid-js";
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import anime from 'animejs';
 
@@ -33,6 +33,7 @@ class WorldCache{
 
 let worldCache: WorldCache[] = JSON.parse(localStorage.getItem('worldCache') || "[]");
 
+// TODO: Context Menu, (Open file in explorer, Copy Image)
 let PhotoViewer = ( props: PhotoViewerProps ) => {
   let viewer: HTMLElement;
   let imageViewer: HTMLElement;
@@ -116,7 +117,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           if(!photoPath)
             photoPath = await invoke('get_user_photos_path') + '/';
 
-          imageViewer.style.background = 'url(\'https://photo.localhost/' + (photoPath + props.currentPhotoView().path).split('\\').join('/') +'\')';
+          imageViewer.style.background = 'url(\'http://photo.localhost/' + (photoPath + props.currentPhotoView().path).split('\\').join('/') +'\')';
         })();
 
         anime({

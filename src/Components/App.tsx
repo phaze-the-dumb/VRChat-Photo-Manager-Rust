@@ -1,8 +1,8 @@
 import { createSignal, createEffect, Switch, Match, onMount } from "solid-js";
 import { listen } from '@tauri-apps/api/event';
-import { fetch, ResponseType } from "@tauri-apps/api/http"
+import { fetch } from "@tauri-apps/plugin-http"
 import anime from "animejs";
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 
 import NavBar from "./NavBar";
 import PhotoList from "./PhotoList";
@@ -36,20 +36,18 @@ function App() {
   }
 
   if(localStorage.getItem('token')){
-    fetch<any>('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token'), {
-      method: 'GET',
-      responseType: ResponseType.JSON
-    })
+    fetch('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token'))
+      .then(data => data.json())
       .then(data => {
-        if(!data.data.ok){
+        if(!data.ok){
           return console.error(data);
         }
 
         console.log(data.data);
-        setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
-        setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
+        setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
+        setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
 
-        if(!isPhotosSyncing() && data.data.user.settings.enableSync){
+        if(!isPhotosSyncing() && data.user.settings.enableSync){
           setIsPhotosSyncing(true);
           invoke('sync_photos', { token: localStorage.getItem('token') });
         }
@@ -115,24 +113,22 @@ function App() {
   listen('auth-callback', ( event: any ) => {
     let token = event.payload;
 
-    fetch<any>('https://photos.phazed.xyz/api/v1/account?token='+token, {
-      method: 'GET',
-      responseType: ResponseType.JSON
-    })
+    fetch('https://photos.phazed.xyz/api/v1/account?token='+token)
+      .then(data => data.json())
       .then(data => {
-        if(!data.data.ok){
+        if(!data.ok){
           console.error(data);
           return setLoadingType('none');
         }
 
-        console.log(data.data);
+        console.log(data);
         localStorage.setItem('token', token);
 
         setLoadingType('none');
-        setLoggedIn({ loggedIn: true, username: data.data.user.username, avatar: data.data.user.avatar, id: data.data.user._id, serverVersion: data.data.user.serverVersion });
-        setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
+        setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
+        setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
 
-        if(!isPhotosSyncing() && data.data.user.settings.enableSync){
+        if(!isPhotosSyncing() && data.user.settings.enableSync){
           setIsPhotosSyncing(true);
           invoke('sync_photos', { token: localStorage.getItem('token') });
         }

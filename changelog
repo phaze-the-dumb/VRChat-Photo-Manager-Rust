@@ -13,3 +13,7 @@ v0.1.6:
 v0.1.7:
   - Fixed the control icons do they actually do what they're supposed to do
   - Fixed window not focusing when opening from tray
+
+v0.1.8:
+  - Migrate to tauri v2
+  - Photo loading is slightly faster

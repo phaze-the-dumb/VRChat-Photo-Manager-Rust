@@ -1,5 +1,5 @@
 import { createEffect, onMount } from "solid-js";
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 
 import anime from "animejs";
@@ -25,6 +25,7 @@ class PhotoListProps{
   setIsPhotosSyncing!: ( syncing: boolean ) => boolean;
 }
 
+// TODO: Photo filtering / Searching (By users, By date, By world)
 let PhotoList = ( props: PhotoListProps ) => {
   let amountLoaded = 0;
   let imagesLoading = 0;
@@ -106,7 +107,8 @@ let PhotoList = ( props: PhotoListProps ) => {
 
       this.imageEl = document.createElement('img');
       this.imageEl.crossOrigin = 'anonymous';
-      this.imageEl.src = 'https://photo.localhost/' + photoPath + this.path;
+
+      this.imageEl.src = "http://photo.localhost/" + photoPath + this.path;
 
       this.imageEl.onload = () => {
         this.image!.width = this.scaledWidth!;
