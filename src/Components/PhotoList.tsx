@@ -5,7 +5,7 @@ import { listen } from '@tauri-apps/api/event';
 import anime from "animejs";
 
 const PHOTO_HEIGHT = 200;
-const MAX_IMAGE_LOAD = 3;
+const MAX_IMAGE_LOAD = 10;
 
 let months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
@@ -31,8 +31,6 @@ let PhotoList = ( props: PhotoListProps ) => {
   let imagesLoading = 0;
 
   let photoTreeLoadingContainer: HTMLElement;
-  let photoMetaDataLoadingContainer: HTMLElement;
-  let photoMetaDataLoadingBar: HTMLElement;
 
   let scrollToTop: HTMLElement;
   let scrollToTopActive = false;
@@ -51,8 +49,6 @@ let PhotoList = ( props: PhotoListProps ) => {
 
   let quitRender: boolean = false;
   let photoPath: string;
-
-  let finishedFirstLoad = false;
 
   createEffect(() => {
     if(props.requestPhotoReload()){
@@ -93,12 +89,14 @@ let PhotoList = ( props: PhotoListProps ) => {
     constructor( path: string ){
       this.path = path;
       this.dateString = this.path.split('_')[1];
-
-      invoke('load_photo_meta', { photo: this.path });
     }
 
     loadImage(){
-      if(this.loading || this.loaded || !this.metaLoaded || imagesLoading >= MAX_IMAGE_LOAD)return;
+      if(this.loading || this.loaded || imagesLoading >= MAX_IMAGE_LOAD)return;
+
+      invoke('load_photo_meta', { photo: this.path });
+      if(!this.metaLoaded)return;
+
       this.loading = true;
 
       imagesLoading++;
@@ -108,7 +106,7 @@ let PhotoList = ( props: PhotoListProps ) => {
       this.imageEl = document.createElement('img');
       this.imageEl.crossOrigin = 'anonymous';
 
-      this.imageEl.src = "http://photo.localhost/" + photoPath + this.path;
+      this.imageEl.src = "http://photo.localhost/" + photoPath + this.path + "?downscale";
 
       this.imageEl.onload = () => {
         this.image!.width = this.scaledWidth!;
@@ -222,7 +220,7 @@ let PhotoList = ( props: PhotoListProps ) => {
         currentRowIndex += 1.4;
       }
 
-      if(currentRowWidth + p.scaledWidth! + 10 < photoContainer.width - 20){
+      if(currentRowWidth + p.scaledWidth! + 10 < photoContainer.width - 100){
         currentRowWidth += p.scaledWidth! + 10;
         currentRow.push(p);
       } else{
@@ -324,31 +322,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     photo.metadata = data.metadata.split('\u0000').filter(x => x !== '')[1];
     amountLoaded++;
 
-    photoMetaDataLoadingBar.style.width = (amountLoaded / photos.length) * 100 + '%';
     photo.metaLoaded = true;
-
-    if(amountLoaded / photos.length === 1 && !finishedFirstLoad){
-      finishedFirstLoad = true;
-      render();
-
-      anime({
-        targets: photoMetaDataLoadingContainer,
-        height: 0,
-        easing: 'easeInOutQuad',
-        duration: 500,
-        opacity: 0,
-        complete: () => {
-          photoMetaDataLoadingContainer.style.display = 'none';
-        }
-      })
-
-      anime({
-        targets: '.reload-photos',
-        opacity: 1,
-        duration: 150,
-        easing: 'easeInOutQuad'
-      })
-    }
   })
 
   listen('photo_create', ( event: any ) => {
@@ -377,14 +351,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     photoTreeLoadingContainer.style.height = '100%';
     photoTreeLoadingContainer.style.display = 'flex';
 
-    photoMetaDataLoadingContainer.style.opacity = '1';
-    photoMetaDataLoadingContainer.style.height = '100%';
-    photoMetaDataLoadingContainer.style.display = 'flex';
-
-    photoMetaDataLoadingBar.style.width = '0%';
-
     quitRender = true;
-    finishedFirstLoad = false;
     amountLoaded = 0;
     scroll = 0;
     photos = [];
@@ -415,18 +382,6 @@ let PhotoList = ( props: PhotoListProps ) => {
         photos.push(photo);
       })
 
-      if(photoPaths.length == 0){
-        anime.set(photoMetaDataLoadingContainer, { height: 0, opacity: 0, display: 'none' });
-        render();
-
-        anime({
-          targets: '.reload-photos',
-          opacity: 1,
-          duration: 150,
-          easing: 'easeInOutQuad'
-        })
-      }
-
       anime({
         targets: photoTreeLoadingContainer,
         height: 0,
@@ -437,6 +392,15 @@ let PhotoList = ( props: PhotoListProps ) => {
           photoTreeLoadingContainer.style.display = 'none';
         }
       })
+
+      anime({
+        targets: '.reload-photos',
+        opacity: 1,
+        duration: 150,
+        easing: 'easeInOutQuad'
+      })
+
+      render();
     })
   }
 
@@ -488,21 +452,24 @@ let PhotoList = ( props: PhotoListProps ) => {
   return ( 
     <div class="photo-list">
       <div class="photo-tree-loading" ref={( el ) => photoTreeLoadingContainer = el}>Scanning Photo Tree...</div>
-      <div class="photo-tree-loading" ref={( el ) => photoMetaDataLoadingContainer = el}>
-        <div>
-          Loading MetaData...
-          <div class="loading-bar"><div class="loading-bar-inner" ref={( el ) => photoMetaDataLoadingBar = el}></div></div>
-        </div>
-      </div>
 
       <div class="scroll-to-top" ref={( el ) => scrollToTop = el} onClick={() => targetScroll = 0}>
         <div class="icon">
           <img draggable="false" src="/icon/angle-up-solid.svg"></img>
         </div>
       </div>
-      <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", reloadPhotos)}>
+      <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", () => window.location.reload())}>
         <div class="icon" style={{ width: '17px' }}>
           <img draggable="false" src="/icon/arrows-rotate-solid.svg"></img>
+        </div>
+      </div>
+
+      <div class="filter-options">
+        <div class="icon" style={{ width: '20px', height: '5px', padding: '20px' }}>
+          <img draggable="false" src="/icon/sliders-solid.svg"></img>
+        </div>
+        <div class="icon" style={{ width: '20px', height: '5px', padding: '20px' }}>
+          <img draggable="false" src="/icon/clock-regular.svg"></img>
         </div>
       </div>
 

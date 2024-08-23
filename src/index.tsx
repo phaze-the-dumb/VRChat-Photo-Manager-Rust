@@ -9,6 +9,8 @@ declare global{
 
 window.CloseAllPopups = [];
 
+window.oncontextmenu = ( e ) => e.preventDefault(); 
+
 import "./styles.css";
 import App from "./Components/App";
 

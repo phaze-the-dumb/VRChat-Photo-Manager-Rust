@@ -33,10 +33,9 @@ class WorldCache{
 
 let worldCache: WorldCache[] = JSON.parse(localStorage.getItem('worldCache') || "[]");
 
-// TODO: Context Menu, (Open file in explorer, Copy Image)
 let PhotoViewer = ( props: PhotoViewerProps ) => {
   let viewer: HTMLElement;
-  let imageViewer: HTMLElement;
+  let imageViewer: HTMLImageElement;
   let isOpen = false;
   let trayOpen = false;
 
@@ -49,10 +48,14 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   let worldInfoContainer: HTMLElement;
   let photoPath: string;
 
+  let viewerContextMenu: HTMLElement;
+  let viewerContextMenuButtons: HTMLElement[] = [];
+
   let openTray = () => {
     if(trayOpen)return;
     trayOpen = true;
 
+    window.CloseAllPopups.forEach(p => p());
     anime({ targets: photoTray, bottom: '0px', duration: 500 });
 
     anime({
@@ -79,6 +82,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   let closeTray = () => {
     if(!trayOpen)return;
 
+    window.CloseAllPopups.forEach(p => p());
     anime({ targets: photoTray, bottom: '-150px', duration: 500 });
 
     anime({
@@ -107,6 +111,104 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
     anime.set(photoControls, { translateX: '-50%' });
     anime.set(photoTrayCloseBtn, { translateX: '-50%', opacity: 0, scale: '0.75', bottom: '10px' });
 
+    let contextMenuOpen = false;
+    window.CloseAllPopups.push(() => {
+      contextMenuOpen = false;
+      anime.set(viewerContextMenu, { opacity: 1, rotate: '0deg' });
+
+      anime({
+        targets: viewerContextMenu,
+        opacity: 0,
+        easing: 'easeInOutQuad',
+        rotate: '30deg',
+        duration: 100,
+        complete: () => {
+          viewerContextMenu.style.display = 'none';
+        }
+      })
+    });
+
+    viewerContextMenuButtons[0].onclick = async () => {
+      window.CloseAllPopups.forEach(p => p());
+      // Context Menu -> Open file location
+
+      let path = await invoke('get_user_photos_path') + '\\' + props.currentPhotoView().path;
+      invoke('open_folder', { url: path });
+    }
+
+    viewerContextMenuButtons[1].onclick = () => {
+      window.CloseAllPopups.forEach(p => p());
+      // Context Menu -> Copy image
+
+      let canvas = document.createElement('canvas');
+      let ctx = canvas.getContext('2d')!;
+
+      canvas.width = props.currentPhotoView().width;
+      canvas.height = props.currentPhotoView().height;
+
+      ctx.drawImage(imageViewer, 0, 0);
+
+      canvas.toBlob(( blob ) => {
+        navigator.clipboard.write([
+          new ClipboardItem({
+            'image/png': blob!
+          })
+        ]);
+  
+        canvas.remove();
+
+        anime.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
+        anime({
+          targets: '.copy-notif',
+          opacity: 1,
+          translateY: '0px'
+        });
+
+        setTimeout(() => {
+          anime({
+            targets: '.copy-notif',
+            opacity: 0,
+            translateY: '-100px'
+          });
+        }, 2000);
+      });
+    }
+
+    imageViewer.oncontextmenu = ( e ) => {
+      if(contextMenuOpen){
+        contextMenuOpen = false;
+
+        anime.set(viewerContextMenu, { opacity: 1, rotate: '0deg' });
+
+        anime({
+          targets: viewerContextMenu,
+          opacity: 0,
+          rotate: '30deg',
+          easing: 'easeInOutQuad',
+          duration: 100,
+          complete: () => {
+            viewerContextMenu.style.display = 'none';
+          }
+        })
+      } else{
+        contextMenuOpen = true;
+
+        viewerContextMenu.style.top = e.clientY + 'px';
+        viewerContextMenu.style.left = e.clientX + 'px';
+        viewerContextMenu.style.display = 'block';
+
+        anime.set(viewerContextMenu, { opacity: 0, rotate: '-30deg' });
+  
+        anime({
+          targets: viewerContextMenu,
+          opacity: 1,
+          rotate: '0deg',
+          easing: 'easeInOutQuad',
+          duration: 100
+        })
+      }
+    }
+
     createEffect(() => {
       let photo = props.currentPhotoView();
 
@@ -117,7 +219,8 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           if(!photoPath)
             photoPath = await invoke('get_user_photos_path') + '/';
 
-          imageViewer.style.background = 'url(\'http://photo.localhost/' + (photoPath + props.currentPhotoView().path).split('\\').join('/') +'\')';
+          imageViewer.src = 'http://photo.localhost/' + (photoPath + props.currentPhotoView().path).split('\\').join('/') + "?full";
+          imageViewer.crossOrigin = 'anonymous';
         })();
 
         anime({
@@ -157,9 +260,14 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
             </div> as Node
           );
 
-          if(!worldData)
+
+          if(!worldData){
+            console.log('Fetching new world data');
+
             invoke('find_world_by_id', { worldId: meta.world.id });
-          else if(worldData.expiresOn < Date.now()){
+          } else if(worldData.expiresOn < Date.now()){
+            console.log('Fetching new world data since cache has expired');
+
             worldCache = worldCache.filter(x => x !== worldData)
             invoke('find_world_by_id', { worldId: meta.world.id });
           } else
@@ -209,7 +317,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           targets: '.navbar',
           top: '0px'
         })
-  
+
         window.CloseAllPopups.forEach(p => p());
 
         anime({ targets: '.prev-button', top: '75%', easing: 'easeInOutQuad', duration: 100 });
@@ -278,20 +386,31 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
   return (
     <div class="photo-viewer" ref={( el ) => viewer = el}>
+      <div class="photo-context-menu" ref={( el ) => viewerContextMenu = el}>
+        <div ref={( el ) => viewerContextMenuButtons.push(el)}>Open file location</div>
+        <div ref={( el ) => viewerContextMenuButtons.push(el)}>Copy image</div>
+      </div>
+
       <div class="viewer-close viewer-button" onClick={() => props.setCurrentPhotoView(null)}>
         <div class="icon" style={{ width: '10px', margin: '0' }}>
           <img draggable="false" src="/icon/x-solid.svg"></img>
         </div>
       </div>
-      <div class="image-container" ref={( el ) => imageViewer = el}></div>
+      <img class="image-container" ref={( el ) => imageViewer = el} />
 
-      <div class="prev-button" onClick={() => props.setPhotoNavChoice('prev')}>
+      <div class="prev-button" onClick={() => {
+        window.CloseAllPopups.forEach(p => p());
+        props.setPhotoNavChoice('prev');
+      }}>
         <div class="icon" style={{ width: '15px', margin: '0' }}>
           <img draggable="false" src="/icon/arrow-left-solid.svg"></img>
         </div>
       </div>
 
-      <div class="next-button" onClick={() => props.setPhotoNavChoice('next')}>
+      <div class="next-button" onClick={() => {
+        window.CloseAllPopups.forEach(p => p());
+        props.setPhotoNavChoice('next');
+      }}>
         <div class="icon" style={{ width: '15px', margin: '0' }}>
           <img draggable="false" src="/icon/arrow-right-solid.svg"></img>
         </div>
@@ -319,7 +438,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
             canvas.width = props.currentPhotoView().width;
             canvas.height = props.currentPhotoView().height;
 
-            ctx.drawImage(props.currentPhotoView().imageEl, 0, 0);
+            ctx.drawImage(imageViewer, 0, 0);
 
             canvas.toBlob(( blob ) => {
               navigator.clipboard.write([

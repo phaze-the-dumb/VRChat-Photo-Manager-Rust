@@ -160,13 +160,13 @@ let NavBar = ( props: NavBarProps ) => {
           fetch('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!)
             .then(data => data.json())
             .then(data => {
-              if(!data.data.ok){
+              if(!data.ok){
                 console.error(data);
                 return;
               }
 
-              console.log(data.data);
-              props.setStorageInfo({ storage: data.data.user.storage, used: data.data.user.used, sync: data.data.user.settings.enableSync });
+              console.log(data);
+              props.setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
             })
             .catch(e => {
               console.error(e);

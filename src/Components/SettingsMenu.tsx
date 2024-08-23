@@ -179,7 +179,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
           return;
         }
 
-        console.log(data.data);
+        console.log(data);
         props.setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
         props.setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
       })

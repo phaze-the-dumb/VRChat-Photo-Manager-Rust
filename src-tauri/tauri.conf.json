@@ -23,16 +23,12 @@
     "security": {
       "csp": "https://photos.phazed.xyz; connect-src ipc: http://ipc.localhost"
     },
-    "trayIcon": {
-      "iconPath": "./icons/icon.ico",
-      "title": "VRChat Photo Manager"
-    },
     "windows": [
       {
         "fullscreen": false,
         "resizable": true,
         "title": "VRChat Photo Manager",
-        "width": 1200,
+        "width": 1220,
         "height": 580,
         "minWidth": 600,
         "minHeight": 400,
