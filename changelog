@@ -22,6 +22,13 @@ v0.2.0:
   - Added the context menu back to the photo viewer screen
   - Fixed some weird bugs where the world data cache would be ignored
   - Fixed the ui forgetting the user account in some cases where the token stored it still valid
+  - Settings menu can now be closed with ESC
+  - Photo viewer can now be navigated with keybinds:
+    - Up Arrow: Open Tray
+    - Down Arrow: Close Tray
+    - Left Arrow: Previous Image
+    - Right Arrow: Next Image
+    - Escape: Close Image
 
   Dev Stuff:
     - Fixed indentation to be more constistant

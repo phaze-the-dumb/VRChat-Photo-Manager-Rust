@@ -407,6 +407,7 @@ fn main() {
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_shell::init())
     .register_asynchronous_uri_scheme_protocol("photo", move |_app, request, responder| {
+        // TODO: Fix photos being W I D E
         thread::spawn(move || {
           // Loads the requested image file, sends data back to the user
           let uri = request.uri();

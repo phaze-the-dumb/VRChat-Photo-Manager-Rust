@@ -1,4 +1,4 @@
-import { createSignal, onMount, Show } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
 import { invoke } from '@tauri-apps/api/core';
 import anime from "animejs";
@@ -27,6 +27,21 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
   let finalPathPreviousData: string;
 
   let [ deletingPhotos, setDeletingPhotos ] = createSignal(false);
+
+  let closeWithKey = ( e: KeyboardEvent ) => {
+    if(e.key === 'Escape'){
+      anime({
+        targets: '.settings',
+        opacity: 0,
+        translateX: '500px',
+        easing: 'easeInOutQuad',
+        duration: 250,
+        complete: () => {
+          anime.set('.settings', { display: 'none' });
+        }
+      })
+    }
+  }
 
   onMount(() => {
     if(localStorage.getItem('transparent')){
@@ -75,6 +90,8 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
         settingsContainer.style.left = (sliderPos - (mouseStartX - e.touches[0].clientX) - (width / 2 - buttons[0])) * sliderScale + 'px';
       }
     })
+
+    window.addEventListener('keyup', closeWithKey);
 
     window.addEventListener('touchend', ( e: TouchEvent ) => {
       if(sliderMouseDown){
@@ -168,6 +185,10 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
           currentButton--;
       }
     })
+  })
+
+  onCleanup(() => {
+    window.removeEventListener('keyup', closeWithKey);
   })
 
   let refreshAccount = () => {

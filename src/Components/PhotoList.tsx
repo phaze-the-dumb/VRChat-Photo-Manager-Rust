@@ -38,6 +38,8 @@ let PhotoList = ( props: PhotoListProps ) => {
   let photoContainer: HTMLCanvasElement;
   let photoContainerBG: HTMLCanvasElement;
 
+  let filterContainer: HTMLDivElement;
+
   let ctx: CanvasRenderingContext2D;
   let ctxBG: CanvasRenderingContext2D;
 
@@ -85,6 +87,8 @@ let PhotoList = ( props: PhotoListProps ) => {
     scaledHeight?: number;
 
     dateString: string;
+
+    public onMetaLoaded: () => void = () => {};
 
     constructor( path: string ){
       this.path = path;
@@ -323,6 +327,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     amountLoaded++;
 
     photo.metaLoaded = true;
+    photo.onMetaLoaded();
   })
 
   listen('photo_create', ( event: any ) => {
@@ -451,6 +456,10 @@ let PhotoList = ( props: PhotoListProps ) => {
 
   return ( 
     <div class="photo-list">
+      <div ref={filterContainer!} class="filter-container">
+        <div class="filter-title">Filters</div>
+      </div>
+
       <div class="photo-tree-loading" ref={( el ) => photoTreeLoadingContainer = el}>Scanning Photo Tree...</div>
 
       <div class="scroll-to-top" ref={( el ) => scrollToTop = el} onClick={() => targetScroll = 0}>

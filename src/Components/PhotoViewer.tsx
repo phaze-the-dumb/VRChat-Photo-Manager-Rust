@@ -1,4 +1,4 @@
-import { For, Show, createEffect, onMount } from "solid-js";
+import { For, Show, createEffect, onCleanup, onMount } from "solid-js";
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import anime from 'animejs';
@@ -51,9 +51,41 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   let viewerContextMenu: HTMLElement;
   let viewerContextMenuButtons: HTMLElement[] = [];
 
+  let allowedToOpenTray = false;
+  let trayInAnimation = false;
+
+  let switchPhotoWithKey = ( e: KeyboardEvent ) => {
+    switch(e.key){
+      case 'Escape':
+        props.setCurrentPhotoView(null);
+
+        break;
+      case 'ArrowUp':
+        if(allowedToOpenTray)
+          openTray();
+
+        break;
+      case 'ArrowDown':
+        closeTray();
+        break;
+      case 'ArrowLeft':
+        window.CloseAllPopups.forEach(p => p());
+        props.setPhotoNavChoice('prev');
+
+        break;
+      case 'ArrowRight':
+        window.CloseAllPopups.forEach(p => p());
+        props.setPhotoNavChoice('next');
+
+        break;
+    }
+  }
+
   let openTray = () => {
-    if(trayOpen)return;
+    if(trayOpen || trayInAnimation)return;
+
     trayOpen = true;
+    trayInAnimation = true;
 
     window.CloseAllPopups.forEach(p => p());
     anime({ targets: photoTray, bottom: '0px', duration: 500 });
@@ -66,6 +98,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       duration: 500,
       complete: () => {
         photoControls.style.display = 'none';
+        trayInAnimation = false;
       }
     });
 
@@ -80,7 +113,8 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   }
 
   let closeTray = () => {
-    if(!trayOpen)return;
+    if(!trayOpen || trayInAnimation)return;
+    trayInAnimation = true;
 
     window.CloseAllPopups.forEach(p => p());
     anime({ targets: photoTray, bottom: '-150px', duration: 500 });
@@ -94,6 +128,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       complete: () => {
         photoTrayCloseBtn.style.display = 'none';
         trayOpen = false;
+        trayInAnimation = false;
       }
     });
 
@@ -110,6 +145,8 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   onMount(() => {
     anime.set(photoControls, { translateX: '-50%' });
     anime.set(photoTrayCloseBtn, { translateX: '-50%', opacity: 0, scale: '0.75', bottom: '10px' });
+
+    window.addEventListener('keyup', switchPhotoWithKey);
 
     let contextMenuOpen = false;
     window.CloseAllPopups.push(() => {
@@ -211,10 +248,13 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
     createEffect(() => {
       let photo = props.currentPhotoView();
+      allowedToOpenTray = false;
 
       imageViewer.style.opacity = '0';
 
       if(photo){
+        console.log(photo);
+
         (async () => {
           if(!photoPath)
             photoPath = await invoke('get_user_photos_path') + '/';
@@ -231,53 +271,63 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           easing: 'easeInOutQuad'
         })
 
-        if(photo.metadata){
-          let meta = JSON.parse(photo.metadata);
-          let worldData = worldCache.find(x => x.worldData.id === meta.world.id);
+        let handleMetaDataLoaded = () => {
+          if(photo.metadata){
+            photo.onMetaLoaded = () => {}
 
-          photoTray.innerHTML = '';
-          photoTray.appendChild(
-            <div class="photo-tray-columns">
-              <div class="photo-tray-column" style={{ width: '20%' }}><br />
-                <div class="tray-heading">People</div>
-
-                <For each={meta.players}>
-                  {( item ) =>
-                    <div>
-                      { item.displayName }
-                      <Show when={item.id}>
-                        <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/user/' + item.id })} style={{ "margin-left": '10px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i>
-                      </Show>
-                    </div>
-                  }
-                </For><br />
-              </div>
-              <div class="photo-tray-column"><br />
-                <div class="tray-heading">World</div>
-
-                <div ref={( el ) => worldInfoContainer = el}>Loading World Data...</div>
-              </div>
-            </div> as Node
-          );
-
-
-          if(!worldData){
-            console.log('Fetching new world data');
-
-            invoke('find_world_by_id', { worldId: meta.world.id });
-          } else if(worldData.expiresOn < Date.now()){
-            console.log('Fetching new world data since cache has expired');
-
-            worldCache = worldCache.filter(x => x !== worldData)
-            invoke('find_world_by_id', { worldId: meta.world.id });
-          } else
-            loadWorldData(worldData);
-
-          trayButton.style.display = 'flex';
-        } else{
-          trayButton.style.display = 'none';
-          closeTray();
+            let meta = JSON.parse(photo.metadata);
+            let worldData = worldCache.find(x => x.worldData.id === meta.world.id);
+  
+            allowedToOpenTray = true;
+            trayButton.style.display = 'flex';
+  
+            photoTray.innerHTML = '';
+            photoTray.appendChild(
+              <div class="photo-tray-columns">
+                <div class="photo-tray-column" style={{ width: '20%' }}><br />
+                  <div class="tray-heading">People</div>
+  
+                  <For each={meta.players}>
+                    {( item ) =>
+                      <div>
+                        { item.displayName }
+                        <Show when={item.id}>
+                          <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/user/' + item.id })} style={{ "margin-left": '10px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </Show>
+                      </div>
+                    }
+                  </For><br />
+                </div>
+                <div class="photo-tray-column"><br />
+                  <div class="tray-heading">World</div>
+  
+                  <div ref={( el ) => worldInfoContainer = el}>Loading World Data...</div>
+                </div>
+              </div> as Node
+            );
+  
+  
+            if(!worldData){
+              console.log('Fetching new world data');
+  
+              invoke('find_world_by_id', { worldId: meta.world.id });
+            } else if(worldData.expiresOn < Date.now()){
+              console.log('Fetching new world data since cache has expired');
+  
+              worldCache = worldCache.filter(x => x !== worldData)
+              invoke('find_world_by_id', { worldId: meta.world.id });
+            } else
+              loadWorldData(worldData);
+          } else{
+            trayButton.style.display = 'none';
+            closeTray();
+          }
         }
+
+        photo.onMetaLoaded = () => handleMetaDataLoaded();
+        handleMetaDataLoaded();
+
+        photo.loadImage();
       }
 
       if(photo && !isOpen){
@@ -326,6 +376,10 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
       isOpen = photo != null;
     })
+  })
+
+  onCleanup(() => {
+    window.removeEventListener('keyup', switchPhotoWithKey);
   })
 
   let loadWorldData = ( data: WorldCache ) => {
