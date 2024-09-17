@@ -22,7 +22,11 @@ v0.2.0:
   - Added the context menu back to the photo viewer screen
   - Fixed some weird bugs where the world data cache would be ignored
   - Fixed the ui forgetting the user account in some cases where the token stored it still valid
+  - Updated no photos text to be kinder
   - Settings menu can now be closed with ESC
+  - Fixed photos being extremely wide under certain conditions
+  - Fixed some icons not showing correctly
+
   - Photo viewer can now be navigated with keybinds:
     - Up Arrow: Open Tray
     - Down Arrow: Close Tray
@@ -32,3 +36,4 @@ v0.2.0:
 
   Dev Stuff:
     - Fixed indentation to be more constistant
+    - main.rs is no longer like 400 quintillion lines long

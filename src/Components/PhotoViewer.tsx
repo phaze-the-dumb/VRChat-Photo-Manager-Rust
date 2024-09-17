@@ -292,7 +292,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
                       <div>
                         { item.displayName }
                         <Show when={item.id}>
-                          <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/user/' + item.id })} style={{ "margin-left": '10px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i>
+                          <img width="15" src="/icon/up-right-from-square-solid.svg" onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/user/' + item.id })} style={{ "margin-left": '10px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} />
                         </Show>
                       </div>
                     }
@@ -331,7 +331,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       }
 
       if(photo && !isOpen){
-        viewer.style.display = 'block';
+        viewer.style.display = 'flex';
   
         anime({
           targets: viewer,
@@ -391,12 +391,12 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       <div>
         <Show when={ data.worldData.found == false && meta }>
           <div>
-            <div class="world-name">{ JSON.parse(meta).world.name } <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i></div>
+            <div class="world-name">{ JSON.parse(meta).world.name } <img width="15" src="/icon/up-right-from-square-solid.svg" onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} /></div>
             <div style={{ width: '75%', margin: 'auto' }}>Could not fetch world information... Is the world private?</div>
           </div>
         </Show>
         <Show when={ data.worldData.found == true }>
-          <div class="world-name">{ data.worldData.name } <i onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} class="fa-solid fa-arrow-up-right-from-square"></i></div>
+          <div class="world-name">{ data.worldData.name } <img width="15" src="/icon/up-right-from-square-solid.svg" onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/world/' + data.worldData.id })} style={{ "margin-left": '0px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} /></div>
           <div style={{ width: '75%', margin: 'auto' }}>{ data.worldData.desc }</div>
 
           <br />

@@ -9,6 +9,8 @@ import PhotoList from "./PhotoList";
 import PhotoViewer from "./PhotoViewer";
 import SettingsMenu from "./SettingsMenu";
 
+// TODO: Clean up frontend files, split up into smaller files PLEASE
+
 function App() {
   if(!localStorage.getItem('start-in-bg')){
     invoke('close_splashscreen')
