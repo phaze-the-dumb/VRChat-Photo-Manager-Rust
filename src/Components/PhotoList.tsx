@@ -27,7 +27,6 @@ class PhotoListProps{
 
 enum ListPopup{
   FILTERS,
-  DATE,
   NONE
 }
 
@@ -45,8 +44,6 @@ let PhotoList = ( props: PhotoListProps ) => {
   let photoContainerBG: HTMLCanvasElement;
 
   let filterContainer: HTMLDivElement;
-  let scrollDateContainer: HTMLDivElement;
-  let dateListContainer: HTMLDivElement;
 
   let ctx: CanvasRenderingContext2D;
   let ctxBG: CanvasRenderingContext2D;
@@ -63,7 +60,6 @@ let PhotoList = ( props: PhotoListProps ) => {
   let photoPath: string;
 
   let currentPopup = ListPopup.NONE;
-  let targetScrollPhoto: Photo | null = null;
 
   let closeWithKey = ( e: KeyboardEvent ) => {
     if(e.key === 'Escape'){
@@ -81,19 +77,6 @@ let PhotoList = ( props: PhotoListProps ) => {
           duration: 100,
           complete: () => {
             filterContainer.style.display = 'none';
-            currentPopup = ListPopup.NONE;
-          }
-        });
-
-        break;
-      case ListPopup.DATE:
-        anime({
-          targets: scrollDateContainer,
-          opacity: 0,
-          easing: 'easeInOutQuad',
-          duration: 100,
-          complete: () => {
-            scrollDateContainer.style.display = 'none';
             currentPopup = ListPopup.NONE;
           }
         });
@@ -223,11 +206,6 @@ let PhotoList = ( props: PhotoListProps ) => {
 
     scroll = scroll + (targetScroll - scroll) * 0.2;
 
-    if(targetScrollPhoto){
-      // TODO: Check if previous date.
-      targetScroll += 100;
-    }
-
     let lastPhoto;
     for (let i = 0; i < photos.length; i++) {
       let p = photos[i];
@@ -270,10 +248,6 @@ let PhotoList = ( props: PhotoListProps ) => {
         ctx.globalAlpha = 1;
         ctx.fillStyle = '#fff';
         ctx.font = '30px Rubik';
-
-        if(targetScrollPhoto && p.dateString === targetScrollPhoto.dateString){
-          targetScrollPhoto = null;
-        }
 
         let dateParts = p.dateString.split('-');
         ctx.fillText(dateParts[2] + ' ' + months[parseInt(dateParts[1]) - 1] + ' ' + dateParts[0], photoContainer.width / 2, 60 + (currentRowIndex + 1.2) * 210 - scroll);
@@ -471,15 +445,6 @@ let PhotoList = ( props: PhotoListProps ) => {
           datesList[date] = 1;
       });
 
-      dateListContainer.innerHTML = '';
-
-      Object.keys(datesList).forEach(( date ) => {
-        dateListContainer.appendChild(<div onClick={() => {
-          let p = photos.find(x => x.dateString === date)!;
-          targetScrollPhoto = p;
-        }} class="date-list-date">{ date }</div> as HTMLElement);
-      })
-
       render();
     })
   }
@@ -541,12 +506,6 @@ let PhotoList = ( props: PhotoListProps ) => {
         <div class="filter-title">Filters</div>
       </div>
 
-      <div ref={scrollDateContainer!} class="filter-container">
-        <div class="date-list" ref={dateListContainer!}>
-          <div class="filter-title">Loading Dates...</div>
-        </div>
-      </div>
-
       <div class="photo-tree-loading" ref={( el ) => photoTreeLoadingContainer = el}>Scanning Photo Tree...</div>
 
       <div class="scroll-to-top" ref={( el ) => scrollToTop = el} onClick={() => targetScroll = 0}>
@@ -578,24 +537,6 @@ let PhotoList = ( props: PhotoListProps ) => {
             <img draggable="false" src="/icon/sliders-solid.svg"></img>
           </div>
           <div class="icon-label">Filters</div>
-        </div>
-        <div>
-          <div onClick={() => {
-            if(currentPopup != ListPopup.NONE)return closeCurrentPopup();
-            currentPopup = ListPopup.DATE;
-
-            scrollDateContainer.style.display = 'block';
-
-            anime({
-              targets: scrollDateContainer,
-              opacity: 1,
-              easing: 'easeInOutQuad',
-              duration: 100
-            });
-          }} class="icon" style={{ width: '20px', height: '5px', padding: '20px' }}>
-            <img draggable="false" src="/icon/clock-regular.svg"></img>
-          </div>
-          <div class="icon-label">Scroll to Date</div>
         </div>
       </div>
 
