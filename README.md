@@ -25,4 +25,5 @@ Support for:
 - Files with VRCX metadata ![image](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Rust/assets/57566773/06f44b67-083f-487e-b8b4-84c87d07604f)
 - Fetches world information from [VRCList](https://vrclist.com)
 - Cloud backups ![image](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Rust/assets/57566773/db703c66-09cc-4120-9ba6-81fe3ef8c87d)
+- Searching for photos taken in specific worlds / with specific users ![image](https://github.com/user-attachments/assets/ea67c4ef-c7e8-4f93-a29a-74aff5f35903)
 - And much more in the works!
