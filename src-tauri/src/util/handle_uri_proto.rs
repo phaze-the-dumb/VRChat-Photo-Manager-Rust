@@ -1,9 +1,9 @@
 use std::{ fs, io::{ BufReader, Read }, thread };
 use fast_image_resize::{ images::Image, IntoImageView, ResizeOptions, Resizer };
 use image::{ codecs::png::{ PngDecoder, PngEncoder }, DynamicImage, ImageEncoder };
-use tauri::{ http::{ Request, Response }, AppHandle, UriSchemeResponder };
+use tauri::{ http::{ Request, Response }, UriSchemeResponder };
 
-pub fn handle_uri_proto( _app: &AppHandle, request: Request<Vec<u8>>, responder: UriSchemeResponder ){
+pub fn handle_uri_proto( request: Request<Vec<u8>>, responder: UriSchemeResponder ){
   thread::spawn(move || {
     // Loads the requested image file, sends data back to the user
     let uri = request.uri();

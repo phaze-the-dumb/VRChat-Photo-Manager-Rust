@@ -107,7 +107,9 @@ fn main() {
     .plugin(tauri_plugin_process::init())
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_shell::init())
-    .register_asynchronous_uri_scheme_protocol("photo", util::handle_uri_proto::handle_uri_proto)
+    .register_asynchronous_uri_scheme_protocol("photo", | _ctx, req, res | {
+      util::handle_uri_proto::handle_uri_proto(req, res);
+    })
     .on_window_event(|window, event| match event {
         WindowEvent::CloseRequested { api, .. } => {
           window.hide().unwrap();
