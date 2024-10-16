@@ -1,5 +1,7 @@
 # VRChat Photo Manager (BETA)
 
+Install [here](https://cdn.phaz.uk/vrcpm/vrcpm-installer.exe)
+
 This is the rust rewrite.
 
 ## Feedback / Bug Reports
