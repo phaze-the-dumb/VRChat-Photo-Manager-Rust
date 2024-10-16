@@ -38,3 +38,6 @@ v0.2.0:
   Dev Stuff:
     - Fixed indentation to be more constistant
     - main.rs is no longer like 400 quintillion lines long
+
+  Hotfix 1:
+    - Fixed photos with legacy naming scheme not loading

@@ -24,7 +24,7 @@ pub fn load_photo_meta(photo: &str, window: tauri::Window) {
           .unwrap();
       }
       Err(_) => {
-        println!("Cannot read image file");
+        println!("Cannot read image file: {:?}", base_dir);
       }
     }
   });

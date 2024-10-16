@@ -125,12 +125,28 @@ let PhotoList = ( props: PhotoListProps ) => {
     scaledHeight?: number;
 
     dateString: string;
+    date: Date;
+
+    legacy: boolean = false;
 
     public onMetaLoaded: () => void = () => {};
 
-    constructor( path: string ){
+    constructor( path: string, isLegacy: boolean = false ){
       this.path = path;
-      this.dateString = this.path.split('_')[1];
+      this.legacy = isLegacy;
+
+      if(this.legacy)
+        this.dateString = this.path.split('_')[2];
+      else
+        this.dateString = this.path.split('_')[1];
+
+      let splitDateString = this.dateString.split('-');
+
+      this.date = new Date();
+
+      this.date.setFullYear(parseInt(splitDateString[0]));
+      this.date.setMonth(parseInt(splitDateString[1]));
+      this.date.setDate(parseInt(splitDateString[2]));
     }
 
     loadMeta(){
@@ -453,12 +469,24 @@ let PhotoList = ( props: PhotoListProps ) => {
       props.setPhotoCount(photoPaths.length);
       props.setPhotoSize(event.payload.size);
 
-      photoPaths.forEach(( path: string ) => {
-        let photo = new Photo(path);
-        photos.push(photo);
+      let doesHaveLegacy = false;
 
+      photoPaths.forEach(( path: string ) => {
+        let photo
+
+        if(path.slice(0, 9) === "legacy://"){
+          photo = new Photo(path.slice(9), true);
+          doesHaveLegacy = true;
+        } else
+          photo = new Photo(path, false);
+
+        photos.push(photo);
         photo.loadMeta();
       })
+
+      if(doesHaveLegacy){
+        photos = photos.sort(( a, b ) => b.date.valueOf() - a.date.valueOf());
+      }
     })
   }
 

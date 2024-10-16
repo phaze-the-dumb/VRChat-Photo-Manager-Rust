@@ -32,9 +32,16 @@ pub fn load_photos(window: tauri::Window) {
             let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
             let re2 = Regex::new(
   r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap();
+            let re3 = Regex::new("VRChat_[0-9]{4}x[0-9]{4}_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}.png").unwrap();
 
-            if re1.is_match(p.file_name().to_str().unwrap())
-              || re2.is_match(p.file_name().to_str().unwrap())
+            let name = p.file_name();
+            let name = name.to_str().unwrap();
+
+            let re3_match = re3.is_match(name);
+
+            if re1.is_match(name)
+              || re2.is_match(name)
+              || re3_match
             {
               let path = fname.to_path_buf().clone();
               let metadata = fs::metadata(&path).unwrap();
@@ -42,8 +49,13 @@ pub fn load_photos(window: tauri::Window) {
               if metadata.is_file() {
                 size += metadata.len() as usize;
 
-                let path = path.strip_prefix(&base_dir).unwrap().to_path_buf();
-                photos.push(path);
+                let pth = path.strip_prefix(&base_dir).unwrap().to_path_buf();
+
+                if re3_match{
+                  photos.push(path::PathBuf::from("legacy://").join(pth));
+                } else{
+                  photos.push(pth);
+                }
               }
             } else {
               println!("Ignoring {:#?} as it doesn't match regex", p.file_name());
