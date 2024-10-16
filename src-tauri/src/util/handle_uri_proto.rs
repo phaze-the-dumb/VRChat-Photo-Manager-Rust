@@ -21,6 +21,11 @@ pub fn handle_uri_proto( _app: &AppHandle, request: Request<Vec<u8>>, responder:
     }
 
     // TODO: Only accept files that are in the vrchat photos folder
+    // Slightly more complex than originally thought, need to find a way to cache the VRC photos path
+    // since i need to be able to load lots of photos very quickly. This shouldn't be a security issue
+    // because tauri should only let the frontend of VRCPhotoManager read files throught this. Only
+    // becomes a potential issue if the frontend gets modified or there's an issue with tauri.
+
     let path = uri.path().split_at(1).1;
     let file = fs::File::open(path);
 

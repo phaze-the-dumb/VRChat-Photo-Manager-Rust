@@ -253,8 +253,6 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       imageViewer.style.opacity = '0';
 
       if(photo){
-        console.log(photo);
-
         (async () => {
           if(!photoPath)
             photoPath = await invoke('get_user_photos_path') + '/';
@@ -277,7 +275,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
             let meta = JSON.parse(photo.metadata);
             let worldData = worldCache.find(x => x.worldData.id === meta.world.id);
-  
+
             allowedToOpenTray = true;
             trayButton.style.display = 'flex';
   
@@ -305,8 +303,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
                 </div>
               </div> as Node
             );
-  
-  
+
             if(!worldData){
               console.log('Fetching new world data');
   
@@ -314,7 +311,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
             } else if(worldData.expiresOn < Date.now()){
               console.log('Fetching new world data since cache has expired');
   
-              worldCache = worldCache.filter(x => x !== worldData)
+              worldCache = worldCache.filter(x => x.worldData.id !== meta.world.id)
               invoke('find_world_by_id', { worldId: meta.world.id });
             } else
               loadWorldData(worldData);

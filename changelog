@@ -18,14 +18,15 @@ v0.2.0:
   - Migrate to tauri v2
 
   - Photos shouldn't cause the ui to lag while loading
-  - Removed the metadata loading screen in favour of loading the metadata just before an image it rendered
   - Added the context menu back to the photo viewer screen
+  - Added filter menu, you can now search for photos taken in specific worlds or with specific people
   - Fixed some weird bugs where the world data cache would be ignored
   - Fixed the ui forgetting the user account in some cases where the token stored it still valid
   - Updated no photos text to be kinder
   - Settings menu can now be closed with ESC
   - Fixed photos being extremely wide under certain conditions
   - Fixed some icons not showing correctly
+  - Fixed a bug where it would store multiple versions of cache for a world, and then request the world data again everytime
 
   - Photo viewer can now be navigated with keybinds:
     - Up Arrow: Open Tray

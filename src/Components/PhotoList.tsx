@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 
 import anime from "animejs";
+import FilterMenu, { FilterType } from "./FilterMenu";
 
 const PHOTO_HEIGHT = 200;
 const MAX_IMAGE_LOAD = 10;
@@ -30,10 +31,11 @@ enum ListPopup{
   NONE
 }
 
-// TODO: Photo filtering / Searching (By users, By date, By world)
 let PhotoList = ( props: PhotoListProps ) => {
   let amountLoaded = 0;
   let imagesLoading = 0;
+
+  let hasFirstLoaded = false;
 
   let photoTreeLoadingContainer: HTMLElement;
 
@@ -51,8 +53,6 @@ let PhotoList = ( props: PhotoListProps ) => {
   let photos: Photo[] = [];
   let currentPhotoIndex: number = -1;
 
-  let datesList: any = {};
-
   let scroll: number = 0;
   let targetScroll: number = 0;
 
@@ -60,6 +60,11 @@ let PhotoList = ( props: PhotoListProps ) => {
   let photoPath: string;
 
   let currentPopup = ListPopup.NONE;
+
+  let filterType: FilterType = FilterType.USER;
+  let filter = '';
+
+  let filteredPhotos: Photo[] = [];
 
   let closeWithKey = ( e: KeyboardEvent ) => {
     if(e.key === 'Escape'){
@@ -128,10 +133,14 @@ let PhotoList = ( props: PhotoListProps ) => {
       this.dateString = this.path.split('_')[1];
     }
 
+    loadMeta(){
+      invoke('load_photo_meta', { photo: this.path });
+    }
+
     loadImage(){
       if(this.loading || this.loaded || imagesLoading >= MAX_IMAGE_LOAD)return;
 
-      invoke('load_photo_meta', { photo: this.path });
+      this.loadMeta();
       if(!this.metaLoaded)return;
 
       this.loading = true;
@@ -164,14 +173,14 @@ let PhotoList = ( props: PhotoListProps ) => {
 
     switch(action){
       case 'prev':
-        if(!photos[currentPhotoIndex - 1])break;
-        props.setCurrentPhotoView(photos[currentPhotoIndex - 1]);
+        if(!filteredPhotos[currentPhotoIndex - 1])break;
+        props.setCurrentPhotoView(filteredPhotos[currentPhotoIndex - 1]);
 
         currentPhotoIndex--;
         break;
       case 'next':
-        if(!photos[currentPhotoIndex + 1])break;
-        props.setCurrentPhotoView(photos[currentPhotoIndex + 1]);
+        if(!filteredPhotos[currentPhotoIndex + 1])break;
+        props.setCurrentPhotoView(filteredPhotos[currentPhotoIndex + 1]);
 
         currentPhotoIndex++;
         break;
@@ -207,8 +216,8 @@ let PhotoList = ( props: PhotoListProps ) => {
     scroll = scroll + (targetScroll - scroll) * 0.2;
 
     let lastPhoto;
-    for (let i = 0; i < photos.length; i++) {
-      let p = photos[i];
+    for (let i = 0; i < filteredPhotos.length; i++) {
+      let p = filteredPhotos[i];
 
       if(currentRowIndex * 210 - scroll > photoContainer.height){
         p.shown = false;
@@ -328,12 +337,12 @@ let PhotoList = ( props: PhotoListProps ) => {
       })
     }
 
-    if(photos.length == 0){
+    if(filteredPhotos.length == 0){
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#fff';
-      ctx.font = '50px Rubik';
+      ctx.font = '40px Rubik';
 
       ctx.fillText("It's looking empty in here! You have no photos :O", photoContainer.width / 2, photoContainer.height / 2);
     }
@@ -361,11 +370,38 @@ let PhotoList = ( props: PhotoListProps ) => {
 
     photo.metaLoaded = true;
     photo.onMetaLoaded();
+
+    if(amountLoaded === photos.length && !hasFirstLoaded){
+      filteredPhotos = photos;
+      hasFirstLoaded = true;
+
+      anime({
+        targets: photoTreeLoadingContainer,
+        height: 0,
+        easing: 'easeInOutQuad',
+        duration: 500,
+        opacity: 0,
+        complete: () => {
+          photoTreeLoadingContainer.style.display = 'none';
+        }
+      })
+
+      anime({
+        targets: '.reload-photos',
+        opacity: 1,
+        duration: 150,
+        easing: 'easeInOutQuad'
+      })
+
+      render();
+    }
   })
 
   listen('photo_create', ( event: any ) => {
     let photo = new Photo(event.payload);
+
     photos.splice(0, 0, photo);
+    photo.loadMeta();
 
     if(!props.isPhotosSyncing() && props.storageInfo().sync){
       props.setIsPhotosSyncing(true);
@@ -392,7 +428,9 @@ let PhotoList = ( props: PhotoListProps ) => {
     quitRender = true;
     amountLoaded = 0;
     scroll = 0;
+
     photos = [];
+    filteredPhotos = [];
 
     anime({
       targets: '.reload-photos',
@@ -418,34 +456,9 @@ let PhotoList = ( props: PhotoListProps ) => {
       photoPaths.forEach(( path: string ) => {
         let photo = new Photo(path);
         photos.push(photo);
+
+        photo.loadMeta();
       })
-
-      anime({
-        targets: photoTreeLoadingContainer,
-        height: 0,
-        easing: 'easeInOutQuad',
-        duration: 500,
-        opacity: 0,
-        complete: () => {
-          photoTreeLoadingContainer.style.display = 'none';
-        }
-      })
-
-      anime({
-        targets: '.reload-photos',
-        opacity: 1,
-        duration: 150,
-        easing: 'easeInOutQuad'
-      })
-
-      photoPaths.forEach(( path: string ) => {
-        let date = path.split('_')[1];
-
-        if(!datesList[date])
-          datesList[date] = 1;
-      });
-
-      render();
     })
   }
 
@@ -480,7 +493,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     })
 
     photoContainer.addEventListener('click', ( e: MouseEvent ) => {
-      let photo = photos.find(x =>
+      let photo = filteredPhotos.find(x =>
         e.clientX > x.x &&
         e.clientY > x.y &&
         e.clientX < x.x + x.scaledWidth! &&
@@ -490,7 +503,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
       if(photo){
         props.setCurrentPhotoView(photo);
-        currentPhotoIndex = photos.indexOf(photo);
+        currentPhotoIndex = filteredPhotos.indexOf(photo);
       } else
         currentPhotoIndex = -1;
     })
@@ -500,10 +513,39 @@ let PhotoList = ( props: PhotoListProps ) => {
     window.removeEventListener('keyup', closeWithKey);
   })
 
-  return ( 
+  let reloadFilters = () => {
+    filteredPhotos = [];
+
+    switch(filterType){
+      case FilterType.USER:
+        photos.map(p => {
+          if(p.metadata){
+            let meta = JSON.parse(p.metadata);
+            let photo = meta.players.find(( y: any ) => y.displayName.toLowerCase().includes(filter) || y.id === filter);
+    
+            if(photo)filteredPhotos.push(p);
+          }
+        })
+        break;
+      case FilterType.WORLD:
+        photos.map(p => {
+          if(p.metadata){
+            let meta = JSON.parse(p.metadata);
+            let photo = meta.world.name.toLowerCase().includes(filter) || meta.world.id === filter;
+    
+            if(photo)filteredPhotos.push(p);
+          }
+        })
+        break;
+    }
+  }
+
+  return (
     <div class="photo-list">
       <div ref={filterContainer!} class="filter-container">
-        <div class="filter-title">Filters</div>
+        <FilterMenu
+          setFilter={( f ) => { filter = f.toLowerCase(); reloadFilters(); }}
+          setFilterType={( t ) => { filterType = t; reloadFilters(); }} />
       </div>
 
       <div class="photo-tree-loading" ref={( el ) => photoTreeLoadingContainer = el}>Scanning Photo Tree...</div>

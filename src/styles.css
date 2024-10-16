@@ -197,13 +197,13 @@ body{
 .filter-container{
   display: none;
   position: fixed;
-  top: 50%;
+  bottom: 0;
   left: 50%;
   width: 600px;
-  height: 250px;
-  transform: translate(-50%, -50%);
+  height: 83px;
+  transform: translate(-50%);
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 5px 5px 0 0;
   backdrop-filter: blur(5px);
   background: #555a;
   color: #fff;
@@ -214,6 +214,51 @@ body{
 
 .filter-container > .filter-title{
   font-size: 30px;
+}
+
+.filter-type-select{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 75%;
+  margin: auto;
+}
+
+.filter-type-select > div{
+  width: 100%;
+  border: #fff 4px solid;
+  border-left: #fff 2px solid;
+  border-right: #fff 2px solid;
+  padding: 5px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filter-type-select > div:first-child{
+  border-left: #fff 4px solid;
+  border-radius: 10px 0 0 10px;
+}
+
+.filter-type-select > div:last-child{
+  border-right: #fff 4px solid;
+  border-radius: 0 10px 10px 0;
+}
+
+.filter-type-select > .selected-filter{
+  background: #00ccff55;
+}
+
+.filter-search{
+  margin-top: 10px;
+  padding: 5px;
+  border: #fff 4px solid;
+  border-radius: 10px;
+  background: #0008;
+  outline: none;
+  color: white;
+  font-size: 15px;
+  font-family: 'Rubik';
+  width: calc(75% - 18px);
 }
 
 .date-list{
