@@ -1,6 +1,8 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
 
+// TODO: Rewrite storage stuff localstorage is dumb.
+
 declare global{
   interface Window {
     CloseAllPopups: (() => void)[]

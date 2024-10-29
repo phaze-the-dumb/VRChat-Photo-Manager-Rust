@@ -41,3 +41,6 @@ v0.2.0:
 
   Hotfix 1:
     - Fixed photos with legacy naming scheme not loading
+
+  Hotfix 2:
+    - Added --background flag to always start in background
