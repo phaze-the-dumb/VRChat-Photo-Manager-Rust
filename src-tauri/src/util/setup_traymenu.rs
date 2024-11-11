@@ -1,4 +1,7 @@
-use tauri::{ menu::{ MenuBuilder, MenuItemBuilder }, tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}, AppHandle, Manager };
+use tauri::{ menu::{ MenuBuilder, MenuItemBuilder }, tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}, AppHandle, Manager, Emitter };
+
+#[derive(serde::Serialize, Clone)]
+struct EmptyEvent{}
 
 pub fn setup_traymenu( handle: &AppHandle ){
   // Setup the tray icon and menu buttons
@@ -29,9 +32,13 @@ pub fn setup_traymenu( handle: &AppHandle ){
 
           if window.is_visible().unwrap() {
             window.hide().unwrap();
+
+            window.emit("hide-window", EmptyEvent {}).unwrap();
           } else {
             window.show().unwrap();
             window.set_focus().unwrap();
+
+            window.emit("show-window", EmptyEvent {}).unwrap();
           }
         }
         _ => {}
@@ -47,6 +54,8 @@ pub fn setup_traymenu( handle: &AppHandle ){
 
         window.show().unwrap();
         window.set_focus().unwrap();
+
+        window.emit("show-window", EmptyEvent {}).unwrap();
       }
     })
     .build(handle)

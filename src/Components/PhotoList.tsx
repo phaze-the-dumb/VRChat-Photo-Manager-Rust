@@ -367,6 +367,14 @@ let PhotoList = ( props: PhotoListProps ) => {
     ctxBG.drawImage(photoContainer, 0, 0);
   }
 
+  listen('hide-window', () => {
+    quitRender = true;
+  })
+
+  listen('show-window', () => {
+    requestAnimationFrame(render);
+  })
+
   listen('photo_meta_loaded', ( event: any ) => {
     let data: PhotoMetadata = event.payload;
 
@@ -386,6 +394,8 @@ let PhotoList = ( props: PhotoListProps ) => {
 
     photo.metaLoaded = true;
     photo.onMetaLoaded();
+
+    reloadFilters();
 
     if(amountLoaded === photos.length && !hasFirstLoaded){
       filteredPhotos = photos;
@@ -427,6 +437,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
   listen('photo_remove', ( event: any ) => {
     photos = photos.filter(x => x.path !== event.payload);
+    filteredPhotos = filteredPhotos.filter(x => x.path !== event.payload);
 
     if(event.payload === props.currentPhotoView().path){
       currentPhotoIndex = -1;

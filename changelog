@@ -44,3 +44,7 @@ v0.2.0:
 
   Hotfix 2:
     - Added --background flag to always start in background
+
+v0.2.1:
+  - Fixed app using GPU while minimised, might use a tiny bit, but should be much better than before
+  - Fixed a load a bugs todo with 

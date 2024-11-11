@@ -62,6 +62,7 @@ fn main() {
   // Listen for file updates, store each update in an mpsc channel and send to the frontend
   let (sender, receiver) = std::sync::mpsc::channel();
   let mut watcher = notify::recommended_watcher(move | res: Result<notify::Event, notify::Error> | {
+    // TODO: Fix this, why does it not work??
     match res {
         Ok(event) => {
         match event.kind{

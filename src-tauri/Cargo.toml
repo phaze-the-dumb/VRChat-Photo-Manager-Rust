@@ -1,6 +1,6 @@
 [package]
 name = "vrcpm-rs"
-version = "0.2.0-hot2"
+version = "0.2.1"
 description = "VRChat Photo Manager"
 authors = ["_phaz"]
 edition = "2021"

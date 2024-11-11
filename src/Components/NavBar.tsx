@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
+import { emit, listen } from '@tauri-apps/api/event';
 import { fetch } from "@tauri-apps/plugin-http";
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import anime from 'animejs';
@@ -140,7 +140,7 @@ let NavBar = ( props: NavBarProps ) => {
           <div class="light" onClick={() => appWindow.toggleMaximize()}>
             <img draggable="false" src="/icon/square-regular.svg"></img>
           </div>
-          <div class="light" onClick={() => appWindow.hide()}>
+          <div class="light" onClick={() => { appWindow.hide(); emit('hide-window'); } }>
             <img draggable="false" src="/icon/x-solid.svg"></img>
           </div>
         </div>
