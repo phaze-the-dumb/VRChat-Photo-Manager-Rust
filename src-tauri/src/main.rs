@@ -163,7 +163,8 @@ fn main() {
       config::set_config_value_string,
       config::get_config_value_string,
       config::set_config_value_int,
-      config::get_config_value_int
+      config::get_config_value_int,
+      get_os::get_os
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
