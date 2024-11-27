@@ -596,7 +596,7 @@ let PhotoList = ( props: PhotoListProps ) => {
       </div>
       <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", () => window.location.reload())}>
         <div class="icon" style={{ width: '17px' }}>
-          <img draggable="false" src="/icon/arrows-rotate-solid.svg"></img>
+          <img draggable="false" width="24" height="24" src="/icon/arrows-rotate-solid.svg"></img>
         </div>
       </div>
 
@@ -615,7 +615,7 @@ let PhotoList = ( props: PhotoListProps ) => {
               duration: 100
             });
           }} class="icon" style={{ width: '20px', height: '5px', padding: '20px' }}>
-            <img draggable="false" src="/icon/sliders-solid.svg"></img>
+            <img draggable="false" width="24" height="24" src="/icon/sliders-solid.svg"></img>
           </div>
           <div class="icon-label">Filters</div>
         </div>

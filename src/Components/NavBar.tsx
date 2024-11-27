@@ -130,18 +130,18 @@ let NavBar = ( props: NavBarProps ) => {
             <div class="user-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
           </Show>
           <div class="icon">
-            <img draggable="false" src="/icon/caret-down-solid.svg"></img>
+            <img draggable="false" width="24" height="24" src="/icon/caret-down-solid.svg"></img>
           </div>
         </div>
         <div class="control-lights">
           <div class="light" onClick={() => appWindow.minimize()}>
-            <img draggable="false" src="/icon/minus-solid.svg"></img>
+            <img draggable="false" width="24" height="24" src="/icon/minus-solid.svg"></img>
           </div>
           <div class="light" onClick={() => appWindow.toggleMaximize()}>
-            <img draggable="false" src="/icon/square-regular.svg"></img>
+            <img draggable="false" width="24" height="24" src="/icon/square-regular.svg"></img>
           </div>
           <div class="light" onClick={() => { appWindow.hide(); emit('hide-window'); } }>
-            <img draggable="false" src="/icon/x-solid.svg"></img>
+            <img draggable="false" width="24" height="24" src="/icon/x-solid.svg"></img>
           </div>
         </div>
       </div>

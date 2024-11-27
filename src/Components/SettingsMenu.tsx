@@ -231,7 +231,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
             <label for="start-in-bg-check">
               <div class="selection-box">
                 <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
-                  <img draggable="false" src="/icon/check-solid.svg"></img>
+                  <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
                 </div>
               </div>
             </label>
@@ -254,7 +254,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
             <label for="start-with-win-check">
               <div class="selection-box">
                 <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
-                  <img draggable="false" src="/icon/check-solid.svg"></img>
+                  <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
                 </div>
               </div>
             </label>
@@ -281,7 +281,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
             <label for="transparent-check">
               <div class="selection-box">
                 <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
-                  <img draggable="false" src="/icon/check-solid.svg"></img>
+                  <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
                 </div>
               </div>
             </label>
@@ -367,7 +367,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
               <div class="account-desc">
                 <div class="reload-photos" onClick={() => refreshAccount()} style={{ opacity: 1 }}>
                   <div class="icon" style={{ width: '17px' }}>
-                    <img draggable="false" src="/icon/arrows-rotate-solid.svg"></img>
+                    <img draggable="false" width="17" height="17" src="/icon/arrows-rotate-solid.svg"></img>
                   </div>
                 </div>
                 <h2>{ props.loggedIn().username }</h2>
