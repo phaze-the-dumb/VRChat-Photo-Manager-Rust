@@ -64,11 +64,6 @@ let PhotoList = ( props: PhotoListProps ) => {
   let filterType: FilterType = FilterType.USER;
   let filter = '';
 
-  let os = "unknown";
-  (async () => {
-    os = await invoke('get_os');
-  })();
-
   let filteredPhotos: Photo[] = [];
 
   let closeWithKey = ( e: KeyboardEvent ) => {
@@ -173,7 +168,7 @@ let PhotoList = ( props: PhotoListProps ) => {
       this.imageEl = document.createElement('img');
       this.imageEl.crossOrigin = 'anonymous';
 
-      this.imageEl.src = os === "windows" ? "http://photo.localhost/" : "photo://localhost" + photoPath + this.path + "?downscale";
+      this.imageEl.src = (window.OS === "windows" ? "http://photo.localhost/" : "photo://localhost") + photoPath + this.path + "?downscale";
 
       this.imageEl.onload = () => {
         this.image!.width = this.scaledWidth!;

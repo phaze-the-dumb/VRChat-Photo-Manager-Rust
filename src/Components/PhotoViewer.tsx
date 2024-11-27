@@ -262,7 +262,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           if(!photoPath)
             photoPath = await invoke('get_user_photos_path') + '/';
 
-          imageViewer.src = await invoke('get_os') === "windows" ? "http://photo.localhost/" : 'photo://localhost' + (photoPath + props.currentPhotoView().path).split('\\').join('/') + "?full";
+          imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost') + (photoPath + props.currentPhotoView().path).split('\\').join('/') + "?full";
           imageViewer.crossOrigin = 'anonymous';
         })();
 
