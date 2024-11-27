@@ -4,7 +4,7 @@ use std::fs;
 pub fn change_final_path(new_path: &str) {
   let config_path = dirs::config_dir()
     .unwrap()
-    .join("PhazeDev\\VRChatPhotoManager\\.photos_path");
+    .join("PhazeDev/VRChatPhotoManager/.photos_path");
 
   fs::write(&config_path, new_path.as_bytes()).unwrap();
 

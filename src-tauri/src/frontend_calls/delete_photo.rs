@@ -8,7 +8,7 @@ pub fn delete_photo(path: String, token: String, is_syncing: bool) {
     let p = get_photo_path().join(&path);
     fs::remove_file(p).unwrap();
 
-    let photo = path.split("\\").last().unwrap();
+    let photo = path.split("/").last().unwrap();
 
     if is_syncing {
       let client = reqwest::blocking::Client::new();
