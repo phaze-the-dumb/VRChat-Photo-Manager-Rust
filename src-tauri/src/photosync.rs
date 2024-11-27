@@ -12,9 +12,9 @@ struct PhotoUploadMeta {
 }
 
 pub fn sync_photos(token: String, path: path::PathBuf, window: tauri::Window) {
-  let sync_lock_path = dirs::home_dir()
+  let sync_lock_path = dirs::config_dir()
     .unwrap()
-    .join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\.sync_lock");
+    .join("PhazeDev\\VRChatPhotoManager\\.sync_lock");
 
   match fs::metadata(&sync_lock_path) {
     Ok(_) => {

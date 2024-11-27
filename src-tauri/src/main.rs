@@ -21,9 +21,9 @@ fn main() {
   tauri_plugin_deep_link::prepare("uk.phaz.vrcpm");
 
   // Double check the app has an install directory
-  let container_folder = dirs::home_dir()
+  let container_folder = dirs::config_dir()
     .unwrap()
-    .join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager");
+    .join("PhazeDev\\VRChatPhotoManager");
 
   match fs::metadata(&container_folder) {
     Ok(meta) => {
@@ -36,9 +36,9 @@ fn main() {
     }
   }
 
-  let sync_lock_path = dirs::home_dir()
+  let sync_lock_path = dirs::config_dir()
     .unwrap()
-    .join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\.sync_lock");
+    .join("PhazeDev\\VRChatPhotoManager\\.sync_lock");
 
   match fs::metadata(&sync_lock_path) {
     Ok(_) => {
@@ -159,7 +159,11 @@ fn main() {
       change_final_path::change_final_path,
       sync_photos::sync_photos,
       util::get_version::get_version,
-      relaunch::relaunch
+      relaunch::relaunch,
+      config::set_config_value_string,
+      config::get_config_value_string,
+      config::set_config_value_int,
+      config::get_config_value_int
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

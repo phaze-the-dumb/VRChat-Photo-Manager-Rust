@@ -43,14 +43,14 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
     }
   }
 
-  onMount(() => {
-    if(localStorage.getItem('transparent')){
-      localStorage.setItem('transparent', 'true');
+  onMount(async () => {
+    if(await invoke('get_config_value_string', { key: 'transparent' }) === "true"){
+      invoke('set_config_value_string', { key: 'transparent', value: 'true' });
 
       anime({ targets: document.body, background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
       anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
     } else{
-      localStorage.removeItem('transparent')
+      invoke('set_config_value_string', { key: 'transparent', value: 'false' });
 
       anime({ targets: document.body, background: 'rgba(0, 0, 0, 1)', easing: 'linear', duration: 100 });
       anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
@@ -191,8 +191,8 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
     window.removeEventListener('keyup', closeWithKey);
   })
 
-  let refreshAccount = () => {
-    fetch('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!)
+  let refreshAccount = async () => {
+    fetch('https://photos.phazed.xyz/api/v1/account?token='+(await invoke('get_config_value_string', { key: 'token' }))!)
       .then(data => data.json())
       .then(data => {
         if(!data.ok){
@@ -217,13 +217,13 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
           <p>{ props.photoCount() } Photos ({ bytesToFormatted(props.photoSize(), 0) })</p>
 
           <div class="selector">
-            <input type="checkbox" id="start-in-bg-check" ref={( el ) => {
-              el.checked = localStorage.getItem('start-in-bg') ? true : false;
+            <input type="checkbox" id="start-in-bg-check" ref={async ( el ) => {
+              el.checked = await invoke('get_config_value_string', { key: 'start-in-bg' }) === "true" ? true : false;
             }} onChange={( el ) => {
               if(el.target.checked){
-                localStorage.setItem('start-in-bg', 'true');
+                invoke('set_config_value_string', { key: 'start-in-bg', value: 'true' });
               } else{
-                localStorage.removeItem('start-in-bg')
+                invoke('set_config_value_string', { key: 'start-in-bg', value: 'false' });
               }
             }} />
             Start in background
@@ -238,14 +238,14 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
           </div>
 
           <div class="selector">
-            <input type="checkbox" id="start-with-win-check" ref={( el ) => {
-              el.checked = localStorage.getItem('start-with-win') ? true : false;
+            <input type="checkbox" id="start-with-win-check" ref={async ( el ) => {
+              el.checked = await invoke('get_config_value_string', { key: 'start-with-win' }) === "true" ? true : false;
             }} onChange={( el ) => {
               if(el.target.checked){
-                localStorage.setItem('start-with-win', 'true');
+                invoke('set_config_value_string', { key: 'start-with-win', value: 'true' });
                 invoke("start_with_win", { start: true });
               } else{
-                localStorage.removeItem('start-with-win')
+                invoke('set_config_value_string', { key: 'start-with-win', value: 'false' });
                 invoke("start_with_win", { start: false });
               }
             }} />
@@ -261,16 +261,16 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
           </div>
 
           <div class="selector">
-            <input type="checkbox" id="transparent-check" ref={( el ) => {
-              el.checked = localStorage.getItem('transparent') ? true : false;
+            <input type="checkbox" id="transparent-check" ref={async ( el ) => {
+              el.checked = await invoke('get_config_value_string', { key: 'transparent' }) === "true" ? true : false;
             }} onChange={( el ) => {
               if(el.target.checked){
-                localStorage.setItem('transparent', 'true');
+                invoke('set_config_value_string', { key: 'transparent', value: 'true' });
 
                 anime({ targets: document.body, background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
                 anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
               } else{
-                localStorage.removeItem('transparent')
+                invoke('set_config_value_string', { key: 'transparent', value: 'false' });
 
                 anime({ targets: document.body, background: 'rgba(0, 0, 0, 1)', easing: 'linear', duration: 100 });
                 anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
@@ -390,13 +390,13 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
 
             <div class="account-notice" style={{ display: 'flex' }}>
               <Show when={!deletingPhotos()} fallback={ "We are deleting your photos, please leave this window open while we delete them." }>
-                <div class="button-danger" onClick={() => props.setConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", () => {
+                <div class="button-danger" onClick={() => props.setConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", async () => {
                   props.setStorageInfo({ used: 0, storage: 0, sync: false });
                   setDeletingPhotos(true);
 
                   fetch('https://photos-cdn.phazed.xyz/api/v1/allphotos', {
                     method: 'DELETE',
-                    headers: { auth: localStorage.getItem("token")! }
+                    headers: { auth: (await invoke('get_config_value_string', { key: 'token' }))! }
                   })
                     .then(data => data.json())
                     .then(data => {

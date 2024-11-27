@@ -31,7 +31,7 @@ class WorldCache{
   }
 }
 
-let worldCache: WorldCache[] = JSON.parse(localStorage.getItem('worldCache') || "[]");
+let worldCache: WorldCache[] = JSON.parse(await invoke('get_config_value_string', { key: 'worldcache' }) || "[]");
 
 let PhotoViewer = ( props: PhotoViewerProps ) => {
   let viewer: HTMLElement;
@@ -430,7 +430,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
     }
 
     worldCache.push(worldData);
-    localStorage.setItem("worldCache", JSON.stringify(worldCache));
+    invoke('set_config_value_string', { key: 'worldcache', value: worldCache });
 
     loadWorldData(worldData);
   })
@@ -534,9 +534,9 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         <div class="viewer-button"
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
-          onClick={() => props.setConfirmationBox("Are you sure you want to delete this photo?", () => { invoke("delete_photo", {
+          onClick={() => props.setConfirmationBox("Are you sure you want to delete this photo?", async () => { invoke("delete_photo", {
             path: props.currentPhotoView().path,
-            token: localStorage.getItem("token") || "none",
+            token: (await invoke('get_config_value_string', { key: 'token' })) || "none",
             isSyncing: props.loggedIn().loggedIn ? props.storageInfo().sync : false
           });
         })}>

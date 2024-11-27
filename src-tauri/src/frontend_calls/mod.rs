@@ -11,3 +11,4 @@ pub mod load_photo_meta;
 pub mod change_final_path;
 pub mod delete_photo;
 pub mod relaunch;
+pub mod config;

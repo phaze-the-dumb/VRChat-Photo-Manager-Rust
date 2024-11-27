@@ -5,24 +5,28 @@ use mslnk::ShellLink;
 // create and delete the shortcut from the startup folder
 #[tauri::command]
 pub fn start_with_win(start: bool) {
-  thread::spawn(move || {
-    if start {
-      let target = dirs::home_dir()
-        .unwrap()
-        .join("AppData\\Roaming\\PhazeDev\\VRChatPhotoManager\\vrchat-photo-manager.exe");
+  if cfg!(windows) {
+    thread::spawn(move || {
+      if start {
+        let target = dirs::config_dir()
+          .unwrap()
+          .join("PhazeDev\\VRChatPhotoManager\\vrchat-photo-manager.exe");
 
-      match fs::metadata(&target) {
-        Ok(_) => {
-          let lnk = dirs::home_dir().unwrap().join("AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\VRChat Photo Manager.lnk");
+        match fs::metadata(&target) {
+          Ok(_) => {
+            let lnk = dirs::home_dir().unwrap().join("AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\VRChat Photo Manager.lnk");
 
-          let sl = ShellLink::new(target).unwrap();
-          sl.create_lnk(lnk).unwrap();
+            let sl = ShellLink::new(target).unwrap();
+            sl.create_lnk(lnk).unwrap();
+          }
+          Err(_) => {}
         }
-        Err(_) => {}
+      } else {
+        let lnk = dirs::home_dir().unwrap().join("AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\VRChat Photo Manager.lnk");
+        fs::remove_file(lnk).unwrap();
       }
-    } else {
-      let lnk = dirs::home_dir().unwrap().join("AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\VRChat Photo Manager.lnk");
-      fs::remove_file(lnk).unwrap();
-    }
-  });
+    });
+  } else {
+    panic!("Cannot start with windows... on not windows...");
+  }
 }

@@ -147,7 +147,7 @@ let NavBar = ( props: NavBarProps ) => {
       </div>
 
       <div class="dropdown" ref={( el ) => dropdown = el}>
-        <div class="dropdown-button" onClick={() => {
+        <div class="dropdown-button" onClick={async () => {
           anime.set('.settings', { display: 'block' });
           anime({
             targets: '.settings',
@@ -157,7 +157,7 @@ let NavBar = ( props: NavBarProps ) => {
             duration: 250
           })
 
-          fetch('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token')!)
+          fetch('https://photos.phazed.xyz/api/v1/account?token='+ (await invoke('get_config_value_string', { key: 'token' }))!)
             .then(data => data.json())
             .then(data => {
               if(!data.ok){
@@ -176,13 +176,13 @@ let NavBar = ( props: NavBarProps ) => {
         }}>Settings</div>
 
         <Show when={props.loggedIn().loggedIn == false} fallback={
-          <div class="dropdown-button" onClick={() => {
-            fetch('https://photos.phazed.xyz/api/v1/deauth?token='+localStorage.getItem('token')!)
+          <div class="dropdown-button" onClick={async () => {
+            fetch('https://photos.phazed.xyz/api/v1/deauth?token='+(await invoke('get_config_value_string', { key: 'token' }))!)
               .then(data => data.json())
               .then(data => {
                 console.log(data);
 
-                localStorage.removeItem('token');
+                invoke('set_config_value_string', { key: 'token', value: '' });
                 window.location.reload();
 
                 setDropdownVisibility(false);
@@ -190,7 +190,7 @@ let NavBar = ( props: NavBarProps ) => {
               .catch(e => {
                 console.error(e);
 
-                localStorage.removeItem('token');
+                invoke('set_config_value_string', { key: 'token', value: '' });
                 window.location.reload();
 
                 setDropdownVisibility(false);

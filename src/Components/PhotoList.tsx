@@ -423,7 +423,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     }
   })
 
-  listen('photo_create', ( event: any ) => {
+  listen('photo_create', async ( event: any ) => {
     let photo = new Photo(event.payload);
 
     photos.splice(0, 0, photo);
@@ -431,7 +431,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
     if(!props.isPhotosSyncing() && props.storageInfo().sync){
       props.setIsPhotosSyncing(true);
-      invoke('sync_photos', { token: localStorage.getItem('token') });
+      invoke('sync_photos', { token: (await invoke('get_config_value_string', { key: 'token' })) });
     }
   })
 

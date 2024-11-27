@@ -12,9 +12,10 @@ import SettingsMenu from "./SettingsMenu";
 // TODO: Clean up frontend files, split up into smaller files PLEASE
 
 function App() {
-  if(!localStorage.getItem('start-in-bg')){
-    invoke('close_splashscreen')
-  }
+  invoke('get_config_value_string', { key: 'start-in-bg' })
+    .then(str => {
+      if(str === "false")invoke('close_splashscreen')
+    })
 
   let [ loggedIn, setLoggedIn ] = createSignal({ loggedIn: false, username: '', avatar: '', id: '', serverVersion: '0.0' });
   let [ storageInfo, setStorageInfo ] = createSignal({ storage: 0, used: 0, sync: false });
@@ -37,27 +38,30 @@ function App() {
     confirmationBoxCallback = cb;
   }
 
-  if(localStorage.getItem('token')){
-    fetch('https://photos.phazed.xyz/api/v1/account?token='+localStorage.getItem('token'))
-      .then(data => data.json())
-      .then(data => {
-        if(!data.ok){
-          return console.error(data);
-        }
-
-        console.log(data.data);
-        setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
-        setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
-
-        if(!isPhotosSyncing() && data.user.settings.enableSync){
-          setIsPhotosSyncing(true);
-          invoke('sync_photos', { token: localStorage.getItem('token') });
-        }
-      })
-      .catch(e => {
-        console.error(e);
-      })
-  }
+  invoke('get_config_value_string', { key: 'token' })
+    .then(token => {
+      if(token){
+        fetch('https://photos.phazed.xyz/api/v1/account?token='+token)
+          .then(data => data.json())
+          .then(data => {
+            if(!data.ok){
+              return console.error(data);
+            }
+    
+            console.log(data.data);
+            setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
+            setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
+    
+            if(!isPhotosSyncing() && data.user.settings.enableSync){
+              setIsPhotosSyncing(true);
+              invoke('sync_photos', { token: token });
+            }
+          })
+          .catch(e => {
+            console.error(e);
+          })
+      }
+    })
 
   setTimeout(() => {
     setLoadingType('none');
@@ -124,7 +128,7 @@ function App() {
         }
 
         console.log(data);
-        localStorage.setItem('token', token);
+        invoke('set_config_value_string', { key: 'token', value: token });
 
         setLoadingType('none');
         setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
@@ -132,7 +136,7 @@ function App() {
 
         if(!isPhotosSyncing() && data.user.settings.enableSync){
           setIsPhotosSyncing(true);
-          invoke('sync_photos', { token: localStorage.getItem('token') });
+          invoke('sync_photos', { token: token });
         }
       })
       .catch(e => {

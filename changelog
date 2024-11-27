@@ -47,4 +47,8 @@ v0.2.0:
 
 v0.2.1:
   - Fixed app using GPU while minimised, might use a tiny bit, but should be much better than before
-  - Fixed a load a bugs todo with 
+  - Fixed a load a bugs todo with (something? apparently i forgot to write this bit...)
+
+v0.2.2:
+  - Use more linux friendly directories
+  - Move away from localstorage and use the .config file
