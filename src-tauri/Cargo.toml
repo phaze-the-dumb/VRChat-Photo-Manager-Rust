@@ -20,7 +20,7 @@ dirs = "5.0.1"
 notify = "6.1.1"
 regex = "1.10.4"
 reqwest = { version = "0.12", features = ["blocking"] }
-mslnk = "0.1.8"
+mslnk = { version = "0.1.8", optional = true }
 tauri-plugin-shell = "2.0.0-rc.2"
 tauri-plugin-http = "2.0.0-rc.0"
 tauri-plugin-process = "2.0.0-rc.0"
