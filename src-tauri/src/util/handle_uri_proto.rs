@@ -27,6 +27,8 @@ pub fn handle_uri_proto( request: Request<Vec<u8>>, responder: UriSchemeResponde
     // becomes a potential issue if the frontend gets modified or there's an issue with tauri.
 
     let path = uri.path().split_at(1).1;
+    dbg!(path);
+    
     let file = fs::File::open(path);
 
     match file {
