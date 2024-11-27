@@ -32,6 +32,18 @@ fn main() {
       }
     }
     Err(_) => {
+      let phaz_folder = dirs::config_dir().unwrap().join("PhazeDev");
+      match fs::metadata(&phaz_folder) {
+        Ok(meta) => {
+          if meta.is_file() {
+            panic!("Cannot launch app as the container path is a file not a directory");
+          }
+        }
+        Err(_) => {
+          fs::create_dir(&phaz_folder).unwrap();
+        }
+      }
+
       fs::create_dir(&container_folder).unwrap();
     }
   }
