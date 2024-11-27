@@ -32,8 +32,6 @@ pub fn handle_uri_proto( request: Request<Vec<u8>>, responder: UriSchemeResponde
     #[cfg(unix)]
     let path = uri.path();
 
-    dbg!(path);
-
     let file = fs::File::open(path);
 
     match file {

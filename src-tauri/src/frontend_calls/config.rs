@@ -5,7 +5,7 @@ use serde_json::Value;
 pub fn get_config_path() -> PathBuf{
   let path = dirs::config_dir()
     .unwrap()
-    .join("PhazeDev\\VRChatPhotoManager\\.config");
+    .join("PhazeDev/VRChatPhotoManager/.config");
 
   match fs::metadata(&path){
     Ok(_) => {}
