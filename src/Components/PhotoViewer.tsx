@@ -31,7 +31,12 @@ class WorldCache{
   }
 }
 
-let worldCache: WorldCache[] = JSON.parse(await invoke('get_config_value_string', { key: 'worldcache' }) || "[]");
+let worldCache: WorldCache[] = [];
+
+invoke('get_config_value_string', { key: 'worldcache' })
+  .then((data: any) => {
+    if(data)worldCache = JSON.parse(data);
+  })
 
 let PhotoViewer = ( props: PhotoViewerProps ) => {
   let viewer: HTMLElement;
