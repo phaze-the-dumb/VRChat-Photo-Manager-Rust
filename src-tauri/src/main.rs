@@ -23,7 +23,7 @@ fn main() {
   // Double check the app has an install directory
   let container_folder = dirs::config_dir()
     .unwrap()
-    .join("PhazeDev\\VRChatPhotoManager");
+    .join("PhazeDev/VRChatPhotoManager");
 
   match fs::metadata(&container_folder) {
     Ok(meta) => {
@@ -38,7 +38,7 @@ fn main() {
 
   let sync_lock_path = dirs::config_dir()
     .unwrap()
-    .join("PhazeDev\\VRChatPhotoManager\\.sync_lock");
+    .join("PhazeDev/VRChatPhotoManager/.sync_lock");
 
   match fs::metadata(&sync_lock_path) {
     Ok(_) => {
