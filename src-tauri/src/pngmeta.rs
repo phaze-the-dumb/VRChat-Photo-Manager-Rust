@@ -16,6 +16,19 @@ pub struct PNGImage {
 
 impl PNGImage {
   pub fn new(buff: Vec<u8>, path: String) -> PNGImage {
+    if buff[0] != 0x89
+      || buff[1] != 0x50
+      || buff[2] != 0x4E
+      || buff[3] != 0x47
+      || buff[4] != 0x0D
+      || buff[5] != 0x0A
+      || buff[6] != 0x1A
+      || buff[7] != 0x0A
+    {
+      dbg!(path);
+      panic!("Image is not a PNG file");
+    }
+
     let mut img = PNGImage {
       width: 0,
       height: 0,
@@ -27,18 +40,6 @@ impl PNGImage {
       metadata: "".to_string(),
       path: path,
     };
-
-    if buff[0] != 0x89
-      || buff[1] != 0x50
-      || buff[2] != 0x4E
-      || buff[3] != 0x47
-      || buff[4] != 0x0D
-      || buff[5] != 0x0A
-      || buff[6] != 0x1A
-      || buff[7] != 0x0A
-    {
-      panic!("Image is not a PNG file");
-    }
 
     img.read_png_chunk(8, buff);
     img
