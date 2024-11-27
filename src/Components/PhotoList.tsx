@@ -397,7 +397,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
     reloadFilters();
 
-    console.log(amountLoaded);
+    console.log(amountLoaded, photos.length);
     if(amountLoaded === photos.length && !hasFirstLoaded){
       filteredPhotos = photos;
       hasFirstLoaded = true;
