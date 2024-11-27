@@ -26,7 +26,11 @@ pub fn handle_uri_proto( request: Request<Vec<u8>>, responder: UriSchemeResponde
     // because tauri should only let the frontend of VRCPhotoManager read files throught this. Only
     // becomes a potential issue if the frontend gets modified or there's an issue with tauri.
 
+    #[cfg(windows)]
     let path = uri.path().split_at(1).1;
+
+    #[cfg(unix)]
+    let path = uri.path();
 
     dbg!(path);
 
