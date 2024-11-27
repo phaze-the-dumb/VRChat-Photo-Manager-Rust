@@ -154,7 +154,7 @@ fn main() {
       open_url::open_url,
       open_folder::open_folder,
       find_world_by_id::find_world_by_id,
-      start_with_win::start_with_win,
+      #[cfg(windows)] start_with_win::start_with_win,
       get_user_photos_path::get_user_photos_path,
       change_final_path::change_final_path,
       sync_photos::sync_photos,

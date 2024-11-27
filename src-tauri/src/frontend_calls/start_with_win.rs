@@ -1,10 +1,11 @@
-#[cfg(target_os = "windows")]
-
 use std::{ thread, fs };
+
+#[cfg(windows)]
 use mslnk::ShellLink;
 
 // When the user changes the start with windows toggle
 // create and delete the shortcut from the startup folder
+#[cfg(windows)]
 #[tauri::command]
 pub fn start_with_win(start: bool) {
   if cfg!(windows) {
