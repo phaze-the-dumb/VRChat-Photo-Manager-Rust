@@ -1,4 +1,6 @@
 use std::{ thread, fs };
+
+#[cfg(windows)]
 use mslnk::ShellLink;
 
 // When the user changes the start with windows toggle
