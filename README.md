@@ -29,3 +29,8 @@ Support for:
 - Cloud backups ![image](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Rust/assets/57566773/db703c66-09cc-4120-9ba6-81fe3ef8c87d)
 - Searching for photos taken in specific worlds / with specific users ![image](https://github.com/user-attachments/assets/ea67c4ef-c7e8-4f93-a29a-74aff5f35903)
 - And much more in the works!
+
+### Linux Support
+
+**While VRCPM does "support" linux, Updates for windows will take priority over updates for linux as most VR users are running on windows.**
+
