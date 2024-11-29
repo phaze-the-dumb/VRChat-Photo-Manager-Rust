@@ -80,6 +80,8 @@ fn main() {
     }
   };
 
+  // Updater only supports windows, so don't update if on linux
+  #[cfg(windows)]
   util::check_updates::check_updates(container_folder);
 
   // Listen for file updates, store each update in an mpsc channel and send to the frontend
