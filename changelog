@@ -52,3 +52,6 @@ v0.2.1:
 v0.2.2:
   - Use more linux friendly directories
   - Move away from localstorage and use the .config file
+  - Seems to be semi-stable on linux
+  - Update deeplink library
+  - Fix bugs with multiple screens displaying on frontend

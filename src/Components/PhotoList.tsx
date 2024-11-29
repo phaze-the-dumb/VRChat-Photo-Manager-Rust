@@ -372,7 +372,8 @@ let PhotoList = ( props: PhotoListProps ) => {
   })
 
   listen('show-window', () => {
-    requestAnimationFrame(render);
+    if(hasFirstLoaded)
+      requestAnimationFrame(render);
   })
 
   listen('photo_meta_loaded', ( event: any ) => {
@@ -471,7 +472,6 @@ let PhotoList = ( props: PhotoListProps ) => {
 
   let loadPhotos = async () => {
     photoPath = await invoke('get_user_photos_path') + '/';
-    invoke('load_photos')
 
     listen('photos_loaded', ( event: any ) => {
       let photoPaths = event.payload.photos.reverse();
@@ -481,26 +481,6 @@ let PhotoList = ( props: PhotoListProps ) => {
       props.setPhotoSize(event.payload.size);
 
       let doesHaveLegacy = false;
-
-      if(photoPaths.length === 0){
-        anime({
-          targets: photoTreeLoadingContainer,
-          height: 0,
-          easing: 'easeInOutQuad',
-          duration: 500,
-          opacity: 0,
-          complete: () => {
-            photoTreeLoadingContainer.style.display = 'none';
-          }
-        })
-
-        anime({
-          targets: '.reload-photos',
-          opacity: 1,
-          duration: 150,
-          easing: 'easeInOutQuad'
-        })
-      }
 
       photoPaths.forEach(( path: string ) => {
         let photo
@@ -518,7 +498,37 @@ let PhotoList = ( props: PhotoListProps ) => {
       if(doesHaveLegacy){
         photos = photos.sort(( a, b ) => b.date.valueOf() - a.date.valueOf());
       }
-    })
+
+      console.log(photos.length + ' Photos found.');
+      if(photos.length === 0){
+        console.log('No photos found, Skipping loading stage.');
+
+        filteredPhotos = photos;
+        hasFirstLoaded = true;
+  
+        anime({
+          targets: photoTreeLoadingContainer,
+          height: 0,
+          easing: 'easeInOutQuad',
+          duration: 500,
+          opacity: 0,
+          complete: () => {
+            photoTreeLoadingContainer.style.display = 'none';
+          }
+        })
+  
+        anime({
+          targets: '.reload-photos',
+          opacity: 1,
+          duration: 150,
+          easing: 'easeInOutQuad'
+        })
+
+        render();
+      }
+    });
+
+    invoke('load_photos');
   }
 
   onMount(() => {

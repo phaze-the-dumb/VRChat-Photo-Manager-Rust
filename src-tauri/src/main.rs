@@ -12,7 +12,6 @@ use frontend_calls::*;
 use notify::{EventKind, RecursiveMode, Watcher};
 use pngmeta::PNGImage;
 use regex::Regex;
-use util::handle_deeplink;
 use std::{env, fs, thread};
 use tauri::{Emitter, Manager, WindowEvent};
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -124,6 +123,7 @@ fn main() {
     }
   }).unwrap();
 
+  println!("Watching dir: {:?}", util::get_photo_path::get_photo_path());
   watcher
     .watch(
       &util::get_photo_path::get_photo_path(),

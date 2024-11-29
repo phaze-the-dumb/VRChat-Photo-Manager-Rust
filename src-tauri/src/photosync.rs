@@ -14,7 +14,7 @@ struct PhotoUploadMeta {
 pub fn sync_photos(token: String, path: path::PathBuf, window: tauri::Window) {
   let sync_lock_path = dirs::config_dir()
     .unwrap()
-    .join("PhazeDev\\VRChatPhotoManager\\.sync_lock");
+    .join("PhazeDev/VRChatPhotoManager/.sync_lock");
 
   match fs::metadata(&sync_lock_path) {
     Ok(_) => {
@@ -207,7 +207,7 @@ pub fn sync_photos(token: String, path: path::PathBuf, window: tauri::Window) {
           folder_name.nth(0).unwrap()
         );
 
-        let full_path = format!("{}\\{}\\{}", path.to_str().unwrap(), folder_name, photo);
+        let full_path = format!("{}/{}/{}", path.to_str().unwrap(), folder_name, photo);
 
         let res = client
           .get(format!(
@@ -221,7 +221,7 @@ pub fn sync_photos(token: String, path: path::PathBuf, window: tauri::Window) {
 
         match res {
           Ok(res) => {
-            let folder_path = format!("{}\\{}", path.to_str().unwrap(), folder_name);
+            let folder_path = format!("{}/{}", path.to_str().unwrap(), folder_name);
             match fs::metadata(&folder_path) {
               Ok(_) => {}
               Err(_) => {
