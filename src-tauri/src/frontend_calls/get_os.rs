@@ -1,5 +1,5 @@
 #[tauri::command]
-pub fn get_os() -> String{
+pub fn get_os() -> String {
   #[cfg(windows)]
   return "windows".into();
 

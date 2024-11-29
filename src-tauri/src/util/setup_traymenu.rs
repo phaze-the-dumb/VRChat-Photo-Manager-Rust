@@ -1,9 +1,13 @@
-use tauri::{ menu::{ MenuBuilder, MenuItemBuilder }, tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}, AppHandle, Manager, Emitter };
+use tauri::{
+  menu::{MenuBuilder, MenuItemBuilder},
+  tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+  AppHandle, Emitter, Manager,
+};
 
 #[derive(serde::Serialize, Clone)]
-struct EmptyEvent{}
+struct EmptyEvent {}
 
-pub fn setup_traymenu( handle: &AppHandle ){
+pub fn setup_traymenu(handle: &AppHandle) {
   // Setup the tray icon and menu buttons
   let quit = MenuItemBuilder::new("Quit")
     .id("quit")
@@ -24,30 +28,30 @@ pub fn setup_traymenu( handle: &AppHandle ){
     .icon(tauri::image::Image::from_bytes(include_bytes!("../../icons/32x32.png")).unwrap())
     .menu(&tray_menu)
     .on_menu_event(move |app: &AppHandle, event| match event.id().as_ref() {
-        "quit" => {
-          std::process::exit(0);
+      "quit" => {
+        std::process::exit(0);
+      }
+      "hide" => {
+        let window = app.get_webview_window("main").unwrap();
+
+        if window.is_visible().unwrap() {
+          window.hide().unwrap();
+
+          window.emit("hide-window", EmptyEvent {}).unwrap();
+        } else {
+          window.show().unwrap();
+          window.set_focus().unwrap();
+
+          window.emit("show-window", EmptyEvent {}).unwrap();
         }
-        "hide" => {
-          let window = app.get_webview_window("main").unwrap();
-
-          if window.is_visible().unwrap() {
-            window.hide().unwrap();
-
-            window.emit("hide-window", EmptyEvent {}).unwrap();
-          } else {
-            window.show().unwrap();
-            window.set_focus().unwrap();
-
-            window.emit("show-window", EmptyEvent {}).unwrap();
-          }
-        }
-        _ => {}
+      }
+      _ => {}
     })
     .on_tray_icon_event(|tray, event| {
       if let TrayIconEvent::Click {
         button: MouseButton::Left,
         button_state: MouseButtonState::Up,
-          ..
+        ..
       } = event
       {
         let window = tray.app_handle().get_webview_window("main").unwrap();

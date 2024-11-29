@@ -1,9 +1,19 @@
-use std::{ fs, io::{ BufReader, Read }, thread };
-use fast_image_resize::{ images::Image, IntoImageView, ResizeOptions, Resizer };
-use image::{ codecs::png::{ PngDecoder, PngEncoder }, DynamicImage, ImageEncoder };
-use tauri::{ http::{ Request, Response }, UriSchemeResponder };
+use fast_image_resize::{images::Image, IntoImageView, ResizeOptions, Resizer};
+use image::{
+  codecs::png::{PngDecoder, PngEncoder},
+  DynamicImage, ImageEncoder,
+};
+use std::{
+  fs,
+  io::{BufReader, Read},
+  thread,
+};
+use tauri::{
+  http::{Request, Response},
+  UriSchemeResponder,
+};
 
-pub fn handle_uri_proto( request: Request<Vec<u8>>, responder: UriSchemeResponder ){
+pub fn handle_uri_proto(request: Request<Vec<u8>>, responder: UriSchemeResponder) {
   thread::spawn(move || {
     // Loads the requested image file, sends data back to the user
     let uri = request.uri();
@@ -35,52 +45,58 @@ pub fn handle_uri_proto( request: Request<Vec<u8>>, responder: UriSchemeResponde
     let file = fs::File::open(path);
 
     match file {
-      Ok(mut file) => {
-        match uri.query().unwrap(){
-          "downscale" => {
-            let decoder = PngDecoder::new(BufReader::new(&file)).unwrap();
-            let src_image = DynamicImage::from_decoder(decoder).unwrap();
+      Ok(mut file) => match uri.query().unwrap() {
+        "downscale" => {
+          let decoder = PngDecoder::new(BufReader::new(&file)).unwrap();
+          let src_image = DynamicImage::from_decoder(decoder).unwrap();
 
-            let size_multiplier: f32 = 200.0 / src_image.height() as f32;
+          let size_multiplier: f32 = 200.0 / src_image.height() as f32;
 
-            let dst_width = (src_image.width() as f32 * size_multiplier).floor() as u32;
-            let dst_height: u32 = 200;
+          let dst_width = (src_image.width() as f32 * size_multiplier).floor() as u32;
+          let dst_height: u32 = 200;
 
-            let mut dst_image = Image::new(dst_width, dst_height, src_image.pixel_type().unwrap());
-            let mut resizer = Resizer::new();
+          let mut dst_image = Image::new(dst_width, dst_height, src_image.pixel_type().unwrap());
+          let mut resizer = Resizer::new();
 
-            let opts = ResizeOptions::new()
-              .resize_alg(fast_image_resize::ResizeAlg::Nearest);
+          let opts = ResizeOptions::new().resize_alg(fast_image_resize::ResizeAlg::Nearest);
 
-            resizer.resize(&src_image, &mut dst_image, Some(&opts)).unwrap();
+          resizer
+            .resize(&src_image, &mut dst_image, Some(&opts))
+            .unwrap();
 
-            let mut buf = Vec::new();
-            let encoder = PngEncoder::new(&mut buf);
+          let mut buf = Vec::new();
+          let encoder = PngEncoder::new(&mut buf);
 
-            encoder.write_image(dst_image.buffer(), dst_width, dst_height, src_image.color().into()).unwrap();
+          encoder
+            .write_image(
+              dst_image.buffer(),
+              dst_width,
+              dst_height,
+              src_image.color().into(),
+            )
+            .unwrap();
 
-            let res = Response::builder()
-              .status(200)
-              .header("Access-Control-Allow-Origin", "*")
-              .body(buf)
-              .unwrap();
+          let res = Response::builder()
+            .status(200)
+            .header("Access-Control-Allow-Origin", "*")
+            .body(buf)
+            .unwrap();
 
-            responder.respond(res);
-          },
-          _ => {
-            let mut buf = Vec::new();
-            file.read_to_end(&mut buf).unwrap();
-
-            let res = Response::builder()
-              .status(200)
-              .header("Access-Control-Allow-Origin", "*")
-              .body(buf)
-              .unwrap();
-
-            responder.respond(res);
-          }
+          responder.respond(res);
         }
-      }
+        _ => {
+          let mut buf = Vec::new();
+          file.read_to_end(&mut buf).unwrap();
+
+          let res = Response::builder()
+            .status(200)
+            .header("Access-Control-Allow-Origin", "*")
+            .body(buf)
+            .unwrap();
+
+          responder.respond(res);
+        }
+      },
       Err(_) => {
         responder.respond(
           Response::builder()

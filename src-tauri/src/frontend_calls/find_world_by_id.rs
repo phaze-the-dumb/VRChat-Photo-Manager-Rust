@@ -1,5 +1,5 @@
-use std::thread;
 use crate::worldscraper::World;
+use std::thread;
 use tauri::Emitter;
 
 // Load vrchat world data

@@ -1,7 +1,12 @@
-use std::{ env, fs, path, process::{ self, Command }, thread, time::Duration };
 use crate::util;
+use std::{
+  env, fs, path,
+  process::{self, Command},
+  thread,
+  time::Duration,
+};
 
-pub fn check_updates( container_folder: path::PathBuf ){
+pub fn check_updates(container_folder: path::PathBuf) {
   let args: Vec<String> = env::args().collect();
 
   let mut update = true;
@@ -35,8 +40,7 @@ pub fn check_updates( container_folder: path::PathBuf ){
               .bytes()
               .unwrap();
 
-            fs::write(&container_folder.join("./updater.exe"), latest_installer)
-              .unwrap();
+            fs::write(&container_folder.join("./updater.exe"), latest_installer).unwrap();
           }
         }
 

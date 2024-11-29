@@ -1,6 +1,6 @@
 use crate::photosync;
-use std::thread;
 use crate::util::get_photo_path::get_photo_path;
+use std::thread;
 
 // On requested sync the photos to the cloud
 #[tauri::command]

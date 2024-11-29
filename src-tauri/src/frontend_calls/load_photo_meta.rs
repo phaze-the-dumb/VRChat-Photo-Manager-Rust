@@ -1,7 +1,7 @@
-use std::{ thread, fs, io::Read };
 use crate::util::get_photo_path::get_photo_path;
-use tauri::Emitter;
 use crate::PNGImage;
+use std::{fs, io::Read, thread};
+use tauri::Emitter;
 
 // Reads the PNG file and loads the image metadata from it
 // then sends the metadata to the frontend, returns width, height, colour depth and so on... more info "pngmeta.rs"

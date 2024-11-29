@@ -1,4 +1,4 @@
-use std::{ thread, fs };
+use std::{fs, thread};
 
 #[cfg(windows)]
 use mslnk::ShellLink;
@@ -25,7 +25,9 @@ pub fn start_with_win(start: bool) {
           Err(_) => {}
         }
       } else {
-        let lnk = dirs::home_dir().unwrap().join("AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/VRChat Photo Manager.lnk");
+        let lnk = dirs::home_dir().unwrap().join(
+          "AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/VRChat Photo Manager.lnk",
+        );
         fs::remove_file(lnk).unwrap();
       }
     });

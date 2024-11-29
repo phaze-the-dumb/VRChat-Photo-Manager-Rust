@@ -397,7 +397,6 @@ let PhotoList = ( props: PhotoListProps ) => {
 
     reloadFilters();
 
-    console.log(amountLoaded, photos.length);
     if(amountLoaded === photos.length && !hasFirstLoaded){
       filteredPhotos = photos;
       hasFirstLoaded = true;
@@ -482,6 +481,26 @@ let PhotoList = ( props: PhotoListProps ) => {
       props.setPhotoSize(event.payload.size);
 
       let doesHaveLegacy = false;
+
+      if(photoPaths.length === 0){
+        anime({
+          targets: photoTreeLoadingContainer,
+          height: 0,
+          easing: 'easeInOutQuad',
+          duration: 500,
+          opacity: 0,
+          complete: () => {
+            photoTreeLoadingContainer.style.display = 'none';
+          }
+        })
+
+        anime({
+          targets: '.reload-photos',
+          opacity: 1,
+          duration: 150,
+          easing: 'easeInOutQuad'
+        })
+      }
 
       photoPaths.forEach(( path: string ) => {
         let photo

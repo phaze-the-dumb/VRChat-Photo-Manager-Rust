@@ -1,5 +1,5 @@
-use std::{ fs, thread, time::Duration };
 use crate::util::get_photo_path::get_photo_path;
+use std::{fs, thread, time::Duration};
 
 // Delete a photo when the users confirms the prompt in the ui
 #[tauri::command]

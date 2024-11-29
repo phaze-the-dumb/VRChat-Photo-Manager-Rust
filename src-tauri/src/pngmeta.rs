@@ -53,15 +53,10 @@ impl PNGImage {
 
     match chunk_type {
       "IHDR" => {
-        self.width =
-          u32::from_le_bytes([data_buff[11], data_buff[10], data_buff[9], data_buff[8]]);
+        self.width = u32::from_le_bytes([data_buff[11], data_buff[10], data_buff[9], data_buff[8]]);
 
-        self.height = u32::from_le_bytes([
-          data_buff[15],
-          data_buff[14],
-          data_buff[13],
-          data_buff[12],
-        ]);
+        self.height =
+          u32::from_le_bytes([data_buff[15], data_buff[14], data_buff[13], data_buff[12]]);
 
         self.bit_depth = data_buff[16];
         self.colour_type = data_buff[17];

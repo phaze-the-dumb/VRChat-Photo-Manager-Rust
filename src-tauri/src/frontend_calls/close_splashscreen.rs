@@ -1,5 +1,5 @@
-use tauri::Manager;
 use std::env;
+use tauri::Manager;
 
 #[tauri::command]
 pub fn close_splashscreen(window: tauri::Window) {
@@ -12,7 +12,7 @@ pub fn close_splashscreen(window: tauri::Window) {
     }
   }
 
-  if show{
+  if show {
     window.get_webview_window("main").unwrap().show().unwrap();
   }
 }

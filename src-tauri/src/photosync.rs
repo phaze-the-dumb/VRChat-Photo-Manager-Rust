@@ -109,53 +109,50 @@ pub fn sync_photos(token: String, path: path::PathBuf, window: tauri::Window) {
         let folder_name = photo.clone().replace("VRChat_", "");
         let mut folder_name = folder_name.split("-");
         let folder_name = format!(
-            "{}-{}",
-            folder_name.nth(0).unwrap(),
-            folder_name.nth(0).unwrap()
+          "{}-{}",
+          folder_name.nth(0).unwrap(),
+          folder_name.nth(0).unwrap()
         );
 
         let full_path = format!("{}\\{}\\{}", path.to_str().unwrap(), folder_name, photo);
         let file = fs::File::open(full_path);
 
         match file {
-            Ok(file) => {
-                let res = client
-                  .put(format!(
-                    "https://photos-cdn.phazed.xyz/api/v1/photos?token={}",
-                    &token
-                  ))
-                  .header("Content-Type", "image/png")
-                  .header("filename", photo)
-                  .body(file)
-                  .timeout(Duration::from_secs(120))
-                  .send()
-                  .unwrap()
-                  .text()
-                  .unwrap();
+          Ok(file) => {
+            let res = client
+              .put(format!(
+                "https://photos-cdn.phazed.xyz/api/v1/photos?token={}",
+                &token
+              ))
+              .header("Content-Type", "image/png")
+              .header("filename", photo)
+              .body(file)
+              .timeout(Duration::from_secs(120))
+              .send()
+              .unwrap()
+              .text()
+              .unwrap();
 
-                let res: Result<Value, Error> = serde_json::from_str(&res);
+            let res: Result<Value, Error> = serde_json::from_str(&res);
 
-                match res {
-                  Ok(res) => {
-                    if !res["ok"].as_bool().unwrap() {
-                      println!(
-                        "Failed to upload: {}",
-                        res["error"].as_str().unwrap()
-                      );
+            match res {
+              Ok(res) => {
+                if !res["ok"].as_bool().unwrap() {
+                  println!("Failed to upload: {}", res["error"].as_str().unwrap());
 
-                      window
-                        .emit("sync-failed", res["error"].as_str().unwrap())
-                        .unwrap();
+                  window
+                    .emit("sync-failed", res["error"].as_str().unwrap())
+                    .unwrap();
 
-                      break;
-                    }
-                  }
-                  Err(err) => {
-                    dbg!(err);
-                  }
+                  break;
                 }
+              }
+              Err(err) => {
+                dbg!(err);
+              }
             }
-            Err(_) => {}
+          }
+          Err(_) => {}
         }
 
         photos_left -= 1;
@@ -252,7 +249,7 @@ pub fn sync_photos(token: String, path: path::PathBuf, window: tauri::Window) {
           .unwrap();
       }
       None => {
-          break;
+        break;
       }
     }
   }

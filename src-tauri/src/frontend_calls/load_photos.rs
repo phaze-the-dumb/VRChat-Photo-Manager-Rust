@@ -1,6 +1,6 @@
-use std::{ thread, fs, path };
 use crate::util::get_photo_path::get_photo_path;
 use regex::Regex;
+use std::{fs, path, thread};
 use tauri::Emitter;
 
 // Scans all files under the "Pictures/VRChat" path
@@ -39,10 +39,7 @@ pub fn load_photos(window: tauri::Window) {
 
             let re3_match = re3.is_match(name);
 
-            if re1.is_match(name)
-              || re2.is_match(name)
-              || re3_match
-            {
+            if re1.is_match(name) || re2.is_match(name) || re3_match {
               let path = fname.to_path_buf().clone();
               let metadata = fs::metadata(&path).unwrap();
 
@@ -51,9 +48,9 @@ pub fn load_photos(window: tauri::Window) {
 
                 let pth = path.strip_prefix(&base_dir).unwrap().to_path_buf();
 
-                if re3_match{
+                if re3_match {
                   photos.push(path::PathBuf::from("legacy://").join(pth));
-                } else{
+                } else {
                   photos.push(pth);
                 }
               }
@@ -71,7 +68,7 @@ pub fn load_photos(window: tauri::Window) {
 
     println!("Found {} photos", photos.len());
     window
-        .emit("photos_loaded", PhotosLoadedResponse { photos, size })
-        .unwrap();
+      .emit("photos_loaded", PhotosLoadedResponse { photos, size })
+      .unwrap();
   });
 }
