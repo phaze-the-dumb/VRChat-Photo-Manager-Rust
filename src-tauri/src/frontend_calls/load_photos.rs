@@ -1,7 +1,7 @@
-use crate::util::get_photo_path::get_photo_path;
+use crate::util::cache::Cache;
 use regex::Regex;
 use std::{fs, path, thread};
-use tauri::Emitter;
+use tauri::{Emitter, State};
 
 // Scans all files under the "Pictures/VRChat" path
 // then sends the list of photos to the frontend
@@ -12,9 +12,10 @@ struct PhotosLoadedResponse {
 }
 
 #[tauri::command]
-pub fn load_photos(window: tauri::Window) {
+pub fn load_photos(window: tauri::Window, cache: State<Cache> ) {
+  let base_dir = cache.get("photo-path".into()).unwrap();
+
   thread::spawn(move || {
-    let base_dir = get_photo_path();
 
     let mut photos: Vec<path::PathBuf> = Vec::new();
     let mut size: usize = 0;

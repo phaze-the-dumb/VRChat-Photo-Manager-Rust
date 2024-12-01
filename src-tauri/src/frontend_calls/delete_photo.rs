@@ -1,11 +1,15 @@
-use crate::util::get_photo_path::get_photo_path;
-use std::{fs, thread, time::Duration};
+use tauri::State;
+
+use crate::util::cache::Cache;
+use std::{ fs, thread, time::Duration };
 
 // Delete a photo when the users confirms the prompt in the ui
 #[tauri::command]
-pub fn delete_photo(path: String, token: String, is_syncing: bool) {
+pub fn delete_photo(path: String, token: String, is_syncing: bool, cache: State<Cache>) {
+  let photo_path = cache.get("photo-path".into());
+
   thread::spawn(move || {
-    let p = get_photo_path().join(&path);
+    let p = photo_path.unwrap() + "/" + &path;
     fs::remove_file(p).unwrap();
 
     let photo = path.split("/").last().unwrap();

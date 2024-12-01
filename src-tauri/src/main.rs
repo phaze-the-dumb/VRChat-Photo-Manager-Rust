@@ -12,6 +12,7 @@ use frontend_calls::*;
 use notify::{EventKind, RecursiveMode, Watcher};
 use pngmeta::PNGImage;
 use regex::Regex;
+use util::cache::Cache;
 use std::{env, fs, thread};
 use tauri::{Emitter, Manager, WindowEvent};
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -19,6 +20,8 @@ use tauri_plugin_deep_link::DeepLinkExt;
 // TODO: Linux support
 
 fn main() {
+  let cache = Cache::new();
+
   // Double check the app has an install directory
   let container_folder = dirs::config_dir()
     .unwrap()
@@ -72,6 +75,8 @@ fn main() {
 
   println!("Loading App...");
   let photos_path = util::get_photo_path::get_photo_path();
+
+  cache.insert("photo-path".into(), photos_path.to_str().unwrap().to_owned());
 
   match fs::metadata(&photos_path) {
     Ok(_) => {}
@@ -152,6 +157,7 @@ fn main() {
       }
       _ => {}
     })
+    .manage(cache)
     .setup(|app| {
       let handle = app.handle();
 

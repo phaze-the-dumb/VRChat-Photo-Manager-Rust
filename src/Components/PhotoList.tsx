@@ -56,7 +56,7 @@ let PhotoList = ( props: PhotoListProps ) => {
   let scroll: number = 0;
   let targetScroll: number = 0;
 
-  let quitRender: boolean = false;
+  let quitRender: boolean = true;
   let photoPath: string;
 
   let currentPopup = ListPopup.NONE;
@@ -206,6 +206,8 @@ let PhotoList = ( props: PhotoListProps ) => {
   })
 
   let render = () => {
+    console.log('render', quitRender);
+
     if(!quitRender)
       requestAnimationFrame(render);
     else
@@ -368,10 +370,14 @@ let PhotoList = ( props: PhotoListProps ) => {
   }
 
   listen('hide-window', () => {
+    console.log('Hide Window');
     quitRender = true;
   })
 
   listen('show-window', () => {
+    console.log('Shown Window');
+    quitRender = false;
+
     if(hasFirstLoaded)
       requestAnimationFrame(render);
   })
