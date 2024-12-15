@@ -59,3 +59,6 @@ v0.2.2:
   - Fix VRCPM using way to many resources while being minimised after starting in the background
   - Changed image resizing algorithm so preview images look less pixelated
   - Fix issue where photos wouldn't display in the list if you opened the app before it had loaded
+
+  Hotfix 1:
+    - Fixed world cache not being saved to the config file

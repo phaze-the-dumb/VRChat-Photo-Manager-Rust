@@ -435,7 +435,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
     }
 
     worldCache.push(worldData);
-    invoke('set_config_value_string', { key: 'worldcache', value: worldCache });
+    invoke('set_config_value_string', { key: 'worldcache', value: JSON.stringify(worldCache) });
 
     loadWorldData(worldData);
   })
