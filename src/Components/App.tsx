@@ -12,10 +12,7 @@ import SettingsMenu from "./SettingsMenu";
 // TODO: Clean up frontend files, split up into smaller files PLEASE
 
 function App() {
-  invoke('get_config_value_string', { key: 'start-in-bg' })
-    .then(str => {
-      if(str === "false")invoke('close_splashscreen')
-    })
+  invoke('close_splashscreen')
 
   let [ loggedIn, setLoggedIn ] = createSignal({ loggedIn: false, username: '', avatar: '', id: '', serverVersion: '0.0' });
   let [ storageInfo, setStorageInfo ] = createSignal({ storage: 0, used: 0, sync: false });
@@ -48,7 +45,6 @@ function App() {
               return console.error(data);
             }
     
-            console.log(data.data);
             setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
             setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
     

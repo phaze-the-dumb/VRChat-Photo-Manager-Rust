@@ -58,7 +58,7 @@ pub fn handle_uri_proto(request: Request<Vec<u8>>, responder: UriSchemeResponder
           let mut dst_image = Image::new(dst_width, dst_height, src_image.pixel_type().unwrap());
           let mut resizer = Resizer::new();
 
-          let opts = ResizeOptions::new().resize_alg(fast_image_resize::ResizeAlg::Nearest);
+          let opts = ResizeOptions::new().resize_alg(fast_image_resize::ResizeAlg::Convolution(fast_image_resize::FilterType::Bilinear));
 
           resizer
             .resize(&src_image, &mut dst_image, Some(&opts))
