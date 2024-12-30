@@ -1,28 +1,18 @@
 import { createEffect, onCleanup, onMount } from "solid-js";
-import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { Window } from "@tauri-apps/api/window";
 
 import anime from "animejs";
-import FilterMenu, { FilterType } from "./FilterMenu";
-
-const PHOTO_HEIGHT = 200;
-const MAX_IMAGE_LOAD = 10;
+import FilterMenu from "./FilterMenu";
+import { Photo } from "./Structs/Photo";
 
 let months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
 class PhotoListProps{
   setCurrentPhotoView!: ( view: any ) => any;
-  setPhotoCount!: ( value: any ) => any;
-  setPhotoSize!: ( value: any ) => any;
   currentPhotoView!: () => any;
   photoNavChoice!: () => string;
   setPhotoNavChoice!: ( view: any ) => any;
-  setConfirmationBox!: ( text: string, cb: () => void ) => void;
-  requestPhotoReload!: () => boolean;
-  setRequestPhotoReload!: ( val: boolean ) => boolean;
-  storageInfo!: () => { storage: number, used: number, sync: boolean };
-  loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
   isPhotosSyncing!: () => boolean;
   setIsPhotosSyncing!: ( syncing: boolean ) => boolean;
 }
@@ -33,11 +23,6 @@ enum ListPopup{
 }
 
 let PhotoList = ( props: PhotoListProps ) => {
-  let amountLoaded = 0;
-  let imagesLoading = 0;
-
-  let hasFirstLoaded = false;
-
   let photoTreeLoadingContainer: HTMLElement;
 
   let scrollToTop: HTMLElement;
@@ -51,21 +36,14 @@ let PhotoList = ( props: PhotoListProps ) => {
   let ctx: CanvasRenderingContext2D;
   let ctxBG: CanvasRenderingContext2D;
 
-  let photos: Photo[] = [];
   let currentPhotoIndex: number = -1;
 
   let scroll: number = 0;
   let targetScroll: number = 0;
 
   let quitRender: boolean = true;
-  let photoPath: string;
 
   let currentPopup = ListPopup.NONE;
-
-  let filterType: FilterType = FilterType.USER;
-  let filter = '';
-
-  let filteredPhotos: Photo[] = [];
 
   Window.getCurrent().isVisible().then(visible => {
     quitRender = !visible;
@@ -93,115 +71,21 @@ let PhotoList = ( props: PhotoListProps ) => {
 
         break;
     }
-  }
-
-  createEffect(() => {
-    if(props.requestPhotoReload()){
-      props.setRequestPhotoReload(false);
-      reloadPhotos();
-    }
-  })
-
-  class PhotoMetadata{
-    width!: number;
-    height!: number;
-    metadata!: string;
-    path!: string;
-  }
-
-  class Photo{
-    path: string;
-    loaded: boolean = false;
-    loading: boolean = false;
-    metaLoaded: boolean = false;
-    image?: HTMLCanvasElement;
-    imageEl?: HTMLImageElement;
-    width?: number;
-    height?: number;
-    loadingRotate: number = 0;
-    metadata: any;
-
-    frames: number = 0;
-    shown: boolean = false;
-
-    x: number = 0;
-    y: number = 0;
-    scaledWidth?: number;
-    scaledHeight?: number;
-
-    dateString: string;
-    date: Date;
-
-    legacy: boolean = false;
-
-    public onMetaLoaded: () => void = () => {};
-
-    constructor( path: string, isLegacy: boolean = false ){
-      this.path = path;
-      this.legacy = isLegacy;
-
-      if(this.legacy)
-        this.dateString = this.path.split('_')[2];
-      else
-        this.dateString = this.path.split('_')[1];
-
-      let splitDateString = this.dateString.split('-');
-
-      this.date = new Date();
-
-      this.date.setFullYear(parseInt(splitDateString[0]));
-      this.date.setMonth(parseInt(splitDateString[1]));
-      this.date.setDate(parseInt(splitDateString[2]));
-    }
-
-    loadMeta(){
-      invoke('load_photo_meta', { photo: this.path });
-    }
-
-    loadImage(){
-      if(this.loading || this.loaded || imagesLoading >= MAX_IMAGE_LOAD)return;
-
-      this.loadMeta();
-      if(!this.metaLoaded)return;
-
-      this.loading = true;
-
-      imagesLoading++;
-
-      this.image = document.createElement('canvas');
-
-      this.imageEl = document.createElement('img');
-      this.imageEl.crossOrigin = 'anonymous';
-
-      this.imageEl.src = (window.OS === "windows" ? "http://photo.localhost/" : "photo://localhost") + photoPath + this.path + "?downscale";
-
-      this.imageEl.onload = () => {
-        this.image!.width = this.scaledWidth!;
-        this.image!.height = this.scaledHeight!;
-
-        this.image!.getContext('2d')!.drawImage(this.imageEl!, 0, 0, this.scaledWidth!, this.scaledHeight!);
-
-        this.loaded = true;
-        this.loading = false;
-
-        imagesLoading--;
-      }
-    }
-  }
+  } 
 
   createEffect(() => {
     let action = props.photoNavChoice();
 
     switch(action){
       case 'prev':
-        if(!filteredPhotos[currentPhotoIndex - 1])break;
-        props.setCurrentPhotoView(filteredPhotos[currentPhotoIndex - 1]);
+        if(!window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex - 1])break;
+        props.setCurrentPhotoView(window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex - 1]);
 
         currentPhotoIndex--;
         break;
       case 'next':
-        if(!filteredPhotos[currentPhotoIndex + 1])break;
-        props.setCurrentPhotoView(filteredPhotos[currentPhotoIndex + 1]);
+        if(!window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex + 1])break;
+        props.setCurrentPhotoView(window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex + 1]);
 
         currentPhotoIndex++;
         break;
@@ -211,6 +95,9 @@ let PhotoList = ( props: PhotoListProps ) => {
   })
 
   let render = () => {
+    // TODO: Tidy this up, optimise it more 
+    // I am really procrastinating rewriting this...
+    
     if(!quitRender)
       requestAnimationFrame(render);
     else
@@ -237,8 +124,8 @@ let PhotoList = ( props: PhotoListProps ) => {
     scroll = scroll + (targetScroll - scroll) * 0.2;
 
     let lastPhoto;
-    for (let i = 0; i < filteredPhotos.length; i++) {
-      let p = filteredPhotos[i];
+    for (let i = 0; i < window.PhotoLoadingManager.FilteredPhotos.length; i++) {
+      let p = window.PhotoLoadingManager.FilteredPhotos[i];
 
       if(currentRowIndex * 210 - scroll > photoContainer.height){
         p.shown = false;
@@ -358,7 +245,7 @@ let PhotoList = ( props: PhotoListProps ) => {
       })
     }
 
-    if(filteredPhotos.length == 0){
+    if(window.PhotoLoadingManager.FilteredPhotos.length == 0){
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.globalAlpha = 1;
@@ -381,169 +268,37 @@ let PhotoList = ( props: PhotoListProps ) => {
     console.log('Shown Window');
     quitRender = false;
 
-    if(hasFirstLoaded)
+    if(window.PhotoLoadingManager.HasFirstLoaded)
       requestAnimationFrame(render);
   })
 
-  listen('photo_meta_loaded', ( event: any ) => {
-    let data: PhotoMetadata = event.payload;
-
-    let photo = photos.find(x => x.path === data.path);
-    if(!photo)return;
-
-    photo.width = data.width;
-    photo.height = data.height;
-
-    let scale = PHOTO_HEIGHT / photo.height;
-
-    photo.scaledWidth = photo.width * scale;
-    photo.scaledHeight = PHOTO_HEIGHT;
-
-    photo.metadata = data.metadata.split('\u0000').filter(x => x !== '')[1];
-    amountLoaded++;
-
-    photo.metaLoaded = true;
-    photo.onMetaLoaded();
-
-    reloadFilters();
-
-    if(amountLoaded === photos.length && !hasFirstLoaded){
-      filteredPhotos = photos;
-      hasFirstLoaded = true;
-
-      anime({
-        targets: photoTreeLoadingContainer,
-        height: 0,
-        easing: 'easeInOutQuad',
-        duration: 500,
-        opacity: 0,
-        complete: () => {
-          photoTreeLoadingContainer.style.display = 'none';
-        }
-      })
-
-      anime({
-        targets: '.reload-photos',
-        opacity: 1,
-        duration: 150,
-        easing: 'easeInOutQuad'
-      })
-
-      render();
-    }
-  })
-
-  listen('photo_create', async ( event: any ) => {
-    let photo = new Photo(event.payload);
-
-    photos.splice(0, 0, photo);
-    photo.loadMeta();
-
-    if(!props.isPhotosSyncing() && props.storageInfo().sync){
-      props.setIsPhotosSyncing(true);
-      invoke('sync_photos', { token: (await invoke('get_config_value_string', { key: 'token' })) });
-    }
-  })
-
-  listen('photo_remove', ( event: any ) => {
-    photos = photos.filter(x => x.path !== event.payload);
-    filteredPhotos = filteredPhotos.filter(x => x.path !== event.payload);
-
-    if(event.payload === props.currentPhotoView().path){
-      currentPhotoIndex = -1;
-      props.setCurrentPhotoView(null);
-    }
-  })
-
-  let reloadPhotos = async () => {
-    photoPath = await invoke('get_user_photos_path') + '/';
-
-    photoTreeLoadingContainer.style.opacity = '1';
-    photoTreeLoadingContainer.style.height = '100%';
-    photoTreeLoadingContainer.style.display = 'flex';
-
-    quitRender = true;
-    amountLoaded = 0;
-    scroll = 0;
-
-    photos = [];
-    filteredPhotos = [];
+  window.PhotoLoadingManager.OnLoadingFinished(() => {
+    anime({
+      targets: photoTreeLoadingContainer,
+      height: 0,
+      easing: 'easeInOutQuad',
+      duration: 500,
+      opacity: 0,
+      complete: () => {
+        photoTreeLoadingContainer.style.display = 'none';
+      }
+    })
 
     anime({
       targets: '.reload-photos',
-      opacity: 0,
+      opacity: 1,
       duration: 150,
       easing: 'easeInOutQuad'
     })
 
-    invoke('load_photos');
-  }
-
-  let loadPhotos = async () => {
-    photoPath = await invoke('get_user_photos_path') + '/';
-
-    listen('photos_loaded', ( event: any ) => {
-      let photoPaths = event.payload.photos.reverse();
-      console.log(photoPaths);
-
-      props.setPhotoCount(photoPaths.length);
-      props.setPhotoSize(event.payload.size);
-
-      let doesHaveLegacy = false;
-
-      photoPaths.forEach(( path: string ) => {
-        let photo
-
-        if(path.slice(0, 9) === "legacy://"){
-          photo = new Photo(path.slice(9), true);
-          doesHaveLegacy = true;
-        } else
-          photo = new Photo(path, false);
-
-        photos.push(photo);
-        photo.loadMeta();
-      })
-
-      if(doesHaveLegacy){
-        photos = photos.sort(( a, b ) => b.date.valueOf() - a.date.valueOf());
-      }
-
-      console.log(photos.length + ' Photos found.');
-      if(photos.length === 0){
-        console.log('No photos found, Skipping loading stage.');
-
-        filteredPhotos = photos;
-        hasFirstLoaded = true;
-  
-        anime({
-          targets: photoTreeLoadingContainer,
-          height: 0,
-          easing: 'easeInOutQuad',
-          duration: 500,
-          opacity: 0,
-          complete: () => {
-            photoTreeLoadingContainer.style.display = 'none';
-          }
-        })
-  
-        anime({
-          targets: '.reload-photos',
-          opacity: 1,
-          duration: 150,
-          easing: 'easeInOutQuad'
-        })
-
-        render();
-      }
-    });
-
-    invoke('load_photos');
-  }
+    render();
+  });
 
   onMount(() => {
     ctx = photoContainer.getContext('2d')!;
     ctxBG = photoContainerBG.getContext('2d')!;
-    loadPhotos();
+
+    window.PhotoLoadingManager.Load();
 
     anime.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
 
@@ -571,7 +326,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     })
 
     photoContainer.addEventListener('click', ( e: MouseEvent ) => {
-      let photo = filteredPhotos.find(x =>
+      let photo = window.PhotoLoadingManager.FilteredPhotos.find(x =>
         e.clientX > x.x &&
         e.clientY > x.y &&
         e.clientX < x.x + x.scaledWidth! &&
@@ -581,7 +336,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
       if(photo){
         props.setCurrentPhotoView(photo);
-        currentPhotoIndex = filteredPhotos.indexOf(photo);
+        currentPhotoIndex = window.PhotoLoadingManager.FilteredPhotos.indexOf(photo);
       } else
         currentPhotoIndex = -1;
     })
@@ -591,39 +346,10 @@ let PhotoList = ( props: PhotoListProps ) => {
     window.removeEventListener('keyup', closeWithKey);
   })
 
-  let reloadFilters = () => {
-    filteredPhotos = [];
-
-    switch(filterType){
-      case FilterType.USER:
-        photos.map(p => {
-          if(p.metadata){
-            let meta = JSON.parse(p.metadata);
-            let photo = meta.players.find(( y: any ) => y.displayName.toLowerCase().includes(filter) || y.id === filter);
-    
-            if(photo)filteredPhotos.push(p);
-          }
-        })
-        break;
-      case FilterType.WORLD:
-        photos.map(p => {
-          if(p.metadata){
-            let meta = JSON.parse(p.metadata);
-            let photo = meta.world.name.toLowerCase().includes(filter) || meta.world.id === filter;
-    
-            if(photo)filteredPhotos.push(p);
-          }
-        })
-        break;
-    }
-  }
-
   return (
     <div class="photo-list">
       <div ref={filterContainer!} class="filter-container">
-        <FilterMenu
-          setFilter={( f ) => { filter = f.toLowerCase(); reloadFilters(); }}
-          setFilterType={( t ) => { filterType = t; reloadFilters(); }} />
+        <FilterMenu />
       </div>
 
       <div class="photo-tree-loading" ref={( el ) => photoTreeLoadingContainer = el}>Scanning Photo Tree...</div>
@@ -633,7 +359,7 @@ let PhotoList = ( props: PhotoListProps ) => {
           <img draggable="false" src="/icon/angle-up-solid.svg"></img>
         </div>
       </div>
-      <div class="reload-photos" onClick={() => props.setConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", () => window.location.reload())}>
+      <div class="reload-photos" onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", () => window.location.reload())}>
         <div class="icon" style={{ width: '17px' }}>
           <img draggable="false" width="17" height="17" src="/icon/arrows-rotate-solid.svg"></img>
         </div>

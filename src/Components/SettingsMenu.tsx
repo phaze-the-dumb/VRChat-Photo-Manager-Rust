@@ -2,21 +2,8 @@ import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
 import { invoke } from '@tauri-apps/api/core';
 import anime from "animejs";
-import { fetch } from "@tauri-apps/plugin-http"
 
-class SettingsMenuProps{
-  setLoadingType!: ( type: string ) => string;
-  photoCount!: () => number;
-  photoSize!: () => number;
-  setRequestPhotoReload!: ( val: boolean ) => boolean;
-  loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
-  storageInfo!: () => { storage: number, used: number, sync: boolean };
-  setStorageInfo!: ( info: { storage: number, used: number, sync: boolean } ) => { storage: number, used: number, sync: boolean };
-  setConfirmationBox!: ( text: string, cb: () => void ) => void;
-  setLoggedIn!: ( val: { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string } ) => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
-}
-
-let SettingsMenu = ( props: SettingsMenuProps ) => {
+let SettingsMenu = () => {
   let sliderBar: HTMLElement;
   let settingsContainer: HTMLElement;
   let currentButton = 0;
@@ -191,30 +178,12 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
     window.removeEventListener('keyup', closeWithKey);
   })
 
-  let refreshAccount = async () => {
-    fetch('https://photos.phazed.xyz/api/v1/account?token='+(await invoke('get_config_value_string', { key: 'token' }))!)
-      .then(data => data.json())
-      .then(data => {
-        if(!data.ok){
-          console.error(data);
-          return;
-        }
-
-        console.log(data);
-        props.setLoggedIn({ loggedIn: true, username: data.user.username, avatar: data.user.avatar, id: data.user._id, serverVersion: data.user.serverVersion });
-        props.setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
-      })
-      .catch(e => {
-        console.error(e);
-      })
-  }
-
   return (
     <div class="settings">
       <div class="settings-container" ref={( el ) => settingsContainer = el}>
         <div class="settings-block">
           <h1>Storage Settings</h1>
-          <p>{ props.photoCount() } Photos ({ bytesToFormatted(props.photoSize(), 0) })</p>
+          <p>{ window.PhotoLoadingManager.PhotoCount() } Photos ({ bytesToFormatted(window.PhotoLoadingManager.PhotoSize(), 0) })</p>
 
           <div class="selector">
             <input type="checkbox" id="start-in-bg-check" ref={async ( el ) => {
@@ -322,7 +291,7 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
                   }
                 })
 
-                props.setRequestPhotoReload(true);
+                window.location.reload();
               }}>
                 Save
               </span>
@@ -348,39 +317,33 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
         <div class="settings-block">
           <h1>Account Settings</h1>
 
-          <Show when={props.loggedIn().loggedIn} fallback={
+          <Show when={window.AccountManager.hasAccount()} fallback={
             <div>
               You aren't logged in. To enable cloud sync and sharing features you need to login to your PhazeID.<br /><br />
               <div class="button" onClick={() => {
-                props.setLoadingType('auth');
-
-                setTimeout(() => {
-                  props.setLoadingType('none');
-                }, 5000);
-    
-                invoke('start_user_auth');
+                window.AccountManager.login();
               }}>Login</div>
             </div>
           }>
             <div class="account-profile">
-              <div class="account-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
+              <div class="account-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${window.AccountManager.Profile()?.id}/${window.AccountManager.Profile()?.avatar}.png')` }}></div>
               <div class="account-desc">
-                <div class="reload-photos" onClick={() => refreshAccount()} style={{ opacity: 1 }}>
+                <div class="reload-photos" onClick={() => window.AccountManager.Refresh()} style={{ opacity: 1 }}>
                   <div class="icon" style={{ width: '17px' }}>
                     <img draggable="false" width="17" height="17" src="/icon/arrows-rotate-solid.svg"></img>
                   </div>
                 </div>
-                <h2>{ props.loggedIn().username }</h2>
+                <h2>{ window.AccountManager.Profile()?.username }</h2>
 
-                <Show when={props.storageInfo().sync}>
+                <Show when={window.AccountManager.Storage()?.isSyncing}>
                   <div class="storage-bar">
-                    <div class="storage-bar-inner" style={{ width: ((props.storageInfo().used / props.storageInfo().storage) * 100) + '%' }}></div>
+                    <div class="storage-bar-inner" style={{ width: ((window.AccountManager.Storage()!.used / window.AccountManager.Storage()!.total) * 100) + '%' }}></div>
                   </div>
 
                   <div>
-                    { bytesToFormatted(props.storageInfo().used, 0) } / { bytesToFormatted(props.storageInfo().storage, 0) }<br /><br />
+                    { bytesToFormatted(window.AccountManager.Storage()!.used, 0) } / { bytesToFormatted(window.AccountManager.Storage()!.total, 0) }<br /><br />
 
-                    <span style={{ 'font-size': '10px' }}>Server Version: { props.loggedIn().serverVersion }</span>
+                    <span style={{ 'font-size': '10px' }}>Server Version: { window.AccountManager.Profile()?.serverVersion }</span>
                   </div>
                 </Show>
               </div>
@@ -390,19 +353,21 @@ let SettingsMenu = ( props: SettingsMenuProps ) => {
 
             <div class="account-notice" style={{ display: 'flex' }}>
               <Show when={!deletingPhotos()} fallback={ "We are deleting your photos, please leave this window open while we delete them." }>
-                <div class="button-danger" onClick={() => props.setConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", async () => {
-                  props.setStorageInfo({ used: 0, storage: 0, sync: false });
-                  setDeletingPhotos(true);
+                <div class="button-danger" onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", async () => {
+                  // TODO: Rework all of this
 
-                  fetch('https://photos-cdn.phazed.xyz/api/v1/allphotos', {
-                    method: 'DELETE',
-                    headers: { auth: (await invoke('get_config_value_string', { key: 'token' }))! }
-                  })
-                    .then(data => data.json())
-                    .then(data => {
-                      console.log(data);
-                      setDeletingPhotos(false);
-                    })
+                  // props.setStorageInfo({ used: 0, storage: 0, sync: false });
+                  // setDeletingPhotos(true);
+
+                  // fetch('https://photos-cdn.phazed.xyz/api/v1/allphotos', {
+                  //   method: 'DELETE',
+                  //   headers: { auth: (await invoke('get_config_value_string', { key: 'token' }))! }
+                  // })
+                  //   .then(data => data.json())
+                  //   .then(data => {
+                  //     console.log(data);
+                  //     setDeletingPhotos(false);
+                  //   })
                 })}>Delete All Photos.</div> <div>This deletes all photos stored in the cloud and disables syncing.</div>
               </Show>
             </div>

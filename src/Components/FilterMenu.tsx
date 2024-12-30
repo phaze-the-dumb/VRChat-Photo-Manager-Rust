@@ -1,13 +1,6 @@
-enum FilterType{
-  USER, WORLD
-}
+import { FilterType } from "./Structs/FilterType";
 
-class FilterMenuProps{
-  setFilterType!: ( type: FilterType ) => void;
-  setFilter!: ( filter: string ) => void;
-}
-
-let FilterMenu = ( props: FilterMenuProps ) => {
+let FilterMenu = () => {
   let selectionButtons: HTMLDivElement[] = [];
 
   let select = ( index: number ) => {
@@ -20,15 +13,15 @@ let FilterMenu = ( props: FilterMenuProps ) => {
       <div class="filter-type-select">
         <div class="selected-filter" ref={( el ) => selectionButtons.push(el)} onClick={() => {
           select(0);
-          props.setFilterType(FilterType.USER);
+          window.PhotoLoadingManager.SetFilterType(FilterType.USER);
         }}>User</div>
         <div ref={( el ) => selectionButtons.push(el)} onClick={() => {
           select(1);
-          props.setFilterType(FilterType.WORLD);
+          window.PhotoLoadingManager.SetFilterType(FilterType.WORLD);
         }}>World</div>
       </div>
 
-      <input class="filter-search" type="text" onInput={( el ) => props.setFilter(el.target.value)} placeholder="Enter Search Term..."></input>
+      <input class="filter-search" type="text" onInput={( el ) => window.PhotoLoadingManager.SetFilter(el.target.value)} placeholder="Enter Search Term..."></input>
     </>
   )
 }

@@ -7,9 +7,6 @@ class PhotoViewerProps{
   currentPhotoView!: () => any;
   setCurrentPhotoView!: ( view: any ) => any;
   setPhotoNavChoice!: ( view: any ) => any;
-  setConfirmationBox!: ( text: string, cb: () => void ) => void;
-  storageInfo!: () => { storage: number, used: number, sync: boolean };
-  loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
 }
 
 class WorldCache{
@@ -539,10 +536,10 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         <div class="viewer-button"
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
-          onClick={() => props.setConfirmationBox("Are you sure you want to delete this photo?", async () => { invoke("delete_photo", {
+          onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("Are you sure you want to delete this photo?", async () => { invoke("delete_photo", {
             path: props.currentPhotoView().path,
             token: (await invoke('get_config_value_string', { key: 'token' })) || "none",
-            isSyncing: props.loggedIn().loggedIn ? props.storageInfo().sync : false
+            isSyncing: window.AccountManager.hasAccount() ? window.AccountManager.Storage()?.isSyncing : false
           });
         })}>
           <div class="icon" style={{ width: '12px', margin: '0' }}>

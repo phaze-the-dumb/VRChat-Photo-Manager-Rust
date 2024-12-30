@@ -9,11 +9,14 @@ use std::{
   thread,
 };
 use tauri::{
-  http::{Request, Response},
-  UriSchemeResponder,
+  http::{Request, Response}, State, UriSchemeResponder
 };
 
-pub fn handle_uri_proto(request: Request<Vec<u8>>, responder: UriSchemeResponder) {
+use super::cache::Cache;
+
+pub fn handle_uri_proto( request: Request<Vec<u8>>, responder: UriSchemeResponder, cache: State<Cache> ) {
+  let photo_path = cache.get("photo-path".into());
+
   thread::spawn(move || {
     // Loads the requested image file, sends data back to the user
     let uri = request.uri();
@@ -42,6 +45,7 @@ pub fn handle_uri_proto(request: Request<Vec<u8>>, responder: UriSchemeResponder
     #[cfg(unix)]
     let path = uri.path();
 
+    let path = format!("{}/{}", photo_path.unwrap(), path);
     let file = fs::File::open(path);
 
     match file {

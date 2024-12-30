@@ -1,15 +1,12 @@
 import { invoke } from '@tauri-apps/api/core';
 import { emit, listen } from '@tauri-apps/api/event';
-import { fetch } from "@tauri-apps/plugin-http";
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import anime from 'animejs';
 import { Show, createSignal, onMount } from 'solid-js';
-const appWindow = getCurrentWebviewWindow()
+
+const appWindow = getCurrentWebviewWindow();
 
 class NavBarProps{
-  setLoadingType!: ( type: string ) => string;
-  loggedIn!: () => { loggedIn: boolean, username: string, avatar: string, id: string, serverVersion: string };
-  setStorageInfo!: ( info: { storage: number, used: number, sync: boolean } ) => { storage: number, used: number, sync: boolean };
   setIsPhotosSyncing!: ( syncing: boolean ) => boolean;
 }
 
@@ -98,7 +95,7 @@ let NavBar = ( props: NavBarProps ) => {
   return (
     <>
       <div class="navbar" data-tauri-drag-region>
-        <div class="tabs" data-tauri-drag-region >
+        <div class="tabs" data-tauri-drag-region>
           <div class="nav-tab" onClick={() => {
             anime(
               {
@@ -126,8 +123,9 @@ let NavBar = ( props: NavBarProps ) => {
           </Show>
         </div>
         <div class="account" onClick={() => setDropdownVisibility(!dropdownVisible)}>
-          <Show when={props.loggedIn().loggedIn}>
-            <div class="user-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${props.loggedIn().id}/${props.loggedIn().avatar}.png')` }}></div>
+          <Show when={window.AccountManager.hasAccount()}>
+            <div class="user-pfp" style={{ background: 
+              `url('https://cdn.phazed.xyz/id/avatars/${window.AccountManager.Profile()?.id}/${window.AccountManager.Profile()?.avatar}.png')` }}></div>
           </Show>
           <div class="icon">
             <img draggable="false" width="24" height="24" src="/icon/caret-down-solid.svg"></img>
@@ -157,34 +155,14 @@ let NavBar = ( props: NavBarProps ) => {
             duration: 250
           })
 
-          fetch('https://photos.phazed.xyz/api/v1/account?token='+ (await invoke('get_config_value_string', { key: 'token' }))!)
-            .then(data => data.json())
-            .then(data => {
-              if(!data.ok){
-                console.error(data);
-                return;
-              }
-
-              console.log(data);
-              props.setStorageInfo({ storage: data.user.storage, used: data.user.used, sync: data.user.settings.enableSync });
-            })
-            .catch(e => {
-              console.error(e);
-            })
-
           setDropdownVisibility(false);
         }}>Settings</div>
 
-        <Show when={props.loggedIn().loggedIn == false} fallback={
+        <Show when={!window.AccountManager.hasAccount()} fallback={
           <div class="dropdown-button" onClick={async () => {
-            fetch('https://photos.phazed.xyz/api/v1/deauth?token='+(await invoke('get_config_value_string', { key: 'token' }))!)
-              .then(data => data.json())
+            window.AccountManager.logout()
               .then(data => {
                 console.log(data);
-
-                invoke('set_config_value_string', { key: 'token', value: '' });
-                window.location.reload();
-
                 setDropdownVisibility(false);
               })
               .catch(e => {
@@ -198,14 +176,8 @@ let NavBar = ( props: NavBarProps ) => {
           }}>Sign Out</div>
         }>
           <div class="dropdown-button" onClick={() => {
-            props.setLoadingType('auth');
-
-            setTimeout(() => {
-              props.setLoadingType('none');
-            }, 5000);
-
-            invoke('start_user_auth');
-            setDropdownVisibility(false); 
+            window.AccountManager.login();
+            setDropdownVisibility(false);
           }}>Sign In</div>
         </Show>
       </div>

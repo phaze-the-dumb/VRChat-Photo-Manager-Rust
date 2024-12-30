@@ -3,7 +3,13 @@ import { render } from "solid-js/web";
 
 declare global{
   interface Window {
-    CloseAllPopups: (() => void)[]
+    AccountManager: AccountManager;
+    LoadingManager: LoadingManager;
+    PhotoLoadingManager: PhotoLoadingManager;
+    ConfirmationBoxManager: ConfirmationBoxManager;
+    PhotoViewerManager: PhotoViewerManager; 
+
+    CloseAllPopups: (() => void)[];
     OS: string;
   }
 }
@@ -15,6 +21,18 @@ window.oncontextmenu = ( e ) => e.preventDefault();
 import "./styles.css";
 import App from "./Components/App";
 import { invoke } from "@tauri-apps/api/core";
+
+import { AccountManager } from "./Components/Managers/AccountManager";
+import { LoadingManager } from "./Components/Managers/LoadingManager";
+import { PhotoLoadingManager } from "./Components/Managers/PhotoLoadingManager";
+import { ConfirmationBoxManager } from "./Components/Managers/ConfirmationBoxManager";
+import { PhotoViewerManager } from "./Components/Managers/PhotoViewerManager";
+
+window.AccountManager = new AccountManager();
+window.LoadingManager = new LoadingManager();
+window.PhotoLoadingManager = new PhotoLoadingManager();
+window.ConfirmationBoxManager = new ConfirmationBoxManager();
+window.PhotoViewerManager = new PhotoViewerManager();
 
 (async () => {
   window.OS = await invoke('get_os');
