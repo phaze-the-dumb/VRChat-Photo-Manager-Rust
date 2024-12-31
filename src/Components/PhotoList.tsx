@@ -9,8 +9,6 @@ import { Photo } from "./Structs/Photo";
 let months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
 class PhotoListProps{
-  setCurrentPhotoView!: ( view: any ) => any;
-  currentPhotoView!: () => any;
   photoNavChoice!: () => string;
   setPhotoNavChoice!: ( view: any ) => any;
   isPhotosSyncing!: () => boolean;
@@ -79,13 +77,13 @@ let PhotoList = ( props: PhotoListProps ) => {
     switch(action){
       case 'prev':
         if(!window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex - 1])break;
-        props.setCurrentPhotoView(window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex - 1]);
+        window.PhotoViewerManager.OpenPhoto(window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex - 1]);
 
         currentPhotoIndex--;
         break;
       case 'next':
         if(!window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex + 1])break;
-        props.setCurrentPhotoView(window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex + 1]);
+        window.PhotoViewerManager.OpenPhoto(window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex + 1]);
 
         currentPhotoIndex++;
         break;
@@ -335,7 +333,7 @@ let PhotoList = ( props: PhotoListProps ) => {
       );
 
       if(photo){
-        props.setCurrentPhotoView(photo);
+        window.PhotoViewerManager.OpenPhoto(photo);
         currentPhotoIndex = window.PhotoLoadingManager.FilteredPhotos.indexOf(photo);
       } else
         currentPhotoIndex = -1;

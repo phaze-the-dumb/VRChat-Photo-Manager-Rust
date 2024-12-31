@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { onCleanup, onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
 import { invoke } from '@tauri-apps/api/core';
 import anime from "animejs";
@@ -12,8 +12,6 @@ let SettingsMenu = () => {
   let finalPathInput: HTMLElement;
   let finalPathData: string;
   let finalPathPreviousData: string;
-
-  let [ deletingPhotos, setDeletingPhotos ] = createSignal(false);
 
   let closeWithKey = ( e: KeyboardEvent ) => {
     if(e.key === 'Escape'){
@@ -352,7 +350,7 @@ let SettingsMenu = () => {
             <div class="account-notice">To enable cloud storage or get more storage please contact "_phaz" on discord</div>
 
             <div class="account-notice" style={{ display: 'flex' }}>
-              <Show when={!deletingPhotos()} fallback={ "We are deleting your photos, please leave this window open while we delete them." }>
+              <Show when={false} fallback={ "We are deleting your photos, please leave this window open while we delete them." }>
                 <div class="button-danger" onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", async () => {
                   // TODO: Rework all of this
 

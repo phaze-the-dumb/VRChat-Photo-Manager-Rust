@@ -1,39 +1,11 @@
 import { For, Show, createEffect, onCleanup, onMount } from "solid-js";
 import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
 import anime from 'animejs';
+import { WorldCache } from "./Structs/WorldCache";
 
 class PhotoViewerProps{
-  currentPhotoView!: () => any;
-  setCurrentPhotoView!: ( view: any ) => any;
   setPhotoNavChoice!: ( view: any ) => any;
 }
-
-class WorldCache{
-  expiresOn!: number;
-  worldData!: {
-    id: string,
-    name: string,
-    author: string,
-    authorId: string,
-    desc: string,
-    img: string,
-    maxUsers: number,
-    visits: number,
-    favourites: number,
-    tags: any,
-    from: string,
-    fromSite: string,
-    found: boolean
-  }
-}
-
-let worldCache: WorldCache[] = [];
-
-invoke('get_config_value_string', { key: 'worldcache' })
-  .then((data: any) => {
-    if(data)worldCache = JSON.parse(data);
-  })
 
 let PhotoViewer = ( props: PhotoViewerProps ) => {
   let viewer: HTMLElement;
@@ -48,7 +20,6 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   let photoTrayCloseBtn: HTMLElement;
 
   let worldInfoContainer: HTMLElement;
-  let photoPath: string;
 
   let viewerContextMenu: HTMLElement;
   let viewerContextMenuButtons: HTMLElement[] = [];
@@ -59,7 +30,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   let switchPhotoWithKey = ( e: KeyboardEvent ) => {
     switch(e.key){
       case 'Escape':
-        props.setCurrentPhotoView(null);
+        window.PhotoViewerManager.Close();
 
         break;
       case 'ArrowUp':
@@ -112,6 +83,41 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       scale: 1,
       duration: 500
     })
+  }
+
+  let copyImage = () => {
+    let canvas = document.createElement('canvas');
+    let ctx = canvas.getContext('2d')!;
+
+    canvas.width = window.PhotoViewerManager.CurrentPhoto()?.width || 0;
+    canvas.height = window.PhotoViewerManager.CurrentPhoto()?.height || 0;
+
+    ctx.drawImage(imageViewer, 0, 0);
+
+    canvas.toBlob(( blob ) => {
+      navigator.clipboard.write([
+        new ClipboardItem({
+          'image/png': blob!
+        })
+      ]);
+
+      canvas.remove();
+
+      anime.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
+      anime({
+        targets: '.copy-notif',
+        opacity: 1,
+        translateY: '0px'
+      });
+
+      setTimeout(() => {
+        anime({
+          targets: '.copy-notif',
+          opacity: 0,
+          translateY: '-100px'
+        });
+      }, 2000);
+    });
   }
 
   let closeTray = () => {
@@ -171,46 +177,14 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
       window.CloseAllPopups.forEach(p => p());
       // Context Menu -> Open file location
 
-      let path = await invoke('get_user_photos_path') + '\\' + props.currentPhotoView().path;
+      let path = await invoke('get_user_photos_path') + '\\' + window.PhotoViewerManager.CurrentPhoto()?.path;
       invoke('open_folder', { url: path });
     }
 
     viewerContextMenuButtons[1].onclick = () => {
       window.CloseAllPopups.forEach(p => p());
       // Context Menu -> Copy image
-
-      let canvas = document.createElement('canvas');
-      let ctx = canvas.getContext('2d')!;
-
-      canvas.width = props.currentPhotoView().width;
-      canvas.height = props.currentPhotoView().height;
-
-      ctx.drawImage(imageViewer, 0, 0);
-
-      canvas.toBlob(( blob ) => {
-        navigator.clipboard.write([
-          new ClipboardItem({
-            'image/png': blob!
-          })
-        ]);
-  
-        canvas.remove();
-
-        anime.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
-        anime({
-          targets: '.copy-notif',
-          opacity: 1,
-          translateY: '0px'
-        });
-
-        setTimeout(() => {
-          anime({
-            targets: '.copy-notif',
-            opacity: 0,
-            translateY: '-100px'
-          });
-        }, 2000);
-      });
+      copyImage();
     }
 
     imageViewer.oncontextmenu = ( e ) => {
@@ -249,19 +223,14 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
     }
 
     createEffect(() => {
-      let photo = props.currentPhotoView();
+      let photo = window.PhotoViewerManager.CurrentPhoto();
       allowedToOpenTray = false;
 
       imageViewer.style.opacity = '0';
 
       if(photo){
-        (async () => {
-          if(!photoPath)
-            photoPath = await invoke('get_user_photos_path') + '/';
-
-          imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost') + (photoPath + props.currentPhotoView().path).split('\\').join('/') + "?full";
-          imageViewer.crossOrigin = 'anonymous';
-        })();
+        imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost') + window.PhotoViewerManager.CurrentPhoto()?.path.split('\\').join('/') + "?full";
+        imageViewer.crossOrigin = 'anonymous';
 
         anime({
           targets: imageViewer,
@@ -276,7 +245,6 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
             photo.onMetaLoaded = () => {}
 
             let meta = JSON.parse(photo.metadata);
-            let worldData = worldCache.find(x => x.worldData.id === meta.world.id);
 
             allowedToOpenTray = true;
             trayButton.style.display = 'flex';
@@ -306,27 +274,18 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
               </div> as Node
             );
 
-            if(!worldData){
-              console.log('Fetching new world data');
-  
-              invoke('find_world_by_id', { worldId: meta.world.id });
-            } else if(worldData.expiresOn < Date.now()){
-              console.log('Fetching new world data since cache has expired');
-  
-              worldCache = worldCache.filter(x => x.worldData.id !== meta.world.id)
-              invoke('find_world_by_id', { worldId: meta.world.id });
-            } else
-              loadWorldData(worldData);
+            window.WorldCacheManager.getWorldById(meta.world.id)
+              .then(worldData => {
+                if(worldData)
+                  loadWorldData(worldData);
+              });
           } else{
             trayButton.style.display = 'none';
             closeTray();
           }
         }
 
-        photo.onMetaLoaded = () => handleMetaDataLoaded();
         handleMetaDataLoaded();
-
-        photo.loadImage();
       }
 
       if(photo && !isOpen){
@@ -382,7 +341,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
   })
 
   let loadWorldData = ( data: WorldCache ) => {
-    let meta = props.currentPhotoView().metadata;
+    let meta = window.PhotoViewerManager.CurrentPhoto()?.metadata;
     if(!meta)return;
 
     worldInfoContainer.innerHTML = '';
@@ -411,32 +370,6 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
     )
   }
 
-  listen('world_data', ( event: any ) => {
-    let worldData = {
-      expiresOn: Date.now() + 1.2096E+09,
-      worldData: {
-        id: event.payload.id,
-        name: event.payload.name.split('\\').join('').slice(1, -1),
-        author: event.payload.author.split('\\').join('').slice(1, -1),
-        authorId: event.payload.authorId.split('\\').join('').slice(1, -1),
-        desc: event.payload.desc.split('\\').join('').slice(1, -1),
-        img: event.payload.img.split('\\').join('').slice(1, -1),
-        maxUsers: event.payload.maxUsers,
-        visits: event.payload.visits,
-        favourites: event.payload.favourites,
-        tags: event.payload.tags,
-        from: event.payload.from,
-        fromSite: event.payload.fromSite,
-        found: event.payload.found
-      }
-    }
-
-    worldCache.push(worldData);
-    invoke('set_config_value_string', { key: 'worldcache', value: JSON.stringify(worldCache) });
-
-    loadWorldData(worldData);
-  })
-
   return (
     <div class="photo-viewer" ref={( el ) => viewer = el}>
       <div class="photo-context-menu" ref={( el ) => viewerContextMenu = el}>
@@ -444,7 +377,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         <div ref={( el ) => viewerContextMenuButtons.push(el)}>Copy image</div>
       </div>
 
-      <div class="viewer-close viewer-button" onClick={() => props.setCurrentPhotoView(null)}>
+      <div class="viewer-close viewer-button" onClick={() => window.PhotoViewerManager.Close()}>
         <div class="icon" style={{ width: '10px', margin: '0' }}>
           <img draggable="false" src="/icon/x-solid.svg"></img>
         </div>
@@ -484,41 +417,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         <div class="viewer-button"
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
-          onClick={() => {
-            let canvas = document.createElement('canvas');
-            let ctx = canvas.getContext('2d')!;
-
-            canvas.width = props.currentPhotoView().width;
-            canvas.height = props.currentPhotoView().height;
-
-            ctx.drawImage(imageViewer, 0, 0);
-
-            canvas.toBlob(( blob ) => {
-              navigator.clipboard.write([
-                new ClipboardItem({
-                  'image/png': blob!
-                })
-              ]);
-        
-              canvas.remove();
-
-              anime.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
-              anime({
-                targets: '.copy-notif',
-                opacity: 1,
-                translateY: '0px'
-              });
-
-              setTimeout(() => {
-                anime({
-                  targets: '.copy-notif',
-                  opacity: 0,
-                  translateY: '-100px'
-                });
-              }, 2000);
-            });
-          }}
-        >
+          onClick={() => { copyImage(); }}>
           <div class="icon" style={{ width: '12px', margin: '0' }}>
             <img draggable="false" src="/icon/copy-solid.svg"></img>
           </div>
@@ -537,7 +436,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
           onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("Are you sure you want to delete this photo?", async () => { invoke("delete_photo", {
-            path: props.currentPhotoView().path,
+            path: window.PhotoViewerManager.CurrentPhoto()?.path,
             token: (await invoke('get_config_value_string', { key: 'token' })) || "none",
             isSyncing: window.AccountManager.hasAccount() ? window.AccountManager.Storage()?.isSyncing : false
           });

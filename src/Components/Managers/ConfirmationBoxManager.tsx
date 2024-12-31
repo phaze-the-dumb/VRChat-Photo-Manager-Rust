@@ -9,22 +9,6 @@ export class ConfirmationBoxManager{
     this._setConfirmationBoxText = setConfirmationBoxText;
   
     let confirmationBox: HTMLElement;
-  
-    createEffect(() => {
-      if(confirmationBoxText() !== ''){
-        confirmationBox.style.display = 'block';
-  
-        setTimeout(() => {
-          confirmationBox.style.opacity = '1';
-        }, 1);
-      } else{
-        confirmationBox.style.opacity = '0';
-  
-        setTimeout(() => {
-          confirmationBox.style.display = 'none';
-        }, 250);
-      }
-    })
 
     document.body.appendChild(<div class="confirmation-box" ref={( el ) => confirmationBox = el}>
       <div class="confirmation-box-container">
@@ -34,6 +18,22 @@ export class ConfirmationBoxManager{
         <div class="button" onClick={() => setConfirmationBoxText('') }>Deny</div>
       </div>
     </div> as HTMLElement);
+
+    createEffect(() => {
+      if(confirmationBoxText() !== ''){
+        confirmationBox.style.display = 'block';
+
+        setTimeout(() => {
+          confirmationBox.style.opacity = '1';
+        }, 1);
+      } else{
+        confirmationBox.style.opacity = '0';
+
+        setTimeout(() => {
+          confirmationBox.style.display = 'none';
+        }, 250);
+      }
+    })
   }
 
   public SetConfirmationBox( text: string, cb: () => void ){

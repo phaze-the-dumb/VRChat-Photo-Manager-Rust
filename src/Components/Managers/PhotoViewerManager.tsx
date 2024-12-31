@@ -2,12 +2,11 @@ import { Accessor, createSignal, Setter } from "solid-js";
 import { Photo } from "../Structs/Photo";
 
 export class PhotoViewerManager{
-  private _currentPhoto: Accessor<Photo | null>;
-
+  public CurrentPhoto: Accessor<Photo | null>;
   private _setCurrentPhoto: Setter<Photo | null>;
 
   constructor(){
-    [ this._currentPhoto, this._setCurrentPhoto ] = createSignal<Photo | null>(null);
+    [ this.CurrentPhoto, this._setCurrentPhoto ] = createSignal<Photo | null>(null);
   }
 
   public Close(){
