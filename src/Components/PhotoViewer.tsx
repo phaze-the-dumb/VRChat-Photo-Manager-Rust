@@ -225,7 +225,7 @@ let PhotoViewer = () => {
       imageViewer.style.opacity = '0';
 
       if(photo){
-        imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost') + window.PhotoViewerManager.CurrentPhoto()?.path.split('\\').join('/') + "?full";
+        imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost/') + window.PhotoViewerManager.CurrentPhoto()?.path.split('\\').join('/') + "?full";
         imageViewer.crossOrigin = 'anonymous';
 
         anime({
