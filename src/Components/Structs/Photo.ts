@@ -67,7 +67,7 @@ export class Photo{
     this.imageEl = document.createElement('img');
     this.imageEl.crossOrigin = 'anonymous';
 
-    this.imageEl.src = (window.OS === "windows" ? "http://photo.localhost/" : "photo://localhost") + this.path + "?downscale";
+    this.imageEl.src = (window.OS === "windows" ? "http://photo.localhost/" : "photo://localhost/") + this.path + "?downscale";
 
     this.imageEl.onload = () => {
       this.image!.width = this.scaledWidth!;

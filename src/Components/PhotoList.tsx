@@ -59,10 +59,7 @@ let PhotoList = () => {
     }
   }
 
-  let render = () => {
-    // TODO: Tidy this up, optimise it more 
-    // I am really procrastinating rewriting this...
-    
+  let render = () => {  
     if(!quitRender)
       requestAnimationFrame(render);
     else
