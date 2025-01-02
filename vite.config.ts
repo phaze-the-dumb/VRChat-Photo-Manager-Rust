@@ -1,9 +1,17 @@
-import { defineConfig } from "vite";
+import { defineConfig, Plugin } from "vite";
 import solid from "vite-plugin-solid";
+
+const fullReloadAlways: Plugin = {
+  name: 'full-reload',
+  handleHotUpdate({ server }) {
+    server.ws.send({ type: "full-reload" });
+    return [];
+  },
+};
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [solid()],
+  plugins: [solid(), fullReloadAlways],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

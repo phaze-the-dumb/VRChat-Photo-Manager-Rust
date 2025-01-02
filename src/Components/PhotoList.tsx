@@ -4,9 +4,6 @@ import { Window } from "@tauri-apps/api/window";
 
 import anime from "animejs";
 import FilterMenu from "./FilterMenu";
-import { Photo } from "./Structs/Photo";
-
-let months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
 enum ListPopup{
   FILTERS,
@@ -85,133 +82,9 @@ let PhotoList = () => {
     ctx.clearRect(0, 0, photoContainer.width, photoContainer.height);
     ctxBG.clearRect(0, 0, photoContainerBG.width, photoContainerBG.height);
 
-    let currentRow: Photo[] = [];
-    let currentRowWidth = 0;
-    let currentRowIndex = -1;
-
     scroll = scroll + (targetScroll - scroll) * 0.2;
 
-    let lastPhoto;
-    for (let i = 0; i < window.PhotoManager.FilteredPhotos.length; i++) {
-      let p = window.PhotoManager.FilteredPhotos[i];
-
-      if(currentRowIndex * 210 - scroll > photoContainer.height){
-        p.shown = false;
-        continue;
-      }
-
-      if(!lastPhoto || (lastPhoto.dateString !== p.dateString)){
-        currentRowWidth -= 10;
-
-        let rowXPos = 0;
-        currentRow.forEach(photo => {
-          if(60 + currentRowIndex * 210 - scroll < -200)return photo.shown = false;
-
-          if(!photo.loaded)
-            setTimeout(() => photo.loadImage(), 1);
-          else{
-            if(!photo.shown){
-              photo.frames = 0;
-              photo.shown = true;
-            }
-
-            ctx.globalAlpha = photo.frames / 100;
-            ctx.drawImage(photo.image!, (rowXPos - currentRowWidth / 2) + photoContainer.width / 2, 60 + currentRowIndex * 210 - scroll, photo.scaledWidth!, 200);
-
-            photo.x = (rowXPos - currentRowWidth / 2) + photoContainer.width / 2;
-            photo.y = 60 + currentRowIndex * 210 - scroll;
-
-            if(photo.frames < 100)
-              photo.frames += 10;
-          }
-
-          rowXPos += photo.scaledWidth! + 10;
-        })
-
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#fff';
-        ctx.font = '30px Rubik';
-
-        let dateParts = p.dateString.split('-');
-        ctx.fillText(dateParts[2] + ' ' + months[parseInt(dateParts[1]) - 1] + ' ' + dateParts[0], photoContainer.width / 2, 60 + (currentRowIndex + 1.2) * 210 - scroll);
-
-        currentRowWidth = 0;
-        currentRow = [];
-        currentRowIndex += 1.4;
-      }
-
-      if(currentRowWidth + p.scaledWidth! + 10 < photoContainer.width - 100){
-        currentRowWidth += p.scaledWidth! + 10;
-        currentRow.push(p);
-      } else{
-        currentRowWidth -= 10;
-
-        let rowXPos = 0;
-        currentRow.forEach(photo => {
-          if(60 + currentRowIndex * 210 - scroll < -200)return photo.shown = false;
-
-          if(!photo.loaded)
-            setTimeout(() => photo.loadImage(), 1);
-          else{
-            if(!photo.shown){
-              photo.frames = 0;
-              photo.shown = true;
-            }
-
-            ctx.globalAlpha = photo.frames / 100;
-            ctx.drawImage(photo.image!, (rowXPos - currentRowWidth / 2) + photoContainer.width / 2, 60 + currentRowIndex * 210 - scroll, photo.scaledWidth!, 200);
-
-            photo.x = (rowXPos - currentRowWidth / 2) + photoContainer.width / 2;
-            photo.y = 60 + currentRowIndex * 210 - scroll;
-
-            if(photo.frames < 100)
-              photo.frames += 10;
-          }
-
-          rowXPos += photo.scaledWidth! + 10;
-        })
-
-        currentRowWidth = 0;
-        currentRow = [];
-        currentRowIndex++;
-
-        currentRowWidth += p.scaledWidth! + 10;
-        currentRow.push(p);
-      }
-
-      lastPhoto = p;
-    }
-
-    if(currentRow.length > 0){
-      currentRowWidth -= 10;
-
-      let rowXPos = 0;
-      currentRow.forEach(photo => {
-        if(60 + currentRowIndex * 210 - scroll < -200)return photo.shown = false;
-
-        if(!photo.loaded)
-          setTimeout(() => photo.loadImage(), 1);
-        else{
-          if(!photo.shown){
-            photo.frames = 0;
-            photo.shown = true;
-          }
-
-          ctx.globalAlpha = photo.frames / 100;
-          ctx.drawImage(photo.image!, (rowXPos - currentRowWidth / 2) + photoContainer.width / 2, 60 + currentRowIndex * 210 - scroll, photo.scaledWidth!, 200);
-
-          photo.x = (rowXPos - currentRowWidth / 2) + photoContainer.width / 2;
-          photo.y = 60 + currentRowIndex * 210 - scroll;
-
-          if(photo.frames < 100)
-            photo.frames += 10;
-        }
-
-        rowXPos += photo.scaledWidth! + 10;
-      })
-    }
+    window.PhotoListRenderingManager.Render(ctx, photoContainer!, scroll);
 
     if(window.PhotoManager.FilteredPhotos.length == 0){
       ctx.textAlign = 'center';
@@ -259,6 +132,7 @@ let PhotoList = () => {
       easing: 'easeInOutQuad'
     })
 
+    window.PhotoListRenderingManager.ComputeLayout(photoContainer!);
     render();
   });
 
@@ -291,6 +165,8 @@ let PhotoList = () => {
 
       photoContainerBG.width = window.innerWidth;
       photoContainerBG.height = window.innerHeight;
+
+      window.PhotoListRenderingManager.ComputeLayout(photoContainer!);
     })
 
     photoContainer.addEventListener('click', ( e: MouseEvent ) => {

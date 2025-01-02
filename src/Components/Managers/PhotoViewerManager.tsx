@@ -13,16 +13,16 @@ export class PhotoViewerManager{
 
   public NextPhoto(){
     if(!window.PhotoManager.FilteredPhotos[this._currentPhotoIndex + 1])return;
-    window.PhotoViewerManager.OpenPhoto(window.PhotoManager.FilteredPhotos[this._currentPhotoIndex + 1]);
-
     this._currentPhotoIndex++;
+
+    window.PhotoViewerManager.OpenPhoto(window.PhotoManager.FilteredPhotos[this._currentPhotoIndex]);
   }
   
   public PreviousPhoto(){
     if(!window.PhotoManager.FilteredPhotos[this._currentPhotoIndex - 1])return;
-    window.PhotoViewerManager.OpenPhoto(window.PhotoManager.FilteredPhotos[this._currentPhotoIndex - 1]);
-
     this._currentPhotoIndex--;
+
+    window.PhotoViewerManager.OpenPhoto(window.PhotoManager.FilteredPhotos[this._currentPhotoIndex]);
   }
 
   public Close(){

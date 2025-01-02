@@ -9,6 +9,7 @@ declare global{
     ConfirmationBoxManager: ConfirmationBoxManager;
     PhotoViewerManager: PhotoViewerManager;
     WorldCacheManager: WorldCacheManager;
+    PhotoListRenderingManager: PhotoListRenderingManager;
 
     CloseAllPopups: (() => void)[];
     OS: string;
@@ -29,6 +30,7 @@ import { PhotoManager } from "./Components/Managers/PhotoManager";
 import { ConfirmationBoxManager } from "./Components/Managers/ConfirmationBoxManager";
 import { PhotoViewerManager } from "./Components/Managers/PhotoViewerManager";
 import { WorldCacheManager } from "./Components/Managers/WorldCacheManager";
+import { PhotoListRenderingManager } from "./Components/Managers/PhotoListRenderingManager";
 
 window.AccountManager = new AccountManager();
 window.LoadingManager = new LoadingManager();
@@ -36,6 +38,7 @@ window.PhotoManager = new PhotoManager();
 window.ConfirmationBoxManager = new ConfirmationBoxManager();
 window.PhotoViewerManager = new PhotoViewerManager();
 window.WorldCacheManager = new WorldCacheManager();
+window.PhotoListRenderingManager = new PhotoListRenderingManager();
 
 (async () => {
   window.OS = await invoke('get_os');

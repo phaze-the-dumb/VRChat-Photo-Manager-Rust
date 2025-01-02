@@ -62,3 +62,9 @@ v0.2.2:
 
   Hotfix 1:
     - Fixed world cache not being saved to the config file
+
+v0.2.3:
+  - Finally replaced the awful render function in the frontend
+
+  Dev Stuff:
+    - Split frontend up into many smaller files for easier editing
