@@ -181,7 +181,7 @@ let SettingsMenu = () => {
       <div class="settings-container" ref={( el ) => settingsContainer = el}>
         <div class="settings-block">
           <h1>Storage Settings</h1>
-          <p>{ window.PhotoLoadingManager.PhotoCount() } Photos ({ bytesToFormatted(window.PhotoLoadingManager.PhotoSize(), 0) })</p>
+          <p>{ window.PhotoManager.PhotoCount() } Photos ({ bytesToFormatted(window.PhotoManager.PhotoSize(), 0) })</p>
 
           <div class="selector">
             <input type="checkbox" id="start-in-bg-check" ref={async ( el ) => {

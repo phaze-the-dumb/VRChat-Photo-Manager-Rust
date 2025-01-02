@@ -1,4 +1,4 @@
-import { createEffect, onCleanup, onMount } from "solid-js";
+import { onCleanup, onMount } from "solid-js";
 import { listen } from '@tauri-apps/api/event';
 import { Window } from "@tauri-apps/api/window";
 
@@ -8,19 +8,12 @@ import { Photo } from "./Structs/Photo";
 
 let months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
-class PhotoListProps{
-  photoNavChoice!: () => string;
-  setPhotoNavChoice!: ( view: any ) => any;
-  isPhotosSyncing!: () => boolean;
-  setIsPhotosSyncing!: ( syncing: boolean ) => boolean;
-}
-
 enum ListPopup{
   FILTERS,
   NONE
 }
 
-let PhotoList = ( props: PhotoListProps ) => {
+let PhotoList = () => {
   let photoTreeLoadingContainer: HTMLElement;
 
   let scrollToTop: HTMLElement;
@@ -33,8 +26,6 @@ let PhotoList = ( props: PhotoListProps ) => {
 
   let ctx: CanvasRenderingContext2D;
   let ctxBG: CanvasRenderingContext2D;
-
-  let currentPhotoIndex: number = -1;
 
   let scroll: number = 0;
   let targetScroll: number = 0;
@@ -69,28 +60,7 @@ let PhotoList = ( props: PhotoListProps ) => {
 
         break;
     }
-  } 
-
-  createEffect(() => {
-    let action = props.photoNavChoice();
-
-    switch(action){
-      case 'prev':
-        if(!window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex - 1])break;
-        window.PhotoViewerManager.OpenPhoto(window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex - 1]);
-
-        currentPhotoIndex--;
-        break;
-      case 'next':
-        if(!window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex + 1])break;
-        window.PhotoViewerManager.OpenPhoto(window.PhotoLoadingManager.FilteredPhotos[currentPhotoIndex + 1]);
-
-        currentPhotoIndex++;
-        break;
-    }
-
-    props.setPhotoNavChoice('');
-  })
+  }
 
   let render = () => {
     // TODO: Tidy this up, optimise it more 
@@ -122,8 +92,8 @@ let PhotoList = ( props: PhotoListProps ) => {
     scroll = scroll + (targetScroll - scroll) * 0.2;
 
     let lastPhoto;
-    for (let i = 0; i < window.PhotoLoadingManager.FilteredPhotos.length; i++) {
-      let p = window.PhotoLoadingManager.FilteredPhotos[i];
+    for (let i = 0; i < window.PhotoManager.FilteredPhotos.length; i++) {
+      let p = window.PhotoManager.FilteredPhotos[i];
 
       if(currentRowIndex * 210 - scroll > photoContainer.height){
         p.shown = false;
@@ -243,7 +213,7 @@ let PhotoList = ( props: PhotoListProps ) => {
       })
     }
 
-    if(window.PhotoLoadingManager.FilteredPhotos.length == 0){
+    if(window.PhotoManager.FilteredPhotos.length == 0){
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.globalAlpha = 1;
@@ -266,11 +236,11 @@ let PhotoList = ( props: PhotoListProps ) => {
     console.log('Shown Window');
     quitRender = false;
 
-    if(window.PhotoLoadingManager.HasFirstLoaded)
+    if(window.PhotoManager.HasFirstLoaded)
       requestAnimationFrame(render);
   })
 
-  window.PhotoLoadingManager.OnLoadingFinished(() => {
+  window.PhotoManager.OnLoadingFinished(() => {
     anime({
       targets: photoTreeLoadingContainer,
       height: 0,
@@ -296,7 +266,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     ctx = photoContainer.getContext('2d')!;
     ctxBG = photoContainerBG.getContext('2d')!;
 
-    window.PhotoLoadingManager.Load();
+    window.PhotoManager.Load();
 
     anime.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
 
@@ -324,7 +294,7 @@ let PhotoList = ( props: PhotoListProps ) => {
     })
 
     photoContainer.addEventListener('click', ( e: MouseEvent ) => {
-      let photo = window.PhotoLoadingManager.FilteredPhotos.find(x =>
+      let photo = window.PhotoManager.FilteredPhotos.find(x =>
         e.clientX > x.x &&
         e.clientY > x.y &&
         e.clientX < x.x + x.scaledWidth! &&
@@ -332,11 +302,10 @@ let PhotoList = ( props: PhotoListProps ) => {
         x.shown
       );
 
-      if(photo){
+      if(photo)
         window.PhotoViewerManager.OpenPhoto(photo);
-        currentPhotoIndex = window.PhotoLoadingManager.FilteredPhotos.indexOf(photo);
-      } else
-        currentPhotoIndex = -1;
+      // else
+      //   currentPhotoIndex = -1;
     })
   })
 

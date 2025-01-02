@@ -5,7 +5,7 @@ declare global{
   interface Window {
     AccountManager: AccountManager;
     LoadingManager: LoadingManager;
-    PhotoLoadingManager: PhotoLoadingManager;
+    PhotoManager: PhotoManager;
     ConfirmationBoxManager: ConfirmationBoxManager;
     PhotoViewerManager: PhotoViewerManager;
     WorldCacheManager: WorldCacheManager;
@@ -25,14 +25,14 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { AccountManager } from "./Components/Managers/AccountManager";
 import { LoadingManager } from "./Components/Managers/LoadingManager";
-import { PhotoLoadingManager } from "./Components/Managers/PhotoLoadingManager";
+import { PhotoManager } from "./Components/Managers/PhotoManager";
 import { ConfirmationBoxManager } from "./Components/Managers/ConfirmationBoxManager";
 import { PhotoViewerManager } from "./Components/Managers/PhotoViewerManager";
 import { WorldCacheManager } from "./Components/Managers/WorldCacheManager";
 
 window.AccountManager = new AccountManager();
 window.LoadingManager = new LoadingManager();
-window.PhotoLoadingManager = new PhotoLoadingManager();
+window.PhotoManager = new PhotoManager();
 window.ConfirmationBoxManager = new ConfirmationBoxManager();
 window.PhotoViewerManager = new PhotoViewerManager();
 window.WorldCacheManager = new WorldCacheManager();

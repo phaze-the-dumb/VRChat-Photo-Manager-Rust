@@ -6,7 +6,7 @@ import { PhotoMetadata } from "../Structs/PhotoMetadata";
 import { Vars } from "../Structs/Vars";
 import { FilterType } from "../FilterMenu";
 
-export class PhotoLoadingManager{
+export class PhotoManager{
   public PhotoCount: Accessor<number>;
   public PhotoSize: Accessor<number>;
 

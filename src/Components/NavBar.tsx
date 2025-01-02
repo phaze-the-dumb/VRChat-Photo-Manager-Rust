@@ -6,11 +6,7 @@ import { Show, createSignal, onMount } from 'solid-js';
 
 const appWindow = getCurrentWebviewWindow();
 
-class NavBarProps{
-  setIsPhotosSyncing!: ( syncing: boolean ) => boolean;
-}
-
-let NavBar = ( props: NavBarProps ) => {
+let NavBar = () => {
   let dropdownVisible = false;
   let inAnimation = false;
   let dropdown: HTMLElement;
@@ -45,7 +41,6 @@ let NavBar = ( props: NavBarProps ) => {
   })
 
   listen('sync-finished', () => {
-    props.setIsPhotosSyncing(false);
     setIsSyncing(false);
   })
 

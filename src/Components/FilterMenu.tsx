@@ -13,15 +13,15 @@ let FilterMenu = () => {
       <div class="filter-type-select">
         <div class="selected-filter" ref={( el ) => selectionButtons.push(el)} onClick={() => {
           select(0);
-          window.PhotoLoadingManager.SetFilterType(FilterType.USER);
+          window.PhotoManager.SetFilterType(FilterType.USER);
         }}>User</div>
         <div ref={( el ) => selectionButtons.push(el)} onClick={() => {
           select(1);
-          window.PhotoLoadingManager.SetFilterType(FilterType.WORLD);
+          window.PhotoManager.SetFilterType(FilterType.WORLD);
         }}>World</div>
       </div>
 
-      <input class="filter-search" type="text" onInput={( el ) => window.PhotoLoadingManager.SetFilter(el.target.value)} placeholder="Enter Search Term..."></input>
+      <input class="filter-search" type="text" onInput={( el ) => window.PhotoManager.SetFilter(el.target.value)} placeholder="Enter Search Term..."></input>
     </>
   )
 }

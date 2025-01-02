@@ -1,4 +1,4 @@
-import { createSignal, onMount } from "solid-js";
+import { onMount } from "solid-js";
 import anime from "animejs";
 import { invoke } from '@tauri-apps/api/core';
 
@@ -12,11 +12,6 @@ import SettingsMenu from "./SettingsMenu";
 function App() {
   invoke('close_splashscreen')
 
-  let [ currentPhotoView, setCurrentPhotoView ] = createSignal<any>(null);
-  let [ photoNavChoice, setPhotoNavChoice ] = createSignal<string>('');
-
-  let [ isPhotosSyncing, setIsPhotosSyncing ] = createSignal(false);
-
   onMount(() => {
     anime.set('.settings',
     {
@@ -28,21 +23,10 @@ function App() {
 
   return (
     <div class="container">
-      <NavBar
-        setIsPhotosSyncing={setIsPhotosSyncing} />
+      <NavBar />
 
-      <PhotoList
-        isPhotosSyncing={isPhotosSyncing}
-        setIsPhotosSyncing={setIsPhotosSyncing}
-        setCurrentPhotoView={setCurrentPhotoView}
-        currentPhotoView={currentPhotoView}
-        photoNavChoice={photoNavChoice}
-        setPhotoNavChoice={setPhotoNavChoice} />
-
-      <PhotoViewer
-        setPhotoNavChoice={setPhotoNavChoice}
-        currentPhotoView={currentPhotoView}
-        setCurrentPhotoView={setCurrentPhotoView} />
+      <PhotoList />
+      <PhotoViewer />
 
       <SettingsMenu />
 

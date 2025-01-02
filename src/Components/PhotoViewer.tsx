@@ -3,11 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import anime from 'animejs';
 import { WorldCache } from "./Structs/WorldCache";
 
-class PhotoViewerProps{
-  setPhotoNavChoice!: ( view: any ) => any;
-}
-
-let PhotoViewer = ( props: PhotoViewerProps ) => {
+let PhotoViewer = () => {
   let viewer: HTMLElement;
   let imageViewer: HTMLImageElement;
   let isOpen = false;
@@ -43,12 +39,12 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
         break;
       case 'ArrowLeft':
         window.CloseAllPopups.forEach(p => p());
-        props.setPhotoNavChoice('prev');
+        window.PhotoViewerManager.PreviousPhoto();
 
         break;
       case 'ArrowRight':
         window.CloseAllPopups.forEach(p => p());
-        props.setPhotoNavChoice('next');
+        window.PhotoViewerManager.NextPhoto();
 
         break;
     }
@@ -386,7 +382,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
       <div class="prev-button" onClick={() => {
         window.CloseAllPopups.forEach(p => p());
-        props.setPhotoNavChoice('prev');
+        window.PhotoViewerManager.PreviousPhoto();
       }}>
         <div class="icon" style={{ width: '15px', margin: '0' }}>
           <img draggable="false" src="/icon/arrow-left-solid.svg"></img>
@@ -395,7 +391,7 @@ let PhotoViewer = ( props: PhotoViewerProps ) => {
 
       <div class="next-button" onClick={() => {
         window.CloseAllPopups.forEach(p => p());
-        props.setPhotoNavChoice('next');
+        window.PhotoViewerManager.NextPhoto();
       }}>
         <div class="icon" style={{ width: '15px', margin: '0' }}>
           <img draggable="false" src="/icon/arrow-right-solid.svg"></img>
