@@ -101,22 +101,17 @@ export class PhotoManager{
       this.Photos.splice(0, 0, photo);
       photo.loadMeta();
   
-      // TODO: SyncManager
-      // if(!props.isPhotosSyncing() && window.AccountManager.Storage()?.isSyncing){
-      //   props.setIsPhotosSyncing(true);
-      //   invoke('sync_photos', { token: (await invoke('get_config_value_string', { key: 'token' })) });
-      // }
+      if(!window.SyncManager.IsSyncing() && window.AccountManager.Storage()?.isSyncing){
+        window.SyncManager.TriggerSync();
+      }
     })
   
     listen('photo_remove', ( event: any ) => {
       this.Photos = this.Photos.filter(x => x.path !== event.payload);
       this.FilteredPhotos = this.FilteredPhotos.filter(x => x.path !== event.payload);
   
-      // TODO: PhotoViewerManager
-      // if(event.payload === props.currentPhotoView().path){
-      //   currentPhotoIndex = -1;
-      //   props.setCurrentPhotoView(null);
-      // }
+      if(event.payload === window.PhotoViewerManager.CurrentPhoto()?.path)
+        window.PhotoViewerManager.Close()
     })
   }
 

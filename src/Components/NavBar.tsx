@@ -1,8 +1,8 @@
 import { invoke } from '@tauri-apps/api/core';
-import { emit, listen } from '@tauri-apps/api/event';
+import { emit } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import anime from 'animejs';
-import { Show, createSignal, onMount } from 'solid-js';
+import { Show, onMount } from 'solid-js';
 
 const appWindow = getCurrentWebviewWindow();
 
@@ -11,37 +11,9 @@ let NavBar = () => {
   let inAnimation = false;
   let dropdown: HTMLElement;
 
-  let [ isSyncing, setIsSyncing ] = createSignal(false);
-  let [ syncPhotoTotal, setSyncPhotoTotal ] = createSignal(0);
-  let [ syncPhotoUploading, setSyncPhotoUploading ] = createSignal(0);
-  let [ syncError, setSyncError ] = createSignal("");
-  let [ syncType, setSyncType ] = createSignal("Upload");
-
   onMount(() => {
     anime.set(dropdown, { opacity: 0,  translateX: -10 });
     dropdown.style.display = 'none';
-  })
-
-  listen('photos-upload-meta', ( e: any ) => {
-    setIsSyncing(true);
-    setSyncPhotoTotal(e.payload.photos_total);
-    setSyncPhotoUploading(e.payload.photos_total - e.payload.photos_uploading);
-    setSyncType('Upload');
-
-    console.log(e.payload)
-  })
-
-  listen('photos-download-meta', ( e: any ) => {
-    setIsSyncing(true);
-    setSyncPhotoTotal(e.payload.photos_total);
-    setSyncPhotoUploading(e.payload.photos_total - e.payload.photos_uploading);
-    setSyncType('Download');
-
-    console.log(e.payload)
-  })
-
-  listen('sync-finished', () => {
-    setIsSyncing(false);
   })
 
   let setDropdownVisibility = ( visible: boolean ) => {
@@ -80,11 +52,6 @@ let NavBar = () => {
     }
   }
 
-
-  listen('sync-failed', ( e: any ) => {
-    setSyncError(e.payload);
-  })
-
   window.CloseAllPopups.push(() => setDropdownVisibility(false));
 
   return (
@@ -106,12 +73,12 @@ let NavBar = () => {
           }}>Photos</div>
         </div>
         <div class="nav-tab" style={{ width: '200px', "text-align": 'center', background: 'transparent' }} data-tauri-drag-region>
-          <Show when={isSyncing()}>
-            <Show when={ syncError() == "" } fallback={ "Error: " + syncError() }>
+          <Show when={window.SyncManager.IsSyncing()}>
+            <Show when={ window.SyncManager.SyncError() == "" } fallback={ "Error: " + window.SyncManager.SyncError() }>
               <div style={{ width: '100%', "text-align": 'center', 'font-size': '14px' }}>
-                { syncType() }ing: { syncPhotoUploading() } / { syncPhotoTotal() }<br />
+                { window.SyncManager.SyncType() }ing: { window.SyncManager.SyncPhotoTransfers () } / { window.SyncManager.SyncPhotoTotal() }<br />
                 <div style={{ width: '80%', height: '2px', margin: 'auto', "margin-top": '5px', background: '#111' }}>
-                  <div style={{ height: '2px', width: (syncPhotoUploading() / syncPhotoTotal()) * 100 + '%', background: '#00ccff' }}></div>
+                  <div style={{ height: '2px', width: (window.SyncManager.SyncPhotoTransfers() / window.SyncManager.SyncPhotoTotal()) * 100 + '%', background: '#00ccff' }}></div>
                 </div>
               </div>
             </Show>

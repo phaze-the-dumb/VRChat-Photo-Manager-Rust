@@ -7,8 +7,6 @@ import PhotoList from "./PhotoList";
 import PhotoViewer from "./PhotoViewer";
 import SettingsMenu from "./SettingsMenu";
 
-// TODO: Clean up frontend files, split up into smaller files PLEASE
-
 function App() {
   invoke('close_splashscreen')
 
