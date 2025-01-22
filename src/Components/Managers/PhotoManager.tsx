@@ -85,8 +85,9 @@ export class PhotoManager{
       photo.metaLoaded = true;
       photo.onMetaLoaded();
   
-      this.ReloadFilters();
+      // this.ReloadFilters();
   
+      console.log(this._amountLoaded, this.Photos.length);
       if(this._amountLoaded === this.Photos.length && !this.HasFirstLoaded){
         this.FilteredPhotos = this.Photos;
         this.HasFirstLoaded = true;
