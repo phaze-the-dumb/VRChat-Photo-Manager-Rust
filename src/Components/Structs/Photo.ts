@@ -55,7 +55,7 @@ export class Photo{
   loadImage(){
     if(this.loading || this.loaded || imagesLoading >= Vars.MAX_IMAGE_LOAD)return;
 
-    this.loadMeta();
+    // this.loadMeta();
     if(!this.metaLoaded)return;
 
     this.loading = true;

@@ -129,7 +129,9 @@ let PhotoList = () => {
       easing: 'easeInOutQuad'
     })
 
-    window.PhotoListRenderingManager.ComputeLayout(photoContainer!);
+    window.PhotoListRenderingManager.SetCanvas(photoContainer!);
+    window.PhotoListRenderingManager.ComputeLayout();
+
     render();
   });
 
@@ -163,7 +165,7 @@ let PhotoList = () => {
       photoContainerBG.width = window.innerWidth;
       photoContainerBG.height = window.innerHeight;
 
-      window.PhotoListRenderingManager.ComputeLayout(photoContainer!);
+      window.PhotoListRenderingManager.ComputeLayout();
     })
 
     photoContainer.addEventListener('click', ( e: MouseEvent ) => {

@@ -7,10 +7,17 @@ const MONTHS = [ "January", "February", "March", "April", "May", "June", "July",
 
 export class PhotoListRenderingManager{
   private _layout: PhotoListRow[] = [];
+  private _canvas!: HTMLCanvasElement;
 
   constructor(){}
 
-  public ComputeLayout( canvas: HTMLCanvasElement ){
+  public SetCanvas( canvas: HTMLCanvasElement ){
+    this._canvas = canvas;
+  }
+
+  public ComputeLayout(){
+    this._layout = [];
+
     let lastDateString = null;
     let row = new PhotoListRow();
     row.Height = 100;
@@ -36,14 +43,14 @@ export class PhotoListRenderingManager{
 
       // Check if the current row width plus another photo is too big to fit, push this row to the
       // layout and add the photo to the next row instead
-      if(row.Width + photo.scaledWidth! + 10 > canvas.width - 100){
+      if(row.Width + photo.scaledWidth! + 10 > this._canvas.width - 100){
         this._layout.push(row);
         row = new PhotoListRow();
       }
 
       // We should now add this photo to the current row
       row.Elements.push(new PhotoListPhoto(photo));
-      row.Width += photo.scaledWidth!;
+      row.Width += photo.scaledWidth! + 10;
     }
 
     this._layout.push(row);
@@ -81,9 +88,13 @@ export class PhotoListRenderingManager{
         currentY += row.Height + 10;
         continue;
       }
+      
+      // === DEBUG ===
+      // ctx.strokeStyle = '#f00';
+      // ctx.strokeRect((canvas.width / 2) - row.Width / 2, currentY - 5 - scroll, row.Width, row.Height + 10);
 
       // Loop through all elements in the row
-      let rowXPos = 0;
+      let rowXPos = 10;
       for (let j = 0; j < row.Elements.length; j++) {
         let el = row.Elements[j];
 
@@ -93,8 +104,8 @@ export class PhotoListRenderingManager{
             // and then render that text
 
             // === DEBUG ===
-            ctx.strokeStyle = '#f00';
-            ctx.strokeRect(0, currentY - scroll, canvas.width, row.Height);
+            // ctx.strokeStyle = '#f00';
+            // ctx.strokeRect(0, currentY - scroll, canvas.width, row.Height);
 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -108,8 +119,8 @@ export class PhotoListRenderingManager{
             let photo = (el as PhotoListPhoto).Photo;
 
             // === DEBUG ===
-            ctx.strokeStyle = '#f00';
-            ctx.strokeRect((rowXPos  - row.Width / 2) + canvas.width / 2, currentY - scroll, photo.scaledWidth!, row.Height);
+            // ctx.strokeStyle = '#f00';
+            // ctx.strokeRect((rowXPos - row.Width / 2) + canvas.width / 2, currentY - scroll, photo.scaledWidth!, row.Height);
 
             if(!photo.loaded)
               // If the photo is not loaded, start a new task and load it in that task

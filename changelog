@@ -64,7 +64,10 @@ v0.2.2:
     - Fixed world cache not being saved to the config file
 
 v0.2.3:
-  - Finally replaced the awful render function in the frontend
+  - Finally replaced the awful render function in the frontend, ( should use less resources when app is open )
+  - Fixed photos not being lined up
+  - Fixed filters not updating photo list
+  - Fixed adding / removing photos not updating the photo list
 
   Dev Stuff:
     - Split frontend up into many smaller files for easier editing

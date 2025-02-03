@@ -69,7 +69,7 @@ export class PhotoManager{
       let data: PhotoMetadata = event.payload;
   
       let photo = this.Photos.find(x => x.path === data.path);
-      if(!photo)return;
+      if(!photo)return console.error('Cannot find photo.', data);
   
       photo.width = data.width;
       photo.height = data.height;
@@ -84,11 +84,8 @@ export class PhotoManager{
   
       photo.metaLoaded = true;
       photo.onMetaLoaded();
-  
-      // this.ReloadFilters();
-  
-      console.log(this._amountLoaded, this.Photos.length);
-      if(this._amountLoaded === this.Photos.length && !this.HasFirstLoaded){
+
+      if(this._amountLoaded === this.Photos.length - 1 && !this.HasFirstLoaded){
         this.FilteredPhotos = this.Photos;
         this.HasFirstLoaded = true;
   
@@ -100,6 +97,8 @@ export class PhotoManager{
       let photo = new Photo(event.payload);
   
       this.Photos.splice(0, 0, photo);
+
+      photo.onMetaLoaded = () => this.ReloadFilters();
       photo.loadMeta();
   
       if(!window.SyncManager.IsSyncing() && window.AccountManager.Storage()?.isSyncing){
@@ -113,6 +112,8 @@ export class PhotoManager{
   
       if(event.payload === window.PhotoViewerManager.CurrentPhoto()?.path)
         window.PhotoViewerManager.Close()
+
+      this.ReloadFilters();
     })
   }
 
@@ -133,24 +134,30 @@ export class PhotoManager{
       case FilterType.USER:
         this.Photos.map(p => {
           if(p.metadata){
-            let meta = JSON.parse(p.metadata);
-            let photo = meta.players.find(( y: any ) => y.displayName.toLowerCase().includes(this._filter) || y.id === this._filter);
-    
-            if(photo)this.FilteredPhotos.push(p);
+            try{
+              let meta = JSON.parse(p.metadata);
+              let photo = meta.players.find(( y: any ) => y.displayName.toLowerCase().includes(this._filter) || y.id === this._filter);
+      
+              if(photo)this.FilteredPhotos.push(p);
+            } catch(e){}
           }
         })
         break;
       case FilterType.WORLD:
         this.Photos.map(p => {
           if(p.metadata){
-            let meta = JSON.parse(p.metadata);
-            let photo = meta.world.name.toLowerCase().includes(this._filter) || meta.world.id === this._filter;
-    
-            if(photo)this.FilteredPhotos.push(p);
+            try{
+              let meta = JSON.parse(p.metadata);
+              let photo = meta.world.name.toLowerCase().includes(this._filter) || meta.world.id === this._filter;
+      
+              if(photo)this.FilteredPhotos.push(p);
+            } catch(e){}
           }
         })
         break;
     }
+
+    window.PhotoListRenderingManager.ComputeLayout();
   }
 
   public Load(){

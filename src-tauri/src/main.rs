@@ -12,7 +12,7 @@ use frontend_calls::*;
 use notify::{EventKind, RecursiveMode, Watcher};
 use pngmeta::PNGImage;
 use regex::Regex;
-use util::cache::Cache;
+use util::{cache::Cache, get_photo_path::get_photo_path};
 use std::{env, fs, thread};
 use tauri::{Emitter, Manager, State, WindowEvent};
 use tauri_plugin_deep_link::DeepLinkExt;
@@ -92,35 +92,36 @@ fn main() {
   // Listen for file updates, store each update in an mpsc channel and send to the frontend
   let (sender, receiver) = std::sync::mpsc::channel();
   let mut watcher = notify::recommended_watcher(move | res: Result<notify::Event, notify::Error> | {
-    // TODO: Fix this, why does it not work?? it does work???
     match res {
-        Ok(event) => {
+      Ok(event) => {
         match event.kind{
           EventKind::Remove(_) => {
             let path = event.paths.first().unwrap();
+            let name = path.file_name().unwrap().to_str().unwrap().to_owned();
 
             let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
             let re2 = Regex::new(r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
 
             if
-              re1.is_match(path.to_str().unwrap()) ||
-              re2.is_match(path.to_str().unwrap())
+              re1.is_match(&name) ||
+              re2.is_match(&name)
             {
-              sender.send((2, path.clone().strip_prefix(util::get_photo_path::get_photo_path()).unwrap().to_path_buf())).unwrap();
+              sender.send((2, path.strip_prefix(get_photo_path()).unwrap().to_str().unwrap().to_owned())).unwrap();
             }
           },
           EventKind::Create(_) => {
             let path = event.paths.first().unwrap();
+            let name = path.file_name().unwrap().to_str().unwrap().to_owned();
 
             let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
             let re2 = Regex::new(r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
 
             if
-              re1.is_match(path.to_str().unwrap()) ||
-              re2.is_match(path.to_str().unwrap())
+              re1.is_match(&name) ||
+              re2.is_match(&name)
             {
               thread::sleep(time::Duration::from_millis(1000));
-              sender.send((1, path.clone().strip_prefix(util::get_photo_path::get_photo_path()).unwrap().to_path_buf())).unwrap();
+              sender.send((1, path.strip_prefix(get_photo_path()).unwrap().to_str().unwrap().to_owned())).unwrap();
             }
           },
           _ => {}
