@@ -11,7 +11,7 @@ const fullReloadAlways: Plugin = {
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [solid(), fullReloadAlways],
+  plugins: [solid(),], //fullReloadAlways],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

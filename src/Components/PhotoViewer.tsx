@@ -23,6 +23,8 @@ let PhotoViewer = () => {
   let allowedToOpenTray = false;
   let trayInAnimation = false;
 
+  let authorProfileButton: HTMLDivElement;
+
   let switchPhotoWithKey = ( e: KeyboardEvent ) => {
     switch(e.key){
       case 'Escape':
@@ -240,41 +242,66 @@ let PhotoViewer = () => {
           if(photo.metadata){
             photo.onMetaLoaded = () => {}
 
-            let meta = JSON.parse(photo.metadata);
+            try{
+              // Try JSON format ( VRCX )
+              let meta = JSON.parse(photo.metadata);
 
-            allowedToOpenTray = true;
-            trayButton.style.display = 'flex';
-  
-            photoTray.innerHTML = '';
-            photoTray.appendChild(
-              <div class="photo-tray-columns">
-                <div class="photo-tray-column" style={{ width: '20%' }}><br />
-                  <div class="tray-heading">People</div>
-  
-                  <For each={meta.players}>
-                    {( item ) =>
-                      <div>
-                        { item.displayName }
-                        <Show when={item.id}>
-                          <img width="15" src="/icon/up-right-from-square-solid.svg" onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/user/' + item.id })} style={{ "margin-left": '10px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} />
-                        </Show>
-                      </div>
-                    }
-                  </For><br />
-                </div>
-                <div class="photo-tray-column"><br />
-                  <div class="tray-heading">World</div>
-  
-                  <div ref={( el ) => worldInfoContainer = el}>Loading World Data...</div>
-                </div>
-              </div> as Node
-            );
+              allowedToOpenTray = true;
+              trayButton.style.display = 'flex';
 
-            window.WorldCacheManager.getWorldById(meta.world.id)
-              .then(worldData => {
-                if(worldData)
-                  loadWorldData(worldData);
-              });
+              authorProfileButton!.style.display = 'none';
+    
+              photoTray.innerHTML = '';
+              photoTray.appendChild(
+                <div class="photo-tray-columns">
+                  <div class="photo-tray-column" style={{ width: '20%' }}><br />
+                    <div class="tray-heading">People</div>
+    
+                    <For each={meta.players}>
+                      {( item ) =>
+                        <div>
+                          { item.displayName }
+                          <Show when={item.id}>
+                            <img width="15" src="/icon/up-right-from-square-solid.svg" onClick={() => invoke('open_url', { url: 'https://vrchat.com/home/user/' + item.id })} style={{ "margin-left": '10px', "font-size": '12px', 'color': '#bbb', cursor: 'pointer' }} />
+                          </Show>
+                        </div>
+                      }
+                    </For><br />
+                  </div>
+                  <div class="photo-tray-column"><br />
+                    <div class="tray-heading">World</div>
+    
+                    <div ref={( el ) => worldInfoContainer = el}>Loading World Data...</div>
+                  </div>
+                </div> as Node
+              );
+
+              window.WorldCacheManager.getWorldById(meta.world.id)
+                .then(worldData => {
+                  if(worldData)
+                    loadWorldData(worldData);
+                });
+            } catch(e){
+              try{
+                // Not json lets try XML (vrc prints)
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(photo.metadata, "text/xml");
+
+                let id = doc.getElementsByTagName('xmp:Author')[0]!.innerHTML;
+
+                authorProfileButton!.style.display = 'flex';
+                authorProfileButton!.onclick = () =>
+                  invoke('open_url', { url: 'https://vrchat.com/home/user/' + id });
+              } catch(e){
+                console.error(e);
+                console.log('Couldn\'t decode metadata')
+
+                authorProfileButton!.style.display = 'none';
+              }
+
+              trayButton.style.display = 'none';
+              closeTray();
+            }
           } else{
             trayButton.style.display = 'none';
             closeTray();
@@ -428,6 +455,17 @@ let PhotoViewer = () => {
             <img draggable="false" src="/icon/angle-up-solid.svg"></img>
           </div>
         </div>
+
+        <div class="viewer-button"
+          ref={authorProfileButton!}
+          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
+          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
+        >
+          <div class="icon" style={{ width: '12px', margin: '0' }}>
+            <img draggable="false" src="/icon/user-solid.svg"></img>
+          </div>
+        </div>
+
         <div class="viewer-button"
           onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
