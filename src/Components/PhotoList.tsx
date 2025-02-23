@@ -190,7 +190,10 @@ let PhotoList = () => {
 
   return (
     <div class="photo-list">
-      <div ref={filterContainer!} class="filter-container">
+      <div ref={filterContainer!} class="filter-container" style={{
+        height: window.PhotoManager.HasBeenIndexed() ? '83px' : '110px',
+        width: window.PhotoManager.HasBeenIndexed() ? '600px' : '650px'
+      }}>
         <FilterMenu />
       </div>
 

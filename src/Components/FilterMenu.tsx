@@ -1,3 +1,4 @@
+import { Show } from "solid-js";
 import { FilterType } from "./Structs/FilterType";
 
 let FilterMenu = () => {
@@ -10,6 +11,10 @@ let FilterMenu = () => {
 
   return (
     <>
+      <Show when={!window.PhotoManager.HasBeenIndexed()}>
+        <div>Your photos aren't indexed due to the large number, filters may take a while to load.</div>
+        <div style={{ height: '8px' }}></div>
+      </Show>
       <div class="filter-type-select">
         <div class="selected-filter" ref={( el ) => selectionButtons.push(el)} onClick={() => {
           select(0);

@@ -9,6 +9,8 @@ export class PhotoListRenderingManager{
   private _layout: PhotoListRow[] = [];
   private _canvas!: HTMLCanvasElement;
 
+  private _isLoading = false;
+
   constructor(){}
 
   public SetCanvas( canvas: HTMLCanvasElement ){
@@ -145,6 +147,16 @@ export class PhotoListRenderingManager{
       }
       
       currentY += row.Height + 10;
+    }
+
+    if(!this._isLoading){
+      console.log('Loading more photos...');
+      this._isLoading = true;
+
+      window.PhotoManager.LoadSomeAndReloadFilters()
+        .then(() => {
+          this._isLoading = false;
+        });
     }
   }
 }

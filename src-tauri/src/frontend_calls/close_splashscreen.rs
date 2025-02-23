@@ -14,7 +14,7 @@ pub fn close_splashscreen(window: tauri::Window) {
     }
   }
 
-  let value = get_config_value_string("start-in-bg".to_owned()).unwrap();
+  let value: String = match get_config_value_string("start-in-bg".to_owned()) { Some(val) => val, None => "false".to_owned() };
   if value == "true"{
     show = false;
   }

@@ -20,6 +20,10 @@ export class PhotoManager{
 
   private _filterType: FilterType = FilterType.USER;
   private _filter: string = "";
+  
+  private _lastLoaded: number = 0;
+  private _onLoadedMeta: any = {};
+  private _hasBeenIndexed: Accessor<boolean>;
 
   constructor(){
     let [ photoCount, setPhotoCount ] = createSignal(-1);
@@ -27,6 +31,10 @@ export class PhotoManager{
 
     this.PhotoCount = photoCount;
     this.PhotoSize = photoSize;
+
+    let setHasBeenIndexed;
+    [ this._hasBeenIndexed, setHasBeenIndexed ] = createSignal(false);
+    console.log(this._hasBeenIndexed())
 
     listen('photos_loaded', ( event: any ) => {
       let photoPaths = event.payload.photos.reverse();
@@ -36,18 +44,23 @@ export class PhotoManager{
       setPhotoSize(event.payload.size);
 
       let doesHaveLegacy = false;
+      
+      if(photoPaths.length <= Vars.MAX_PHOTOS_BULK_LOAD)
+        setHasBeenIndexed(true);
 
-      photoPaths.forEach(( path: string ) => {
+      photoPaths.forEach(( path: string, i: number ) => {
         let photo
 
         if(path.slice(0, 9) === "legacy://"){
-          photo = new Photo(path.slice(9), true);
+          photo = new Photo(path.slice(9), true, i);
           doesHaveLegacy = true;
         } else
-          photo = new Photo(path, false);
+          photo = new Photo(path, false, i);
 
         this.Photos.push(photo);
-        photo.loadMeta();
+
+        if(photoPaths.length <= Vars.MAX_PHOTOS_BULK_LOAD)
+          photo.loadMeta();
       })
 
       if(doesHaveLegacy){
@@ -55,7 +68,7 @@ export class PhotoManager{
       }
 
       console.log(this.Photos.length + ' Photos found.');
-      if(this.Photos.length === 0){
+      if(this.Photos.length === 0 || photoPaths.length > Vars.MAX_PHOTOS_BULK_LOAD){
         console.log('No photos found, Skipping loading stage.');
 
         this.FilteredPhotos = this.Photos;
@@ -63,6 +76,8 @@ export class PhotoManager{
 
         this._finishedLoadingCallbacks.forEach(cb => cb());
       }
+
+      console.log(this._hasBeenIndexed())
     });
 
     listen('photo_meta_loaded', ( event: any ) => {
@@ -70,6 +85,13 @@ export class PhotoManager{
   
       let photo = this.Photos.find(x => x.path === data.path);
       if(!photo)return console.error('Cannot find photo.', data);
+
+      this._lastLoaded = photo.index;
+
+      if(this._onLoadedMeta[photo.index]){
+        this._onLoadedMeta[photo.index]();
+        delete this._onLoadedMeta[photo.index];
+      }
   
       photo.width = data.width;
       photo.height = data.height;
@@ -94,8 +116,9 @@ export class PhotoManager{
     })
 
     listen('photo_create', async ( event: any ) => {
-      let photo = new Photo(event.payload);
-  
+      let photo = new Photo(event.payload, false, 0);
+      
+      this.Photos.forEach(p => p.index++); // Probably a really dumb way of doing this
       this.Photos.splice(0, 0, photo);
 
       photo.onMetaLoaded = () => this.ReloadFilters();
@@ -124,6 +147,28 @@ export class PhotoManager{
 
   public SetFilter( filter: string ){
     this._filter = filter;
+    this.ReloadFilters();
+  }
+
+  public HasBeenIndexed(){
+    return this._hasBeenIndexed();
+  }
+
+  public LoadPhotoMetaAndWait( photo: Photo ){
+    return new Promise(res => {
+      photo.loadMeta();
+      this._onLoadedMeta[photo.index] = res;
+    })
+  }
+
+  public async LoadSomeAndReloadFilters(){
+    if(this.Photos.length < this._lastLoaded + 1)return;
+
+    for (let i = 1; i < 10; i++) {
+      if(!this.Photos[this._lastLoaded + 1])break;
+      await this.LoadPhotoMetaAndWait(this.Photos[this._lastLoaded + 1]);
+    }
+
     this.ReloadFilters();
   }
 

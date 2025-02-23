@@ -69,5 +69,12 @@ v0.2.3:
   - Fixed filters not updating photo list
   - Fixed adding / removing photos not updating the photo list
 
+  Hotfix 1:
+    - Fixed new installations immediately crashing
+
   Dev Stuff:
     - Split frontend up into many smaller files for easier editing
+
+v0.2.4:
+  - Refactor loading system to not load all photos at the start 
+    (should help with large numbers of photos)
