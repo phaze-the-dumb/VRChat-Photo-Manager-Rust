@@ -11,8 +11,9 @@ Please give me feedback in the issues section of this repo. Any feedback is welc
 Also for bug reports if you can, please try replicating the issue with a debug variant of the app and sending the logs along with your issue
 
 You can download the debug EXEs using this url format:
-https://cdn.phaz.uk/vrcpm/builds/debug/vrcpm-[YOUR-APP-VERSION]-debug.exe (Windows)
-https://cdn.phaz.uk/vrcpm/builds/debug/vrcpm-[YOUR-APP-VERSION]-debug (Linux)
+
+- https://cdn.phaz.uk/vrcpm/builds/debug/vrcpm-[YOUR-APP-VERSION]-debug.exe (Windows)
+- https://cdn.phaz.uk/vrcpm/builds/debug/vrcpm-[YOUR-APP-VERSION]-debug (Linux)
 
 You can find your app version under appllication settings.
 
