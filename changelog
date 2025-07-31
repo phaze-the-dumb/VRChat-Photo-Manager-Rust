@@ -76,5 +76,13 @@ v0.2.3:
     - Split frontend up into many smaller files for easier editing
 
 v0.2.4:
-  - Refactor loading system to not load all photos at the start 
+  - Refactor loading system to not load all photos at the start
     (should help with large numbers of photos)
+  - Update UI to work on linux
+  - Opening files on linux now works
+  - Fixed not rendering properly on linux
+  - Switch world data api to vrchat
+  - Photos are in the correct order on linux now
+
+  Dev Stuff:
+    - Implemented a view transition handler, should help with transitions when the app is scaled
