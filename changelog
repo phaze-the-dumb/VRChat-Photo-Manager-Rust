@@ -82,6 +82,7 @@ v0.2.4:
   - Opening files on linux now works
   - Fixed not rendering properly on linux
   - Switch world data api to vrchat
+  - Fixed icons being MASSIVE on linux
   - Photos are in the correct order on linux now
 
   Dev Stuff:
