@@ -10,7 +10,7 @@ export class WorldCache{
     maxUsers: number,
     visits: number,
     favourites: number,
-    tags: any,
+    tags: string[],
     from: string,
     fromSite: string,
     found: boolean

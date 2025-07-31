@@ -1,5 +1,4 @@
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-use serde_json::json;
 
 #[derive(Clone)]
 pub struct World {
@@ -12,9 +11,7 @@ pub struct World {
   max_users: u64,
   visits: u64,
   favourites: u64,
-  tags: String,
-  from: String,
-  from_site: String,
+  tags: Vec<String>,
   found: bool,
 }
 
@@ -32,65 +29,35 @@ impl World {
       max_users: 0,
       visits: 0,
       favourites: 0,
-      tags: "".into(),
-      from: "https://vrclist.com/worlds/".into(),
-      from_site: "vrclist.com".into(),
+      tags: vec!["".into()],
       found: false,
     };
 
     let client = reqwest::blocking::Client::new();
 
-    let world_id_str = world_id.to_owned();
-    let fixed_id_req = client
-      .post("https://api.vrclist.com/worlds/id-convert")
-      .header("Content-Type", "application/json")
+    let world_data = client
+      .get(format!("https://api.vrchat.cloud/api/1/worlds/{}", world_id))
       .header("User-Agent", "VRChat-Photo-Manager-Rust/0.0.1")
-      .body(json!({ "world_id": world_id_str }).to_string())
       .send()
-      .unwrap()
-      .text()
       .unwrap();
 
-    if &fixed_id_req == "" {
-      println!("World {} not found", world_id);
-      return world;
-    }
-
+    if world_data.status() != 200{ return world; }
     world.found = true;
 
-    let fixed_id: serde_json::Value = serde_json::from_str(&fixed_id_req).unwrap();
-    world.from = format!("https://vrclist.com/worlds/{}", fixed_id["id"].to_string());
-
-    let world_data = client
-      .post("https://api.vrclist.com/worlds/single")
-      .header("Content-Type", "application/json")
-      .header("User-Agent", "VRChat-Photo-Manager-Rust/0.0.1")
-      .body(json!({ "id": fixed_id["id"].to_string() }).to_string())
-      .send()
-      .unwrap()
-      .text()
-      .unwrap();
-
+    let world_data = world_data.text().unwrap();
     let world_data: serde_json::Value = serde_json::from_str(&world_data).unwrap();
 
-    world.name = world_data["name"].to_string();
-    world.author = world_data["authorName"].to_string();
-    world.author_id = world_data["authorId"].to_string();
-    world.desc = world_data["description"].to_string();
-    world.img = world_data["imageUrl"].to_string();
-    world.tags = world_data["tags"].to_string();
-
-    match world_data["vrchat_visits"].as_u64() {
-      Some(visits) => world.visits = visits,
-      None => {}
-    }
-
-    match world_data["capacity"].as_u64() {
-      Some(cap) => {
-        world.max_users = cap;
-      }
-      None => {}
-    }
+    world.name = world_data["name"].as_str().unwrap().to_owned();
+    world.author = world_data["authorName"].as_str().unwrap().to_owned();
+    world.author_id = world_data["authorId"].as_str().unwrap().to_owned();
+    world.desc = world_data["description"].as_str().unwrap().to_owned();
+    world.img = world_data["imageUrl"].as_str().unwrap().to_owned();
+    world.tags = world_data["tags"].as_array().unwrap().clone().iter()
+      .map(| item | item.as_str().unwrap().to_owned())
+      .collect();
+    world.visits = world_data["visits"].as_u64().unwrap();
+    world.favourites = world_data["favorites"].as_u64().unwrap();
+    world.max_users = world_data["capacity"].as_u64().unwrap();
 
     println!("Fetched world data for {}", &world_id);
     world
@@ -113,8 +80,6 @@ impl Serialize for World {
     s.serialize_field("visits", &self.visits)?;
     s.serialize_field("favourites", &self.favourites)?;
     s.serialize_field("tags", &self.tags)?;
-    s.serialize_field("from", &self.from)?;
-    s.serialize_field("fromSite", &self.from_site)?;
     s.serialize_field("found", &self.found)?;
 
     s.end()

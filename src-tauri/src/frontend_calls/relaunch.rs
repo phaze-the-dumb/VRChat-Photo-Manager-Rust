@@ -1,4 +1,4 @@
-use std::process::{self, Command};
+use std::process::{ self, Command };
 
 #[tauri::command]
 pub fn relaunch() {

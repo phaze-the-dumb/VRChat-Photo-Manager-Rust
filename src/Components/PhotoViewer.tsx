@@ -239,6 +239,7 @@ let PhotoViewer = () => {
         })
 
         let handleMetaDataLoaded = () => {
+          console.log(photo.metadata);
           if(photo.metadata){
             photo.onMetaLoaded = () => {}
 
@@ -382,7 +383,7 @@ let PhotoViewer = () => {
 
           <br />
           <div class="world-tags">
-            <For each={JSON.parse(data.worldData.tags.split('\\\\').join("").split('\\').join("").slice(1, -1))}>
+            <For each={data.worldData.tags}>
               {( tag ) =>
                 <div>{ tag.replace("author_tag_", "").replace("system_", "") }</div>
               }

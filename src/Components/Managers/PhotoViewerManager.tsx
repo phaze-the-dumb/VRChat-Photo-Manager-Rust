@@ -1,5 +1,6 @@
 import { Accessor, createSignal, Setter } from "solid-js";
 import { Photo } from "../Structs/Photo";
+import { ViewState } from "./ViewManager";
 
 export class PhotoViewerManager{
   public CurrentPhoto: Accessor<Photo | null>;
@@ -26,10 +27,13 @@ export class PhotoViewerManager{
   }
 
   public Close(){
+    window.ViewManager.ChangeState(ViewState.PHOTO_LIST);
     this._setCurrentPhoto(null);
   }
 
   public OpenPhoto( photo: Photo ){
+    window.ViewManager.ChangeState(ViewState.PHOTO_VIEWER);
+
     this._setCurrentPhoto(photo);
     this._currentPhotoIndex = window.PhotoManager.FilteredPhotos.indexOf(photo);
   }

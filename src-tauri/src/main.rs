@@ -9,17 +9,20 @@ mod worldscraper;
 use core::time;
 use frontend_calls::*;
 
-use notify::{EventKind, RecursiveMode, Watcher};
+use notify::{ EventKind, RecursiveMode, Watcher };
 use pngmeta::PNGImage;
 use regex::Regex;
-use util::{cache::Cache, get_photo_path::get_photo_path};
-use std::{env, fs, thread};
-use tauri::{Emitter, Manager, State, WindowEvent};
+use util::{ cache::Cache, get_photo_path::get_photo_path };
+use std::{ env, fs, thread };
+use tauri::{ Emitter, Manager, State, WindowEvent };
 use tauri_plugin_deep_link::DeepLinkExt;
 
 // TODO: Linux support
 
 fn main() {
+  #[cfg(target_os = "linux")]
+  std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1"); // Fix webkit being shit
+
   let cache = Cache::new();
 
   // Double check the app has an install directory

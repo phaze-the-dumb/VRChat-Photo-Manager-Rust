@@ -17,11 +17,11 @@ export class WorldCacheManager{
         expiresOn: Date.now() + 1.2096E+09,
         worldData: {
           id: event.payload.id,
-          name: event.payload.name.split('\\').join('').slice(1, -1),
-          author: event.payload.author.split('\\').join('').slice(1, -1),
-          authorId: event.payload.authorId.split('\\').join('').slice(1, -1),
-          desc: event.payload.desc.split('\\').join('').slice(1, -1),
-          img: event.payload.img.split('\\').join('').slice(1, -1),
+          name: event.payload.name,
+          author: event.payload.author,
+          authorId: event.payload.authorId,
+          desc: event.payload.desc,
+          img: event.payload.img,
           maxUsers: event.payload.maxUsers,
           visits: event.payload.visits,
           favourites: event.payload.favourites,
@@ -34,7 +34,7 @@ export class WorldCacheManager{
   
       this._worldCache.push(worldData);
       invoke('set_config_value_string', { key: 'worldcache', value: JSON.stringify(this._worldCache) });
-  
+
       this._resolveWorld(worldData);
     })
   }

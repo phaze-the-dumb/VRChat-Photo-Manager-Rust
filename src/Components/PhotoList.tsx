@@ -4,6 +4,7 @@ import { Window } from "@tauri-apps/api/window";
 
 import anime from "animejs";
 import FilterMenu from "./FilterMenu";
+import { ViewState } from "./Managers/ViewManager";
 
 enum ListPopup{
   FILTERS,
@@ -34,6 +35,29 @@ let PhotoList = () => {
   Window.getCurrent().isVisible().then(visible => {
     quitRender = !visible;
   })
+
+
+  window.ViewManager.OnStateTransition(ViewState.PHOTO_LIST, ViewState.SETTINGS, () => {
+    anime({ targets: photoContainer, opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+  });
+
+  window.ViewManager.OnStateTransition(ViewState.SETTINGS, ViewState.PHOTO_LIST, () => {
+    anime({ targets: photoContainer, opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+  });
+
+
+  window.ViewManager.OnStateTransition(ViewState.PHOTO_LIST, ViewState.PHOTO_VIEWER, () => {
+    anime({ targets: photoContainer, opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+    anime({ targets: '.filter-options', opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+    anime({ targets: '.reload-photos', opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+  });
+
+  window.ViewManager.OnStateTransition(ViewState.PHOTO_VIEWER, ViewState.PHOTO_LIST, () => {
+    anime({ targets: photoContainer, opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+    anime({ targets: '.filter-options', opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+    anime({ targets: '.reload-photos', opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+  });
+
 
   let closeWithKey = ( e: KeyboardEvent ) => {
     if(e.key === 'Escape'){
@@ -93,7 +117,6 @@ let PhotoList = () => {
       ctx.fillText("It's looking empty in here! You have no photos :O", photoContainer.width / 2, photoContainer.height / 2);
     }
 
-    ctxBG.filter = 'blur(100px)';
     ctxBG.drawImage(photoContainer, 0, 0);
   }
 
@@ -224,8 +247,8 @@ let PhotoList = () => {
               easing: 'easeInOutQuad',
               duration: 100
             });
-          }} class="icon" style={{ width: '20px', height: '5px', padding: '20px' }}>
-            <img draggable="false" width="20" height="20" src="/icon/sliders-solid.svg"></img>
+          }} class="icon" style={{ width: '20px', height: '20px', padding: '20px' }}>
+            <img draggable="false" style={{ width: "20px", height: "20px" }} src="/icon/sliders-solid.svg"></img>
           </div>
           <div class="icon-label">Filters</div>
         </div>

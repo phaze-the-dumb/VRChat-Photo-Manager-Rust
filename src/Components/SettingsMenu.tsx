@@ -2,6 +2,7 @@ import { onCleanup, onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
 import { invoke } from '@tauri-apps/api/core';
 import anime from "animejs";
+import { ViewState } from "./Managers/ViewManager";
 
 let SettingsMenu = () => {
   let sliderBar: HTMLElement;
@@ -15,6 +16,7 @@ let SettingsMenu = () => {
 
   let closeWithKey = ( e: KeyboardEvent ) => {
     if(e.key === 'Escape'){
+      window.ViewManager.ChangeState(ViewState.PHOTO_LIST);
       anime({
         targets: '.settings',
         opacity: 0,

@@ -1,4 +1,4 @@
-use std::{fs, thread};
+use std::{ fs, thread };
 
 #[cfg(windows)]
 use mslnk::ShellLink;

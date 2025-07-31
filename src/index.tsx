@@ -11,9 +11,11 @@ declare global{
     WorldCacheManager: WorldCacheManager;
     PhotoListRenderingManager: PhotoListRenderingManager;
     SyncManager: SyncManager;
+    ViewManager: ViewManager;
 
     CloseAllPopups: (() => void)[];
     OS: string;
+
   }
 }
 
@@ -33,6 +35,7 @@ import { PhotoViewerManager } from "./Components/Managers/PhotoViewerManager";
 import { WorldCacheManager } from "./Components/Managers/WorldCacheManager";
 import { PhotoListRenderingManager } from "./Components/Managers/PhotoListRenderingManager";
 import { SyncManager } from "./Components/Managers/SyncManager";
+import { ViewManager } from "./Components/Managers/ViewManager";
 
 window.AccountManager = new AccountManager();
 window.LoadingManager = new LoadingManager();
@@ -42,6 +45,7 @@ window.PhotoViewerManager = new PhotoViewerManager();
 window.WorldCacheManager = new WorldCacheManager();
 window.PhotoListRenderingManager = new PhotoListRenderingManager();
 window.SyncManager = new SyncManager();
+window.ViewManager = new ViewManager();
 
 (async () => {
   window.OS = await invoke('get_os');

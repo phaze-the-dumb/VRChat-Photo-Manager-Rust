@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { PhotoMetadata } from "../Structs/PhotoMetadata";
 import { Vars } from "../Structs/Vars";
 import { FilterType } from "../FilterMenu";
+import { MergeSort } from "../Utils/Sort";
 
 export class PhotoManager{
   public PhotoCount: Accessor<number>;
@@ -63,13 +64,11 @@ export class PhotoManager{
           photo.loadMeta();
       })
 
-      if(doesHaveLegacy){
-        this.Photos = this.Photos.sort(( a, b ) => b.date.valueOf() - a.date.valueOf());
-      }
+      this.Photos = MergeSort(this.Photos);
 
       console.log(this.Photos.length + ' Photos found.');
       if(this.Photos.length === 0 || photoPaths.length > Vars.MAX_PHOTOS_BULK_LOAD){
-        console.log('No photos found, Skipping loading stage.');
+        console.log('No photos found or over bulk load limit, Skipping loading stage.');
 
         this.FilteredPhotos = this.Photos;
         this.HasFirstLoaded = true;
@@ -182,7 +181,7 @@ export class PhotoManager{
             try{
               let meta = JSON.parse(p.metadata);
               let photo = meta.players.find(( y: any ) => y.displayName.toLowerCase().includes(this._filter) || y.id === this._filter);
-      
+
               if(photo)this.FilteredPhotos.push(p);
             } catch(e){}
           }

@@ -3,6 +3,7 @@ import { emit } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import anime from 'animejs';
 import { Show, onMount } from 'solid-js';
+import { ViewState } from './Managers/ViewManager';
 
 const appWindow = getCurrentWebviewWindow();
 
@@ -59,6 +60,7 @@ let NavBar = () => {
       <div class="navbar" data-tauri-drag-region>
         <div class="tabs" data-tauri-drag-region>
           <div class="nav-tab" onClick={() => {
+            window.ViewManager.ChangeState(ViewState.PHOTO_LIST);
             anime(
               {
                 targets: '.settings',
@@ -117,6 +119,7 @@ let NavBar = () => {
             duration: 250
           })
 
+          window.ViewManager.ChangeState(ViewState.SETTINGS);
           setDropdownVisibility(false);
         }}>Settings</div>
 
