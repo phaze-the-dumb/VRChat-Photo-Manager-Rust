@@ -2,9 +2,6 @@
 
 Install [here](https://cdn.phaz.uk/vrcpm/vrcpm-installer.exe) (Windows)
 
-Install [here](https://cdn.phaz.uk/vrcpm/vrcpm-installer) (Linux)
-**Note for linux:** Run this executable in the terminal for log output.
-
 ## Feedback / Bug Reports
 
 Please give me feedback in the issues section of this repo. Any feedback is welcome, bug reports too! (since there's probably quite a few bugs)
