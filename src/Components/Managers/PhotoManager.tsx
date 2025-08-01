@@ -35,7 +35,6 @@ export class PhotoManager{
 
     let setHasBeenIndexed;
     [ this._hasBeenIndexed, setHasBeenIndexed ] = createSignal(false);
-    console.log(this._hasBeenIndexed())
 
     listen('photos_loaded', ( event: any ) => {
       let photoPaths = event.payload.photos.reverse();
@@ -44,18 +43,15 @@ export class PhotoManager{
       setPhotoCount(photoPaths.length);
       setPhotoSize(event.payload.size);
 
-      let doesHaveLegacy = false;
-      
       if(photoPaths.length <= Vars.MAX_PHOTOS_BULK_LOAD)
         setHasBeenIndexed(true);
 
       photoPaths.forEach(( path: string, i: number ) => {
         let photo
 
-        if(path.slice(0, 9) === "legacy://"){
+        if(path.slice(0, 9) === "legacy://")
           photo = new Photo(path.slice(9), true, i);
-          doesHaveLegacy = true;
-        } else
+        else
           photo = new Photo(path, false, i);
 
         this.Photos.push(photo);
@@ -75,8 +71,6 @@ export class PhotoManager{
 
         this._finishedLoadingCallbacks.forEach(cb => cb());
       }
-
-      console.log(this._hasBeenIndexed())
     });
 
     listen('photo_meta_loaded', ( event: any ) => {

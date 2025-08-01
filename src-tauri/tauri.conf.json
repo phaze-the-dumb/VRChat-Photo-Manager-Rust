@@ -18,7 +18,9 @@
   "productName": "vrchat-photo-manager",
   "version": "0.0.1",
   "identifier": "uk.phaz.vrcpm",
-  "plugins": {},
+  "plugins": {
+    "shell": { "open": true }
+  },
   "app": {
     "security": {
       "csp": "https://photos.phazed.xyz; connect-src ipc: http://ipc.localhost"

@@ -1,10 +1,10 @@
 use std::env;
-use tauri::Manager;
+use tauri::{ Emitter, Manager };
 
 use super::config::get_config_value_string;
 
 #[tauri::command]
-pub fn close_splashscreen(window: tauri::Window) {
+pub fn close_splashscreen( window: tauri::Window ) {
   let args: Vec<String> = env::args().collect();
 
   let mut show = true;
@@ -20,6 +20,9 @@ pub fn close_splashscreen(window: tauri::Window) {
   }
 
   if show {
-    window.get_webview_window("main").unwrap().show().unwrap();
+    let webview = window.get_webview_window("main").unwrap();
+
+    webview.show().unwrap();
+    webview.emit("show-window", 0).unwrap();
   }
 }

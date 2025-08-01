@@ -1,15 +1,12 @@
 import { onMount } from "solid-js";
 import anime from "animejs";
-import { invoke } from '@tauri-apps/api/core';
 
 import NavBar from "./NavBar";
 import PhotoList from "./PhotoList";
 import PhotoViewer from "./PhotoViewer";
 import SettingsMenu from "./SettingsMenu";
 
-function App() {
-  invoke('close_splashscreen')
-
+let App = () => {
   onMount(() => {
     anime.set('.settings',
     {

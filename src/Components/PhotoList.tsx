@@ -5,6 +5,7 @@ import { Window } from "@tauri-apps/api/window";
 import anime from "animejs";
 import FilterMenu from "./FilterMenu";
 import { ViewState } from "./Managers/ViewManager";
+import { invoke } from "@tauri-apps/api/core";
 
 enum ListPopup{
   FILTERS,
@@ -65,6 +66,16 @@ let PhotoList = () => {
     }
   }
 
+  let onResize = () => {
+    photoContainer.width = window.innerWidth;
+    photoContainer.height = window.innerHeight;
+
+    photoContainerBG.width = window.innerWidth;
+    photoContainerBG.height = window.innerHeight;
+
+    window.PhotoListRenderingManager.ComputeLayout();
+  }
+
   let closeCurrentPopup = () => {
     switch(currentPopup){
       case ListPopup.FILTERS:
@@ -83,7 +94,7 @@ let PhotoList = () => {
     }
   }
 
-  let render = () => {  
+  let render = () => {
     if(!quitRender)
       requestAnimationFrame(render);
     else
@@ -121,19 +132,29 @@ let PhotoList = () => {
   }
 
   listen('hide-window', () => {
-    console.log('Hide Window');
     quitRender = true;
+    console.log('Hide Window');
   })
 
   listen('show-window', () => {
+    if(quitRender)quitRender = false;
     console.log('Shown Window');
-    quitRender = false;
 
-    if(window.PhotoManager.HasFirstLoaded)
+    photoContainer.width = window.innerWidth;
+    photoContainer.height = window.innerHeight;
+
+    photoContainerBG.width = window.innerWidth;
+    photoContainerBG.height = window.innerHeight;
+
+    if(window.PhotoManager.HasFirstLoaded){
       requestAnimationFrame(render);
+      window.PhotoManager.HasFirstLoaded = false;
+    }
   })
 
   window.PhotoManager.OnLoadingFinished(() => {
+    invoke('close_splashscreen');
+
     anime({
       targets: photoTreeLoadingContainer,
       height: 0,
@@ -166,14 +187,15 @@ let PhotoList = () => {
 
     anime.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
 
-    photoContainer.addEventListener('wheel', ( e: WheelEvent ) => {
+    photoContainer.onwheel = ( e: WheelEvent ) => {
       targetScroll += e.deltaY;
 
       if(targetScroll < 0)
         targetScroll = 0;
-    });
+    };
 
     window.addEventListener('keyup', closeWithKey);
+    window.addEventListener('resize', onResize);
 
     photoContainer.width = window.innerWidth;
     photoContainer.height = window.innerHeight;
@@ -181,17 +203,7 @@ let PhotoList = () => {
     photoContainerBG.width = window.innerWidth;
     photoContainerBG.height = window.innerHeight;
 
-    window.addEventListener('resize', () => {
-      photoContainer.width = window.innerWidth;
-      photoContainer.height = window.innerHeight;
-
-      photoContainerBG.width = window.innerWidth;
-      photoContainerBG.height = window.innerHeight;
-
-      window.PhotoListRenderingManager.ComputeLayout();
-    })
-
-    photoContainer.addEventListener('click', ( e: MouseEvent ) => {
+    photoContainer.onclick = ( e: MouseEvent ) => {
       let photo = window.PhotoManager.FilteredPhotos.find(x =>
         e.clientX > x.x &&
         e.clientY > x.y &&
@@ -204,11 +216,15 @@ let PhotoList = () => {
         window.PhotoViewerManager.OpenPhoto(photo);
       // else
       //   currentPhotoIndex = -1;
-    })
+    }
   })
 
   onCleanup(() => {
+    photoContainer.onwheel = () => {};
+    photoContainer.onclick = () => {};
+
     window.removeEventListener('keyup', closeWithKey);
+    window.removeEventListener('resize', onResize);
   })
 
   return (

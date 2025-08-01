@@ -78,12 +78,15 @@ v0.2.3:
 v0.2.4:
   - Refactor loading system to not load all photos at the start
     (should help with large numbers of photos)
-  - Update UI to work on linux
+  - Update UI to work on webkitgtk
   - Opening files on linux now works
-  - Fixed not rendering properly on linux
+  - Fixed not rendering properly when using webkitgtk
   - Switch world data api to vrchat
-  - Fixed icons being MASSIVE on linux
+  - Fixed icons being MASSIVE when using webkitgtk
   - Photos are in the correct order on linux now
+  - Fixed photos not rendering if the window isn't resized or reopened when using webkitgtk
+  - Fixed scrolling being more and more snappy when the window is closed and reopened when using webkitgtk
+  - Fixed render being called multiple times per frame when using webkitgtk
 
   Dev Stuff:
     - Implemented a view transition handler, should help with transitions when the app is scaled
