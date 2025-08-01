@@ -27,6 +27,8 @@ pub fn setup_traymenu(handle: &AppHandle) {
   TrayIconBuilder::with_id("main")
     .icon(tauri::image::Image::from_bytes(include_bytes!("../../icons/32x32.png")).unwrap())
     .menu(&tray_menu)
+    .title("VRChat Photo Manager")
+    .tooltip("VRChat Photo Manager")
     .on_menu_event(move |app: &AppHandle, event| match event.id().as_ref() {
       "quit" => {
         std::process::exit(0);
