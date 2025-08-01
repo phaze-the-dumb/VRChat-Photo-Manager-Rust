@@ -40,10 +40,14 @@ let PhotoList = () => {
 
   window.ViewManager.OnStateTransition(ViewState.PHOTO_LIST, ViewState.SETTINGS, () => {
     anime({ targets: photoContainer, opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+    anime({ targets: '.filter-options', opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+    anime({ targets: '.reload-photos', opacity: 0, easing: 'easeInOutQuad', duration: 100 });
   });
 
   window.ViewManager.OnStateTransition(ViewState.SETTINGS, ViewState.PHOTO_LIST, () => {
     anime({ targets: photoContainer, opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+    anime({ targets: '.filter-options', opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+    anime({ targets: '.reload-photos', opacity: 1, easing: 'easeInOutQuad', duration: 100 });
   });
 
 

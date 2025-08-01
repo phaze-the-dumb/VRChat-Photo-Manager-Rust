@@ -9,6 +9,7 @@ export class ViewManager{
   private _eventListeners: { from: ViewState, to: ViewState, cb: () => void }[] = [];
 
   public ChangeState( state: ViewState ){
+    console.log('From: ' + this._state + ' To: ' + state);
     this._eventListeners.filter(x => x.from === this._state && x.to === state).forEach(c => c.cb());
     this._state = state;
   }

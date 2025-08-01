@@ -22,7 +22,7 @@ use tauri_plugin_deep_link::DeepLinkExt;
 
 fn main() {
   #[cfg(target_os = "linux")]
-  std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1"); // Fix webkit being shit
+  std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1"); // Fix webkitgtk being shit
 
   let cache = Cache::new();
 
