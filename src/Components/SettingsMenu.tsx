@@ -206,28 +206,30 @@ let SettingsMenu = () => {
             </label>
           </div>
 
-          <div class="selector">
-            <input type="checkbox" id="start-with-win-check" ref={async ( el ) => {
-              el.checked = await invoke('get_config_value_string', { key: 'start-with-win' }) === "true" ? true : false;
-            }} onChange={( el ) => {
-              if(el.target.checked){
-                invoke('set_config_value_string', { key: 'start-with-win', value: 'true' });
-                invoke("start_with_win", { start: true });
-              } else{
-                invoke('set_config_value_string', { key: 'start-with-win', value: 'false' });
-                invoke("start_with_win", { start: false });
-              }
-            }} />
-            Start with windows
+          <Show when={window.OS === 'windows'}>
+            <div class="selector">
+              <input type="checkbox" id="start-with-win-check" ref={async ( el ) => {
+                el.checked = await invoke('get_config_value_string', { key: 'start-with-win' }) === "true" ? true : false;
+              }} onChange={( el ) => {
+                if(el.target.checked){
+                  invoke('set_config_value_string', { key: 'start-with-win', value: 'true' });
+                  invoke("start_with_win", { start: true });
+                } else{
+                  invoke('set_config_value_string', { key: 'start-with-win', value: 'false' });
+                  invoke("start_with_win", { start: false });
+                }
+              }} />
+              Start with windows
 
-            <label for="start-with-win-check">
-              <div class="selection-box">
-                <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
-                  <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
+              <label for="start-with-win-check">
+                <div class="selection-box">
+                  <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
+                    <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
+                  </div>
                 </div>
-              </div>
-            </label>
-          </div>
+              </label>
+            </div>
+          </Show>
 
           <div class="selector">
             <input type="checkbox" id="transparent-check" ref={async ( el ) => {
@@ -315,63 +317,7 @@ let SettingsMenu = () => {
           <p>VRChat Photo Manager supports photos with extra metadata provided by VRCX.</p>
         </div>
         <div class="settings-block">
-          <h1>Account Settings</h1>
-
-          <Show when={window.AccountManager.hasAccount()} fallback={
-            <div>
-              You aren't logged in. To enable cloud sync and sharing features you need to login to your PhazeID.<br /><br />
-              <div class="button" onClick={() => {
-                window.AccountManager.login();
-              }}>Login</div>
-            </div>
-          }>
-            <div class="account-profile">
-              <div class="account-pfp" style={{ background: `url('https://cdn.phazed.xyz/id/avatars/${window.AccountManager.Profile()?.id}/${window.AccountManager.Profile()?.avatar}.png')` }}></div>
-              <div class="account-desc">
-                <div class="reload-photos" onClick={() => window.AccountManager.Refresh()} style={{ opacity: 1 }}>
-                  <div class="icon" style={{ width: '17px' }}>
-                    <img draggable="false" width="17" height="17" src="/icon/arrows-rotate-solid.svg"></img>
-                  </div>
-                </div>
-                <h2>{ window.AccountManager.Profile()?.username }</h2>
-
-                <Show when={window.AccountManager.Storage()?.isSyncing}>
-                  <div class="storage-bar">
-                    <div class="storage-bar-inner" style={{ width: ((window.AccountManager.Storage()!.used / window.AccountManager.Storage()!.total) * 100) + '%' }}></div>
-                  </div>
-
-                  <div>
-                    { bytesToFormatted(window.AccountManager.Storage()!.used, 0) } / { bytesToFormatted(window.AccountManager.Storage()!.total, 0) }<br /><br />
-
-                    <span style={{ 'font-size': '10px' }}>Server Version: { window.AccountManager.Profile()?.serverVersion }</span>
-                  </div>
-                </Show>
-              </div>
-            </div>
-
-            <div class="account-notice">To enable cloud storage or get more storage please contact "_phaz" on discord</div>
-
-            <div class="account-notice" style={{ display: 'flex' }}>
-              <Show when={false} fallback={ "We are deleting your photos, please leave this window open while we delete them." }>
-                <div class="button-danger" onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("You are about to delete all your photos from the cloud, and disable syncing. This will NOT delete any local files.", async () => {
-                  // TODO: Rework all of this
-
-                  // props.setStorageInfo({ used: 0, storage: 0, sync: false });
-                  // setDeletingPhotos(true);
-
-                  // fetch('https://photos-cdn.phazed.xyz/api/v1/allphotos', {
-                  //   method: 'DELETE',
-                  //   headers: { auth: (await invoke('get_config_value_string', { key: 'token' }))! }
-                  // })
-                  //   .then(data => data.json())
-                  //   .then(data => {
-                  //     console.log(data);
-                  //     setDeletingPhotos(false);
-                  //   })
-                })}>Delete All Photos.</div> <div>This deletes all photos stored in the cloud and disables syncing.</div>
-              </Show>
-            </div>
-          </Show>
+          <p>WIP</p>
         </div>
       </div>
 
@@ -386,7 +332,7 @@ let SettingsMenu = () => {
           <div class="slider-text" onMouseDown={() => lastClickedButton = 0}>Program Settings</div>
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>
-          <div class="slider-text" onMouseDown={() => lastClickedButton = 1}>Account Settings</div>
+          <div class="slider-text" onMouseDown={() => lastClickedButton = 1}>Sync Settings</div>
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>

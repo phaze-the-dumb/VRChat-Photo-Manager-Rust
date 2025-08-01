@@ -90,3 +90,6 @@ v0.2.4:
 
   Dev Stuff:
     - Implemented a view transition handler, should help with transitions when the app is scaled
+
+v0.2.5:
+  - Fixed the "Start with windows" button appearing on linux

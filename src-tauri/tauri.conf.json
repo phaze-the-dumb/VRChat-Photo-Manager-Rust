@@ -36,8 +36,7 @@
         "minHeight": 400,
         "visible": false,
         "decorations": false,
-        "transparent": true,
-        "titleBarStyle": "Transparent"
+        "transparent": true
       }
     ]
   }
