@@ -84,38 +84,23 @@ let PhotoViewer = () => {
   }
 
   let copyImage = () => {
-    let canvas = document.createElement('canvas');
-    let ctx = canvas.getContext('2d')!;
-
-    canvas.width = window.PhotoViewerManager.CurrentPhoto()?.width || 0;
-    canvas.height = window.PhotoViewerManager.CurrentPhoto()?.height || 0;
-
-    ctx.drawImage(imageViewer, 0, 0);
-
-    canvas.toBlob(( blob ) => {
-      navigator.clipboard.write([
-        new ClipboardItem({
-          'image/png': blob!
-        })
-      ]);
-
-      canvas.remove();
-
-      anime.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
-      anime({
-        targets: '.copy-notif',
-        opacity: 1,
-        translateY: '0px'
-      });
-
-      setTimeout(() => {
+    invoke('copy_image', { path: window.PhotoViewerManager.CurrentPhoto()!.path })
+      .then(() => {
+        anime.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
         anime({
           targets: '.copy-notif',
-          opacity: 0,
-          translateY: '-100px'
+          opacity: 1,
+          translateY: '0px'
         });
-      }, 2000);
-    });
+
+        setTimeout(() => {
+          anime({
+            targets: '.copy-notif',
+            opacity: 0,
+            translateY: '-100px'
+          });
+        }, 2000);
+      })
   }
 
   let closeTray = () => {

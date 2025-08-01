@@ -13,3 +13,4 @@ pub mod relaunch;
 pub mod start_user_auth;
 pub mod start_with_win;
 pub mod sync_photos;
+pub mod copy_image;

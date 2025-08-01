@@ -26,6 +26,7 @@ tauri-plugin-http = "2.0.0-rc.0"
 tauri-plugin-process = "2.0.0-rc.0"
 image = "0.25.2"
 fast_image_resize = { version = "4.2.1", features = [ "image" ] }
+arboard = "3.6.0"
 
 [target.'cfg(windows)'.dependencies]
 mslnk = { version = "0.1.8" }

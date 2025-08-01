@@ -3,15 +3,15 @@ use std::str;
 
 #[derive(Clone)]
 pub struct PNGImage {
-  width: u32,
-  height: u32,
-  bit_depth: u8,
-  colour_type: u8,
-  compression_method: u8,
-  filter_method: u8,
-  interlace_method: u8,
-  metadata: String,
-  path: String,
+  pub width: u32,
+  pub height: u32,
+  pub bit_depth: u8,
+  pub colour_type: u8,
+  pub compression_method: u8,
+  pub filter_method: u8,
+  pub interlace_method: u8,
+  pub metadata: String,
+  pub path: String,
 }
 
 impl PNGImage {

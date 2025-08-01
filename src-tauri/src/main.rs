@@ -7,13 +7,14 @@ mod util;
 mod worldscraper;
 
 use core::time;
+use arboard::Clipboard;
 use frontend_calls::*;
 
 use notify::{ EventKind, RecursiveMode, Watcher };
 use pngmeta::PNGImage;
 use regex::Regex;
 use util::{ cache::Cache, get_photo_path::get_photo_path };
-use std::{ env, fs, thread };
+use std::{ env, fs, sync::Mutex, thread };
 use tauri::{ Emitter, Manager, State, WindowEvent };
 use tauri_plugin_deep_link::DeepLinkExt;
 
@@ -142,6 +143,8 @@ fn main() {
     )
     .unwrap();
 
+  let clipboard = Clipboard::new().unwrap();
+
   tauri::Builder::default()
     .plugin(tauri_plugin_single_instance::init(| app, argv, _cwd | {
       app.get_webview_window("main").unwrap().show().unwrap();
@@ -163,6 +166,7 @@ fn main() {
       _ => {}
     })
     .manage(cache)
+    .manage(Mutex::new(clipboard))
     .setup(|app| {
       let handle = app.handle();
 
@@ -209,7 +213,8 @@ fn main() {
       config::get_config_value_string,
       config::set_config_value_int,
       config::get_config_value_int,
-      get_os::get_os
+      get_os::get_os,
+      copy_image::copy_image
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
