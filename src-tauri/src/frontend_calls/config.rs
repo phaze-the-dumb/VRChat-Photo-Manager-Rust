@@ -17,6 +17,8 @@ pub fn get_config_path() -> PathBuf {
   path
 }
 
+
+// TODO: Redo all of this just, stop please.
 #[tauri::command]
 pub fn set_config_value_string(key: String, value: String) {
   let path = get_config_path();

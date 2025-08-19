@@ -18,6 +18,8 @@ use std::{ env, fs, sync::Mutex, thread };
 use tauri::{ Emitter, Manager, State, WindowEvent };
 use tauri_plugin_deep_link::DeepLinkExt;
 
+use crate::frontend_calls::config::get_config_value_string;
+
 // TODO: Linux support
 
 fn main() {
@@ -154,7 +156,10 @@ fn main() {
       util::handle_uri_proto::handle_uri_proto(req, res, cache);
     })
     .on_window_event(|window, event| match event {
-      WindowEvent::CloseRequested { api, .. } => {
+      WindowEvent::CloseRequested { api,   .. } => {
+        let val = get_config_value_string("minimise-on-close".into());
+        if val.is_some() && val.unwrap() == "false"{ return; }
+
         window.hide().unwrap();
         api.prevent_close();
       }

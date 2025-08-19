@@ -1,6 +1,6 @@
 [package]
 name = "VRChatPhotoManager"
-version = "0.2.5"
+version = "0.2.6"
 description = "VRChat Photo Manager"
 authors = ["_phaz"]
 edition = "2021"

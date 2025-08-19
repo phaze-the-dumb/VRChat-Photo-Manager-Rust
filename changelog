@@ -102,3 +102,7 @@ v0.2.5:
   - Fixed app name on windows
   - Update styles
   - Fixed filters removing photos without metadata
+
+v0.2.6:
+  - Fixed photos not being loaded if they're too low resolution
+  - Added close to tray toggle
