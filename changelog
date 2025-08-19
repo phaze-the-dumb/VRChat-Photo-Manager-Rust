@@ -95,5 +95,7 @@ v0.2.5:
   - Fixed the "Start with windows" button appearing on linux
   - Fixed linux tray icon title
   - Fixed build-release.sh script outputting the wrong names for windows builds
-  - Fixed clipboard on linux ( and speeded it up on windows )
+  - Fixed clipboard on linux ( and sped it up on windows )
   - Fixed some icons not fading out when moving to the settings menu
+  - Removed the auto updater
+  - Removed account login stuff

@@ -1,10 +1,10 @@
-use std::{borrow::Cow, fs::{self, File}, io::BufReader, sync::Mutex};
+use std::{ borrow::Cow, sync::Mutex };
 
-use arboard::{Clipboard, ImageData};
-use image::{codecs::png::PngDecoder, EncodableLayout, GenericImageView, ImageDecoder};
+use arboard::{ Clipboard, ImageData };
+use image::GenericImageView;
 use tauri::State;
 
-use crate::{ frontend_calls::get_user_photos_path::get_user_photos_path, pngmeta::PNGImage, util::cache::Cache };
+use crate::{ frontend_calls::get_user_photos_path::get_user_photos_path, util::cache::Cache };
 
 #[tauri::command]
 pub fn copy_image( path: String, clipboard: State<Mutex<Clipboard>>, cache: State<Cache> ) {

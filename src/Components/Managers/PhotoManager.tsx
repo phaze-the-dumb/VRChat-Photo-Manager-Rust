@@ -117,7 +117,7 @@ export class PhotoManager{
       photo.onMetaLoaded = () => this.ReloadFilters();
       photo.loadMeta();
   
-      if(!window.SyncManager.IsSyncing() && window.AccountManager.Storage()?.isSyncing){
+      if(!window.SyncManager.IsSyncing()){
         window.SyncManager.TriggerSync();
       }
     })

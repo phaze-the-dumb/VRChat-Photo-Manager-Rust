@@ -280,7 +280,7 @@ let SettingsMenu = () => {
                 finalPathConfirm.style.display = 'none';
 
                 await invoke('change_final_path', { newPath: finalPathData });
-                await invoke('relaunch');
+                window.location.reload();
 
                 anime({
                   targets: '.settings',

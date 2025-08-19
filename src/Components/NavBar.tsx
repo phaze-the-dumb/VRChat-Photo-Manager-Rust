@@ -1,4 +1,3 @@
-import { invoke } from '@tauri-apps/api/core';
 import { emit } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import anime from 'animejs';
@@ -87,10 +86,6 @@ let NavBar = () => {
           </Show>
         </div>
         <div class="account" onClick={() => setDropdownVisibility(!dropdownVisible)}>
-          <Show when={window.AccountManager.hasAccount()}>
-            <div class="user-pfp" style={{ background: 
-              `url('https://cdn.phazed.xyz/id/avatars/${window.AccountManager.Profile()?.id}/${window.AccountManager.Profile()?.avatar}.png')` }}></div>
-          </Show>
           <div class="icon">
             <img draggable="false" width="24" height="24" src="/icon/caret-down-solid.svg"></img>
           </div>
@@ -122,29 +117,6 @@ let NavBar = () => {
           window.ViewManager.ChangeState(ViewState.SETTINGS);
           setDropdownVisibility(false);
         }}>Settings</div>
-
-        <Show when={!window.AccountManager.hasAccount()} fallback={
-          <div class="dropdown-button" onClick={async () => {
-            window.AccountManager.logout()
-              .then(data => {
-                console.log(data);
-                setDropdownVisibility(false);
-              })
-              .catch(e => {
-                console.error(e);
-
-                invoke('set_config_value_string', { key: 'token', value: '' });
-                window.location.reload();
-
-                setDropdownVisibility(false);
-              })
-          }}>Sign Out</div>
-        }>
-          <div class="dropdown-button" onClick={() => {
-            window.AccountManager.login();
-            setDropdownVisibility(false);
-          }}>Sign In</div>
-        </Show>
       </div>
     </>
   )

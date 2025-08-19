@@ -458,7 +458,6 @@ let PhotoViewer = () => {
           onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("Are you sure you want to delete this photo?", async () => { invoke("delete_photo", {
             path: window.PhotoViewerManager.CurrentPhoto()?.path,
             token: (await invoke('get_config_value_string', { key: 'token' })) || "none",
-            isSyncing: window.AccountManager.hasAccount() ? window.AccountManager.Storage()?.isSyncing : false
           });
         })}>
           <div class="icon" style={{ width: '12px', margin: '0' }}>

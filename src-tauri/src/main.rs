@@ -89,10 +89,6 @@ fn main() {
     }
   };
 
-  // Updater only supports windows, so don't update if on linux
-  #[cfg(windows)]
-  util::check_updates::check_updates(container_folder);
-
   // Listen for file updates, store each update in an mpsc channel and send to the frontend
   let (sender, receiver) = std::sync::mpsc::channel();
   let mut watcher = notify::recommended_watcher(move | res: Result<notify::Event, notify::Error> | {
@@ -146,9 +142,8 @@ fn main() {
   let clipboard = Clipboard::new().unwrap();
 
   tauri::Builder::default()
-    .plugin(tauri_plugin_single_instance::init(| app, argv, _cwd | {
+    .plugin(tauri_plugin_single_instance::init(| app, _argv, _cwd | {
       app.get_webview_window("main").unwrap().show().unwrap();
-      util::handle_deeplink::handle_deeplink(argv[1].clone(), app);
     }))
     .plugin(tauri_plugin_deep_link::init())
     .plugin(tauri_plugin_process::init())
@@ -194,7 +189,6 @@ fn main() {
       Ok(())
     })
     .invoke_handler(tauri::generate_handler![
-      start_user_auth::start_user_auth,
       load_photos::load_photos,
       close_splashscreen::close_splashscreen,
       load_photo_meta::load_photo_meta,
@@ -208,7 +202,6 @@ fn main() {
       change_final_path::change_final_path,
       sync_photos::sync_photos,
       util::get_version::get_version,
-      relaunch::relaunch,
       config::set_config_value_string,
       config::get_config_value_string,
       config::set_config_value_int,

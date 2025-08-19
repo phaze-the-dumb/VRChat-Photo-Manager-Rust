@@ -3,7 +3,6 @@ import { render } from "solid-js/web";
 
 declare global{
   interface Window {
-    AccountManager: AccountManager;
     LoadingManager: LoadingManager;
     PhotoManager: PhotoManager;
     ConfirmationBoxManager: ConfirmationBoxManager;
@@ -27,7 +26,6 @@ import "./styles.css";
 import App from "./Components/App";
 import { invoke } from "@tauri-apps/api/core";
 
-import { AccountManager } from "./Components/Managers/AccountManager";
 import { LoadingManager } from "./Components/Managers/LoadingManager";
 import { PhotoManager } from "./Components/Managers/PhotoManager";
 import { ConfirmationBoxManager } from "./Components/Managers/ConfirmationBoxManager";
@@ -37,7 +35,6 @@ import { PhotoListRenderingManager } from "./Components/Managers/PhotoListRender
 import { SyncManager } from "./Components/Managers/SyncManager";
 import { ViewManager } from "./Components/Managers/ViewManager";
 
-window.AccountManager = new AccountManager();
 window.LoadingManager = new LoadingManager();
 window.PhotoManager = new PhotoManager();
 window.ConfirmationBoxManager = new ConfirmationBoxManager();

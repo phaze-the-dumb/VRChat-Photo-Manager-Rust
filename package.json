@@ -19,11 +19,11 @@
     "@tauri-apps/plugin-shell": "2.0.0-rc.0",
     "@types/animejs": "^3.1.13",
     "animejs": "^3.2.2",
-    "solid-js": "^1.9.7"
+    "solid-js": "^1.9.9"
   },
   "devDependencies": {
     "@tauri-apps/cli": "2.0.0-rc.5",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.2",
     "vite": "^5.4.19",
     "vite-plugin-solid": "^2.11.8"
   }

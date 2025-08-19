@@ -98,6 +98,12 @@ let PhotoList = () => {
     }
   }
 
+  let fps = 0;
+  setInterval(() => {
+    console.log('FPS: ' + fps);
+    fps = 0;
+  }, 1000);
+
   let render = () => {
     if(!quitRender)
       requestAnimationFrame(render);
@@ -118,7 +124,7 @@ let PhotoList = () => {
     ctx.clearRect(0, 0, photoContainer.width, photoContainer.height);
     ctxBG.clearRect(0, 0, photoContainerBG.width, photoContainerBG.height);
 
-    scroll = scroll + (targetScroll - scroll) * 0.2;
+    scroll = scroll + (targetScroll - scroll) * 0.1;
 
     window.PhotoListRenderingManager.Render(ctx, photoContainer!, scroll);
 
@@ -133,6 +139,7 @@ let PhotoList = () => {
     }
 
     ctxBG.drawImage(photoContainer, 0, 0);
+    fps += 1;
   }
 
   listen('hide-window', () => {
@@ -192,7 +199,7 @@ let PhotoList = () => {
     anime.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
 
     photoContainer.onwheel = ( e: WheelEvent ) => {
-      targetScroll += e.deltaY;
+      targetScroll += e.deltaY * 2;
 
       if(targetScroll < 0)
         targetScroll = 0;

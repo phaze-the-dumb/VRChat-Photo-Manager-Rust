@@ -23,7 +23,7 @@
   },
   "app": {
     "security": {
-      "csp": "https://photos.phazed.xyz; connect-src ipc: http://ipc.localhost"
+      "csp": "connect-src ipc: http://ipc.localhost"
     },
     "windows": [
       {

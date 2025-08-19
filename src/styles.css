@@ -333,8 +333,7 @@ body{
   top: 0;
   left: 0;
   z-index: -1;
-  filter: blur(100px);
-  -webkit-filter: blur(100px);
+  /* filter: blur(100px); */
 }
 
 .single-photo-container{
