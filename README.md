@@ -1,8 +1,6 @@
 # VRChat Photo Manager (BETA)
 
-Install [here](https://cdn.phaz.uk/vrcpm/vrcpm-installer.exe) (Windows)
-
-Install [here](https://github.com/phaze-the-dumb/VRChat-Photo-Manager/releases) (Linux)
+Download [here](https://github.com/phaze-the-dumb/VRChat-Photo-Manager/releases/latest)
 
 ## Feedback / Bug Reports
 
