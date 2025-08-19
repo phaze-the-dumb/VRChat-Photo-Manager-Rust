@@ -7,10 +7,25 @@ pub fn open_folder(url: &str) {
 
   #[cfg(target_os = "linux")]
   {
-    let url = url.replace("\\", "/");
-    let mut path: Vec<&str> = url.split("/").collect();
+    let path = url.replace("\\", "/");
 
-    path.pop();
-    Command::new("xdg-open").arg(path.join("/")).spawn().unwrap();
+    let mut dir_path: Vec<_> = path.split("/").collect();
+    dir_path.pop();
+    let dir_path = dir_path.join("/");
+
+    let commands = vec![
+      ( "nautilus", vec![ path.clone() ] ),
+      ( "nemo", vec![ path.clone() ] ),
+      ( "thunar", vec![ path.clone() ] ),
+      ( "caja", vec![ "--select".into(), path.clone() ] ),
+      ( "pcmanfm-qt", vec![ dir_path.clone() ] ),
+      ( "pcmanfm", vec![ dir_path.clone() ] ),
+      ( "dolphin", vec![ "--select".into(), path.clone() ] ),
+      ( "konqueror", vec![ "--select".into(), path.clone() ] ),
+      ( "xdg-open", vec![ dir_path.clone() ] )
+    ];
+
+    for command in commands{
+      if Command::new(command.0).args(command.1).spawn().is_ok() { break; } }
   }
 }
