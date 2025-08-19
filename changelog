@@ -109,3 +109,4 @@ v0.2.6:
   - Fixed "Open in folder" not selecting files on linux
   - Remove all sync stuff
   - Fixed scroll to top button not animating out
+  - Fixed scroll to top button being ontop of filters menu
