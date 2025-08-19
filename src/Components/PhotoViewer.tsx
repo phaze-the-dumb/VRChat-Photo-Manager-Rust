@@ -1,7 +1,7 @@
 import { For, Show, createEffect, onCleanup, onMount } from "solid-js";
 import { invoke } from '@tauri-apps/api/core';
-import anime from 'animejs';
 import { WorldCache } from "./Structs/WorldCache";
+import { animate, JSAnimation, utils } from "animejs";
 
 let PhotoViewer = () => {
   let viewer: HTMLElement;
@@ -21,7 +21,6 @@ let PhotoViewer = () => {
   let viewerContextMenuButtons: HTMLElement[] = [];
 
   let allowedToOpenTray = false;
-  let trayInAnimation = false;
 
   let authorProfileButton: HTMLDivElement;
 
@@ -52,31 +51,32 @@ let PhotoViewer = () => {
     }
   }
 
-  let openTray = () => {
-    if(trayOpen || trayInAnimation)return;
+  let trayAnimation: JSAnimation[] = [];
 
+  let openTray = () => {
+    if(trayOpen)return;
     trayOpen = true;
-    trayInAnimation = true;
+
+    trayAnimation.forEach(anim => anim.cancel());
 
     window.CloseAllPopups.forEach(p => p());
-    anime({ targets: photoTray, bottom: '0px', duration: 500 });
+    trayAnimation[0] = animate(photoTray, { bottom: '-150px', duration: 500, ease: 'outElastic' });
 
-    anime({
-      targets: photoControls,
+    trayAnimation[1]  = animate(photoControls, {
       bottom: '160px',
+      ease: 'outElastic',
       scale: '0.75',
       opacity: 0,
       duration: 500,
-      complete: () => {
+      onComplete: () => {
         photoControls.style.display = 'none';
-        trayInAnimation = false;
       }
     });
 
     photoTrayCloseBtn.style.display = 'flex';
-    anime({
-      targets: photoTrayCloseBtn,
+    trayAnimation[2]  = animate(photoTrayCloseBtn, {
       bottom: '160px',
+      ease: 'outElastic',
       opacity: 1,
       scale: 1,
       duration: 500
@@ -86,16 +86,16 @@ let PhotoViewer = () => {
   let copyImage = () => {
     invoke('copy_image', { path: window.PhotoViewerManager.CurrentPhoto()!.path })
       .then(() => {
-        anime.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
-        anime({
-          targets: '.copy-notif',
+        utils.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
+        animate('.copy-notif', {
+          ease: 'outElastic',
           opacity: 1,
           translateY: '0px'
         });
 
         setTimeout(() => {
-          anime({
-            targets: '.copy-notif',
+          animate('.copy-notif', {
+            ease: 'outElastic',
             opacity: 0,
             translateY: '-100px'
           });
@@ -104,29 +104,29 @@ let PhotoViewer = () => {
   }
 
   let closeTray = () => {
-    if(!trayOpen || trayInAnimation)return;
-    trayInAnimation = true;
+    if(!trayOpen)return;
+    trayOpen = false;
+
+    trayAnimation.forEach(anim => anim.cancel());
 
     window.CloseAllPopups.forEach(p => p());
-    anime({ targets: photoTray, bottom: '-150px', duration: 500 });
+    trayAnimation[0] = animate(photoTray, { bottom: '-300px', duration: 500, ease: 'outElastic' });
 
-    anime({
-      targets: photoTrayCloseBtn,
+    trayAnimation[2] = animate(photoTrayCloseBtn, {
       bottom: '10px',
       scale: '0.75',
+      ease: 'outElastic',
       opacity: 0,
       duration: 500,
-      complete: () => {
+      onComplete: () => {
         photoTrayCloseBtn.style.display = 'none';
-        trayOpen = false;
-        trayInAnimation = false;
       }
     });
 
     photoControls.style.display = 'flex';
-    anime({
-      targets: photoControls,
+    trayAnimation[1] = animate(photoControls, {
       bottom: '10px',
+      ease: 'outElastic',
       opacity: 1,
       scale: 1,
       duration: 500,
@@ -134,23 +134,22 @@ let PhotoViewer = () => {
   }
 
   onMount(() => {
-    anime.set(photoControls, { translateX: '-50%' });
-    anime.set(photoTrayCloseBtn, { translateX: '-50%', opacity: 0, scale: '0.75', bottom: '10px' });
+    utils.set(photoControls, { translateX: '-50%' });
+    utils.set(photoTrayCloseBtn, { translateX: '-50%', opacity: 0, scale: '0.75', bottom: '10px' });
 
     window.addEventListener('keyup', switchPhotoWithKey);
 
     let contextMenuOpen = false;
     window.CloseAllPopups.push(() => {
       contextMenuOpen = false;
-      anime.set(viewerContextMenu, { opacity: 1, rotate: '0deg' });
+      utils.set(viewerContextMenu, { opacity: 1, rotate: '0deg' });
 
-      anime({
-        targets: viewerContextMenu,
+      animate(viewerContextMenu, {
         opacity: 0,
         easing: 'easeInOutQuad',
         rotate: '30deg',
         duration: 100,
-        complete: () => {
+        onComplete: () => {
           viewerContextMenu.style.display = 'none';
         }
       })
@@ -174,15 +173,14 @@ let PhotoViewer = () => {
       if(contextMenuOpen){
         contextMenuOpen = false;
 
-        anime.set(viewerContextMenu, { opacity: 1, rotate: '0deg' });
+        utils.set(viewerContextMenu, { opacity: 1, rotate: '0deg' });
 
-        anime({
-          targets: viewerContextMenu,
+        animate(viewerContextMenu, {
           opacity: 0,
           rotate: '30deg',
           easing: 'easeInOutQuad',
           duration: 100,
-          complete: () => {
+          onComplete: () => {
             viewerContextMenu.style.display = 'none';
           }
         })
@@ -193,10 +191,9 @@ let PhotoViewer = () => {
         viewerContextMenu.style.left = e.clientX + 'px';
         viewerContextMenu.style.display = 'block';
 
-        anime.set(viewerContextMenu, { opacity: 0, rotate: '-30deg' });
+        utils.set(viewerContextMenu, { opacity: 0, rotate: '-30deg' });
   
-        anime({
-          targets: viewerContextMenu,
+        animate(viewerContextMenu, {
           opacity: 1,
           rotate: '0deg',
           easing: 'easeInOutQuad',
@@ -215,8 +212,7 @@ let PhotoViewer = () => {
         imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost/') + window.PhotoViewerManager.CurrentPhoto()?.path.split('\\').join('/') + "?full";
         imageViewer.crossOrigin = 'anonymous';
 
-        anime({
-          targets: imageViewer,
+        animate(imageViewer, {
           opacity: 1,
           delay: 50,
           duration: 150,
@@ -300,45 +296,33 @@ let PhotoViewer = () => {
       if(photo && !isOpen){
         viewer.style.display = 'flex';
   
-        anime({
-          targets: viewer,
+        animate(viewer, {
           opacity: 1,
           easing: 'easeInOutQuad',
           duration: 150
         });
-  
-        anime({
-          targets: '.navbar',
-          top: '-50px'
-        })
 
-        anime.set('.prev-button', { left: '-50px', top: '50%' });
-        anime.set('.next-button', { right: '-50px', top: '50%' });
+        utils.set('.prev-button', { left: '-50px', top: '50%' });
+        utils.set('.next-button', { right: '-50px', top: '50%' });
 
-        anime({ targets: '.prev-button', left: '0', easing: 'easeInOutQuad', duration: 100 });
-        anime({ targets: '.next-button', right: '0', easing: 'easeInOutQuad', duration: 100 });
+        animate('.prev-button', { left: '0', easing: 'easeInOutQuad', duration: 100 });
+        animate('.next-button', { right: '0', easing: 'easeInOutQuad', duration: 100 });
 
         window.CloseAllPopups.forEach(p => p());
       } else if(!photo && isOpen){
-        anime({
-          targets: viewer,
+        animate(viewer, {
           opacity: 0,
           easing: 'easeInOutQuad',
           duration: 150,
-          complete: () => {
+          onComplete: () => {
             viewer.style.display = 'none';
           }
         });
-  
-        anime({
-          targets: '.navbar',
-          top: '0px'
-        })
 
         window.CloseAllPopups.forEach(p => p());
 
-        anime({ targets: '.prev-button', top: '75%', easing: 'easeInOutQuad', duration: 100 });
-        anime({ targets: '.next-button', top: '75%', easing: 'easeInOutQuad', duration: 100 });
+        animate('.prev-button', { top: '75%', easing: 'easeInOutQuad', duration: 100 });
+        animate('.next-button', { top: '75%', easing: 'easeInOutQuad', duration: 100 });
       }
 
       isOpen = photo != null;
@@ -387,7 +371,7 @@ let PhotoViewer = () => {
       </div>
 
       <div class="viewer-close viewer-button" onClick={() => window.PhotoViewerManager.Close()}>
-        <div class="icon" style={{ width: '10px', margin: '0' }}>
+        <div class="icon-small" style={{ width: '10px', margin: '0' }}>
           <img draggable="false" src="/icon/x-solid.svg"></img>
         </div>
       </div>
@@ -397,7 +381,7 @@ let PhotoViewer = () => {
         window.CloseAllPopups.forEach(p => p());
         window.PhotoViewerManager.PreviousPhoto();
       }}>
-        <div class="icon" style={{ width: '15px', margin: '0' }}>
+        <div class="icon-small" style={{ width: '15px', margin: '0' }}>
           <img draggable="false" src="/icon/arrow-left-solid.svg"></img>
         </div>
       </div>
@@ -406,7 +390,7 @@ let PhotoViewer = () => {
         window.CloseAllPopups.forEach(p => p());
         window.PhotoViewerManager.NextPhoto();
       }}>
-        <div class="icon" style={{ width: '15px', margin: '0' }}>
+        <div class="icon-small" style={{ width: '15px', margin: '0' }}>
           <img draggable="false" src="/icon/arrow-right-solid.svg"></img>
         </div>
       </div>
@@ -417,50 +401,49 @@ let PhotoViewer = () => {
         onClick={() => closeTray()}
         ref={( el ) => photoTrayCloseBtn = el}
       >
-        <div class="icon" style={{ width: '12px', margin: '0' }}>
+        <div class="icon-small" style={{ width: '12px', margin: '0' }}>
           <img draggable="false" src="/icon/angle-down-solid.svg"></img>
         </div>
       </div>
 
       <div class="control-buttons" ref={( el ) => photoControls = el}>
         <div class="viewer-button"
-          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
-          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
+          onMouseOver={( el ) => animate(el.currentTarget, { width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
+          onMouseLeave={( el ) => animate(el.currentTarget, { width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
           onClick={() => { copyImage(); }}>
-          <div class="icon" style={{ width: '12px', margin: '0' }}>
+          <div class="icon-small" style={{ width: '12px', margin: '0' }}>
             <img draggable="false" src="/icon/copy-solid.svg"></img>
           </div>
         </div>
         <div class="viewer-button" style={{ width: '50px' }}
-          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '70px', height: '30px', 'margin-left': '10px', 'margin-right': '10px' })}
-          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '50px', height: '30px', 'margin-left': '20px', 'margin-right': '20px' })}
+          onMouseOver={( el ) => animate(el.currentTarget, {  width: '70px', height: '30px', 'margin-left': '10px', 'margin-right': '10px' })}
+          onMouseLeave={( el ) => animate(el.currentTarget, { width: '50px', height: '30px', 'margin-left': '20px', 'margin-right': '20px' })}
           ref={( el ) => trayButton = el}
           onClick={() => openTray()}
         >
-          <div class="icon" style={{ width: '12px', margin: '0' }}>
+          <div class="icon-small" style={{ width: '12px', margin: '0' }}>
             <img draggable="false" src="/icon/angle-up-solid.svg"></img>
           </div>
         </div>
 
         <div class="viewer-button"
           ref={authorProfileButton!}
-          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
-          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
+          onMouseOver={( el ) => animate(el.currentTarget, { width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
+          onMouseLeave={( el ) => animate(el.currentTarget, { width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
         >
-          <div class="icon" style={{ width: '12px', margin: '0' }}>
+          <div class="icon-small" style={{ width: '12px', margin: '0' }}>
             <img draggable="false" src="/icon/user-solid.svg"></img>
           </div>
         </div>
 
         <div class="viewer-button"
-          onMouseOver={( el ) => anime({ targets: el.currentTarget, width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
-          onMouseLeave={( el ) => anime({ targets: el.currentTarget, width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
+          onMouseOver={( el ) => animate(el.currentTarget, { width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
+          onMouseLeave={( el ) => animate(el.currentTarget, { width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
           onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("Are you sure you want to delete this photo?", async () => { invoke("delete_photo", {
-            path: window.PhotoViewerManager.CurrentPhoto()?.path,
-            token: (await invoke('get_config_value_string', { key: 'token' })) || "none",
+            path: window.PhotoViewerManager.CurrentPhoto()?.path
           });
         })}>
-          <div class="icon" style={{ width: '12px', margin: '0' }}>
+          <div class="icon-small" style={{ width: '12px', margin: '0' }}>
             <img draggable="false" src="/icon/trash-solid.svg"></img>
           </div>
         </div>

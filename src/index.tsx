@@ -22,7 +22,16 @@ window.CloseAllPopups = [];
 
 window.oncontextmenu = ( e ) => e.preventDefault(); 
 
+import './css/icons.css';
+import './css/tray.css';
+import './css/settings.css';
+import './css/slide-bar.css';
+import './css/viewer.css';
+import './css/filters.css';
+import './css/list.css';
+
 import "./styles.css";
+
 import App from "./Components/App";
 import { invoke } from "@tauri-apps/api/core";
 

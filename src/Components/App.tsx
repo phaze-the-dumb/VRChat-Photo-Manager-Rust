@@ -1,14 +1,13 @@
 import { onMount } from "solid-js";
-import anime from "animejs";
 
-import NavBar from "./NavBar";
 import PhotoList from "./PhotoList";
 import PhotoViewer from "./PhotoViewer";
 import SettingsMenu from "./SettingsMenu";
+import { utils } from "animejs";
 
 let App = () => {
   onMount(() => {
-    anime.set('.settings',
+    utils.set('.settings',
     {
       display: 'none',
       opacity: 0,
@@ -18,8 +17,6 @@ let App = () => {
 
   return (
     <div class="container">
-      <NavBar />
-
       <PhotoList />
       <PhotoViewer />
 

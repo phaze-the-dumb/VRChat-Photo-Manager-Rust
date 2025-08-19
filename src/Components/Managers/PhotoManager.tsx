@@ -170,11 +170,16 @@ export class PhotoManager{
 
     switch(this._filterType){
       case FilterType.USER:
+        if(this._filter === '')return this.FilteredPhotos = this.Photos;
+
         this.Photos.map(p => {
           if(p.metadata){
             try{
               let meta = JSON.parse(p.metadata);
-              let photo = meta.players.find(( y: any ) => y.displayName.toLowerCase().includes(this._filter) || y.id === this._filter);
+              let photo = meta.players.find(( y: any ) =>
+                y.displayName.toLowerCase().includes(this._filter) ||
+                y.id === this._filter
+              );
 
               if(photo)this.FilteredPhotos.push(p);
             } catch(e){}
@@ -182,12 +187,16 @@ export class PhotoManager{
         })
         break;
       case FilterType.WORLD:
+        if(this._filter === '')return this.FilteredPhotos = this.Photos;
+
         this.Photos.map(p => {
           if(p.metadata){
             try{
               let meta = JSON.parse(p.metadata);
-              let photo = meta.world.name.toLowerCase().includes(this._filter) || meta.world.id === this._filter;
-      
+              let photo =
+                meta.world.name.toLowerCase().includes(this._filter) ||
+                meta.world.id === this._filter;
+
               if(photo)this.FilteredPhotos.push(p);
             } catch(e){}
           }

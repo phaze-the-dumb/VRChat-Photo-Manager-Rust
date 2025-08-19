@@ -1,8 +1,8 @@
 import { onCleanup, onMount, Show } from "solid-js";
 import { bytesToFormatted } from "../utils";
 import { invoke } from '@tauri-apps/api/core';
-import anime from "animejs";
 import { ViewState } from "./Managers/ViewManager";
+import { animate, utils } from "animejs";
 
 let SettingsMenu = () => {
   let sliderBar: HTMLElement;
@@ -17,14 +17,13 @@ let SettingsMenu = () => {
   let closeWithKey = ( e: KeyboardEvent ) => {
     if(e.key === 'Escape'){
       window.ViewManager.ChangeState(ViewState.PHOTO_LIST);
-      anime({
-        targets: '.settings',
+      animate('.settings', {
         opacity: 0,
         translateX: '500px',
         easing: 'easeInOutQuad',
         duration: 250,
-        complete: () => {
-          anime.set('.settings', { display: 'none' });
+        onComplete: () => {
+          utils.set('.settings', { display: 'none' });
         }
       })
     }
@@ -34,13 +33,13 @@ let SettingsMenu = () => {
     if(await invoke('get_config_value_string', { key: 'transparent' }) === "true"){
       invoke('set_config_value_string', { key: 'transparent', value: 'true' });
 
-      anime({ targets: document.body, background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
-      anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
+      animate(document.body, { background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
+      animate('.settings', { background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
     } else{
       invoke('set_config_value_string', { key: 'transparent', value: 'false' });
 
-      anime({ targets: document.body, background: 'rgba(0, 0, 0, 1)', easing: 'linear', duration: 100 });
-      anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
+      animate(document.body, { background: 'rgba(0, 0, 0, 1)', easing: 'linear', duration: 100 });
+      animate('.settings', { background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
     }
 
     let sliderMouseDown = false;
@@ -57,14 +56,14 @@ let SettingsMenu = () => {
 
       if(!sliderMouseDown){
         sliderPos = sliderPos + (width / 2 - buttons[currentButton] - sliderPos) * 0.25;
-        anime.set(sliderBar, { translateX: sliderPos });
+        utils.set(sliderBar, { translateX: sliderPos });
 
         settingsContainer.style.left = (sliderPos - (width / 2 - buttons[0])) * sliderScale + 'px';
       }
     }
 
     render();
-    anime.set(sliderBar, { translateX: sliderPos });
+    utils.set(sliderBar, { translateX: sliderPos });
 
     sliderBar.addEventListener('touchstart', ( e: TouchEvent ) => {
       sliderMouseDown = true;
@@ -73,7 +72,7 @@ let SettingsMenu = () => {
 
     window.addEventListener('touchmove', ( e: TouchEvent ) => {
       if(sliderMouseDown){
-        anime.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
+        utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
         settingsContainer.style.left = (sliderPos - (mouseStartX - e.touches[0].clientX) - (width / 2 - buttons[0])) * sliderScale + 'px';
       }
     })
@@ -84,7 +83,7 @@ let SettingsMenu = () => {
       if(sliderMouseDown){
         sliderPos = sliderPos - (mouseStartX - e.touches[0].clientX);
 
-        anime.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
+        utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
         sliderMouseDown = false;
 
         if(Math.abs(mouseStartX - e.touches[0].clientX) > 50){
@@ -118,7 +117,7 @@ let SettingsMenu = () => {
 
     window.addEventListener('mousemove', ( e: MouseEvent ) => {
       if(sliderMouseDown){
-        anime.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
+        utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
         settingsContainer.style.left = sliderPos - (mouseStartX - e.clientX) + 'px';
         settingsContainer.style.left = (sliderPos - (mouseStartX - e.clientX) - (width / 2 - buttons[0])) * sliderScale + 'px';
       }
@@ -128,7 +127,7 @@ let SettingsMenu = () => {
       if(sliderMouseDown){
         sliderPos = sliderPos - (mouseStartX - e.clientX);
 
-        anime.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
+        utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
         sliderMouseDown = false;
 
         if(Math.abs(mouseStartX - e.clientX) > 50){
@@ -160,7 +159,7 @@ let SettingsMenu = () => {
       sliderPos = width / 2 - buttons[currentButton];
       sliderScale = width / (buttons[1] - buttons[0]);
 
-      anime.set(sliderBar, { translateX: sliderPos  });
+      utils.set(sliderBar, { translateX: sliderPos  });
     })
 
     sliderBar.addEventListener('wheel', ( e: WheelEvent ) => {
@@ -180,6 +179,21 @@ let SettingsMenu = () => {
 
   return (
     <div class="settings">
+      <div class="settings-close" onClick={() => {
+        window.ViewManager.ChangeState(ViewState.PHOTO_LIST);
+        animate('.settings',
+          {
+            opacity: 0,
+            translateX: '500px',
+            easing: 'easeInOutQuad',
+            duration: 250,
+            onComplete: () => {
+              utils.set('.settings', { display: 'none' });
+            }
+          })
+      }}>
+        <div class="icon"><img draggable="false" src="/icon/x-solid.svg"></img></div>
+      </div>
       <div class="settings-container" ref={( el ) => settingsContainer = el}>
         <div class="settings-block">
           <h1>Storage Settings</h1>
@@ -199,7 +213,7 @@ let SettingsMenu = () => {
 
             <label for="start-in-bg-check">
               <div class="selection-box">
-                <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
+                <div class="icon-small" style={{ margin: '0', display: 'inline-flex' }}>
                   <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
                 </div>
               </div>
@@ -223,7 +237,7 @@ let SettingsMenu = () => {
 
               <label for="start-with-win-check">
                 <div class="selection-box">
-                  <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
+                  <div class="icon-small" style={{ margin: '0', display: 'inline-flex' }}>
                     <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
                   </div>
                 </div>
@@ -238,20 +252,20 @@ let SettingsMenu = () => {
               if(el.target.checked){
                 invoke('set_config_value_string', { key: 'transparent', value: 'true' });
 
-                anime({ targets: document.body, background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
-                anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
+                animate(document.body, { background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
+                animate('.settings', { background: 'rgba(0, 0, 0, 0.5)', easing: 'linear', duration: 100 });
               } else{
                 invoke('set_config_value_string', { key: 'transparent', value: 'false' });
 
-                anime({ targets: document.body, background: 'rgba(0, 0, 0, 1)', easing: 'linear', duration: 100 });
-                anime({ targets: '.settings', background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
+                animate(document.body, { background: 'rgba(0, 0, 0, 1)', easing: 'linear', duration: 100 });
+                animate('.settings', { background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
               }
             }} />
             Window Transparency
 
             <label for="transparent-check">
               <div class="selection-box">
-                <div class="icon" style={{ width: '10px', margin: '0', display: 'inline-flex' }}>
+                <div class="icon-small" style={{ margin: '0', display: 'inline-flex' }}>
                   <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
                 </div>
               </div>
@@ -282,14 +296,13 @@ let SettingsMenu = () => {
                 await invoke('change_final_path', { newPath: finalPathData });
                 window.location.reload();
 
-                anime({
-                  targets: '.settings',
+                animate('.settings', {
                   opacity: 0,
                   translateX: '500px',
                   easing: 'easeInOutQuad',
                   duration: 250,
-                  complete: () => {
-                    anime.set('.settings', { display: 'none' });
+                  onComplete: () => {
+                    utils.set('.settings', { display: 'none' });
                   }
                 })
 

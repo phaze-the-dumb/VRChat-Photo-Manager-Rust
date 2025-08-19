@@ -2,10 +2,10 @@ import { onCleanup, onMount } from "solid-js";
 import { listen } from '@tauri-apps/api/event';
 import { Window } from "@tauri-apps/api/window";
 
-import anime from "animejs";
 import FilterMenu from "./FilterMenu";
 import { ViewState } from "./Managers/ViewManager";
 import { invoke } from "@tauri-apps/api/core";
+import { animate, utils } from "animejs";
 
 enum ListPopup{
   FILTERS,
@@ -13,18 +13,14 @@ enum ListPopup{
 }
 
 let PhotoList = () => {
-  let photoTreeLoadingContainer: HTMLElement;
-
   let scrollToTop: HTMLElement;
   let scrollToTopActive = false;
 
   let photoContainer: HTMLCanvasElement;
-  let photoContainerBG: HTMLCanvasElement;
 
   let filterContainer: HTMLDivElement;
 
   let ctx: CanvasRenderingContext2D;
-  let ctxBG: CanvasRenderingContext2D;
 
   let scroll: number = 0;
   let targetScroll: number = 0;
@@ -39,28 +35,28 @@ let PhotoList = () => {
 
 
   window.ViewManager.OnStateTransition(ViewState.PHOTO_LIST, ViewState.SETTINGS, () => {
-    anime({ targets: photoContainer, opacity: 0, easing: 'easeInOutQuad', duration: 100 });
-    anime({ targets: '.filter-options', opacity: 0, easing: 'easeInOutQuad', duration: 100 });
-    anime({ targets: '.reload-photos', opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+    animate(photoContainer, { opacity: 0.5, filter: 'blur(10px)', easing: 'easeInOutQuad', duration: 100 });
+    animate('.filter-options', { opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+    animate('.scroll-to-top', { opacity: 0, easing: 'easeInOutQuad', duration: 100 });
   });
 
   window.ViewManager.OnStateTransition(ViewState.SETTINGS, ViewState.PHOTO_LIST, () => {
-    anime({ targets: photoContainer, opacity: 1, easing: 'easeInOutQuad', duration: 100 });
-    anime({ targets: '.filter-options', opacity: 1, easing: 'easeInOutQuad', duration: 100 });
-    anime({ targets: '.reload-photos', opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+    animate(photoContainer, { opacity: 1, filter: 'blur(0px)', easing: 'easeInOutQuad', duration: 100, onComplete: () => photoContainer.style.filter = '' });
+    animate('.filter-options', { opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+    animate('.scroll-to-top', { opacity: 1, easing: 'easeInOutQuad', duration: 100 });
   });
 
 
   window.ViewManager.OnStateTransition(ViewState.PHOTO_LIST, ViewState.PHOTO_VIEWER, () => {
-    anime({ targets: photoContainer, opacity: 0, easing: 'easeInOutQuad', duration: 100 });
-    anime({ targets: '.filter-options', opacity: 0, easing: 'easeInOutQuad', duration: 100 });
-    anime({ targets: '.reload-photos', opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+    animate(photoContainer, { opacity: 0.5, filter: 'blur(10px)', easing: 'easeInOutQuad', duration: 100 });
+    animate('.filter-options', { opacity: 0, easing: 'easeInOutQuad', duration: 100 });
+    animate('.scroll-to-top', { opacity: 0, easing: 'easeInOutQuad', duration: 100 });
   });
 
   window.ViewManager.OnStateTransition(ViewState.PHOTO_VIEWER, ViewState.PHOTO_LIST, () => {
-    anime({ targets: photoContainer, opacity: 1, easing: 'easeInOutQuad', duration: 100 });
-    anime({ targets: '.filter-options', opacity: 1, easing: 'easeInOutQuad', duration: 100 });
-    anime({ targets: '.reload-photos', opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+    animate(photoContainer, { opacity: 1, filter: 'blur(0px)', easing: 'easeInOutQuad', duration: 100, onComplete: () => photoContainer.style.filter = '' });
+    animate('.filter-options', { opacity: 1, easing: 'easeInOutQuad', duration: 100 });
+    animate('.scroll-to-top', { opacity: 1, easing: 'easeInOutQuad', duration: 100 });
   });
 
 
@@ -74,21 +70,18 @@ let PhotoList = () => {
     photoContainer.width = window.innerWidth;
     photoContainer.height = window.innerHeight;
 
-    photoContainerBG.width = window.innerWidth;
-    photoContainerBG.height = window.innerHeight;
-
     window.PhotoListRenderingManager.ComputeLayout();
   }
 
   let closeCurrentPopup = () => {
     switch(currentPopup){
       case ListPopup.FILTERS:
-        anime({
-          targets: filterContainer!,
+        animate(filterContainer!, {
           opacity: 0,
+          translateY: '10px',
           easing: 'easeInOutQuad',
           duration: 100,
-          complete: () => {
+          onComplete: () => {
             filterContainer!.style.display = 'none';
             currentPopup = ListPopup.NONE;
           }
@@ -98,12 +91,6 @@ let PhotoList = () => {
     }
   }
 
-  let fps = 0;
-  setInterval(() => {
-    console.log('FPS: ' + fps);
-    fps = 0;
-  }, 1000);
-
   let render = () => {
     if(!quitRender)
       requestAnimationFrame(render);
@@ -112,17 +99,16 @@ let PhotoList = () => {
 
     if(!scrollToTopActive && scroll > photoContainer.height){
       scrollToTop.style.display = 'flex';
-      anime({ targets: scrollToTop, opacity: 1, translateY: '0px', easing: 'easeInOutQuad', duration: 100 });
+      animate(scrollToTop, { opacity: 1, translateY: '0px', easing: 'easeInOutQuad', duration: 100 });
 
       scrollToTopActive = true;
     } else if(scrollToTopActive && scroll < photoContainer.height){
-      anime({ targets: scrollToTop, opacity: 0, translateY: '-10px', complete: () => scrollToTop.style.display = 'none', easing: 'easeInOutQuad', duration: 100 });
+      animate(scrollToTop, { opacity: 0, translateY: '-10px', complete: () => scrollToTop.style.display = 'none', easing: 'easeInOutQuad', duration: 100 });
       scrollToTopActive = false;
     }
 
-    if(!ctx || !ctxBG)return;
+    if(!ctx)return;
     ctx.clearRect(0, 0, photoContainer.width, photoContainer.height);
-    ctxBG.clearRect(0, 0, photoContainerBG.width, photoContainerBG.height);
 
     scroll = scroll + (targetScroll - scroll) * 0.1;
 
@@ -137,9 +123,6 @@ let PhotoList = () => {
 
       ctx.fillText("It's looking empty in here! You have no photos :O", photoContainer.width / 2, photoContainer.height / 2);
     }
-
-    ctxBG.drawImage(photoContainer, 0, 0);
-    fps += 1;
   }
 
   listen('hide-window', () => {
@@ -154,9 +137,6 @@ let PhotoList = () => {
     photoContainer.width = window.innerWidth;
     photoContainer.height = window.innerHeight;
 
-    photoContainerBG.width = window.innerWidth;
-    photoContainerBG.height = window.innerHeight;
-
     if(window.PhotoManager.HasFirstLoaded){
       requestAnimationFrame(render);
       window.PhotoManager.HasFirstLoaded = false;
@@ -166,19 +146,7 @@ let PhotoList = () => {
   window.PhotoManager.OnLoadingFinished(() => {
     invoke('close_splashscreen');
 
-    anime({
-      targets: photoTreeLoadingContainer,
-      height: 0,
-      easing: 'easeInOutQuad',
-      duration: 500,
-      opacity: 0,
-      complete: () => {
-        photoTreeLoadingContainer.style.display = 'none';
-      }
-    })
-
-    anime({
-      targets: '.reload-photos',
+    animate('.reload-photos', {
       opacity: 1,
       duration: 150,
       easing: 'easeInOutQuad'
@@ -192,11 +160,10 @@ let PhotoList = () => {
 
   onMount(() => {
     ctx = photoContainer.getContext('2d')!;
-    ctxBG = photoContainerBG.getContext('2d')!;
 
     window.PhotoManager.Load();
 
-    anime.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
+    utils.set(scrollToTop, { opacity: 0, translateY: '-10px', display: 'none' });
 
     photoContainer.onwheel = ( e: WheelEvent ) => {
       targetScroll += e.deltaY * 2;
@@ -210,9 +177,6 @@ let PhotoList = () => {
 
     photoContainer.width = window.innerWidth;
     photoContainer.height = window.innerHeight;
-
-    photoContainerBG.width = window.innerWidth;
-    photoContainerBG.height = window.innerHeight;
 
     photoContainer.onclick = ( e: MouseEvent ) => {
       let photo = window.PhotoManager.FilteredPhotos.find(x =>
@@ -240,23 +204,13 @@ let PhotoList = () => {
 
   return (
     <div class="photo-list">
-      <div ref={filterContainer!} class="filter-container" style={{
-        height: window.PhotoManager.HasBeenIndexed() ? '83px' : '110px',
-        width: window.PhotoManager.HasBeenIndexed() ? '600px' : '650px'
-      }}>
+      <div ref={filterContainer!} class="filter-container">
         <FilterMenu />
       </div>
-
-      <div class="photo-tree-loading" ref={( el ) => photoTreeLoadingContainer = el}>Scanning Photo Tree...</div>
 
       <div class="scroll-to-top" ref={( el ) => scrollToTop = el} onClick={() => targetScroll = 0}>
         <div class="icon">
           <img draggable="false" src="/icon/angle-up-solid.svg"></img>
-        </div>
-      </div>
-      <div class="reload-photos" onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("Are you sure you want to reload all photos? This can cause the application to slow down while it is loading...", () => window.location.reload())}>
-        <div class="icon" style={{ width: '17px' }}>
-          <img draggable="false" width="17" height="17" src="/icon/arrows-rotate-solid.svg"></img>
         </div>
       </div>
 
@@ -268,21 +222,46 @@ let PhotoList = () => {
 
             filterContainer!.style.display = 'block';
 
-            anime({
-              targets: filterContainer!,
+            animate(filterContainer!, {
               opacity: 1,
+              translateY: 0,
               easing: 'easeInOutQuad',
               duration: 100
             });
-          }} class="icon" style={{ width: '20px', height: '20px', padding: '20px' }}>
+          }} class="icon">
             <img draggable="false" style={{ width: "20px", height: "20px" }} src="/icon/sliders-solid.svg"></img>
           </div>
           <div class="icon-label">Filters</div>
         </div>
+
+        <div>
+          <div onClick={() => {
+            window.location.reload();
+          }} class="icon">
+            <img draggable="false" style={{ width: "20px", height: "20px" }} src="/icon/arrows-rotate-solid.svg"></img>
+          </div>
+          <div class="icon-label">Reload Photos</div>
+        </div>
+
+        <div>
+          <div onClick={() => {
+            utils.set('.settings', { display: 'block' });
+            animate('.settings', {
+              opacity: 1,
+              translateX: '0px',
+              easing: 'easeInOutQuad',
+              duration: 250
+            })
+
+            window.ViewManager.ChangeState(ViewState.SETTINGS);
+          }} class="icon">
+            <img draggable="false" style={{ width: "20px", height: "20px" }} src="/icon/gear-solid-full.svg"></img>
+          </div>
+          <div class="icon-label">Settings</div>
+        </div>
       </div>
 
       <canvas class="photo-container" ref={( el ) => photoContainer = el}></canvas>
-      <canvas class="photo-container-bg" ref={( el ) => photoContainerBG = el}></canvas>
     </div>
   )
 }

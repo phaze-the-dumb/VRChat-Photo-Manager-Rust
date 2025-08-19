@@ -1,0 +1,84 @@
+.settings{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.settings-container{
+  position: fixed;
+  top: 50px;
+  left: 0px;
+  width: 200%;
+  height: calc(100% - 100px);
+  display: flex;
+}
+
+.settings-close{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  cursor: pointer;
+  user-select: none;
+  width: 40px;
+  height: 40px;
+}
+
+.settings-block{
+  width: 50%;
+  height: 100%;
+  color: white;
+  text-align: center;
+}
+
+.selector{
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: #000a;
+  display: inline-block;
+  margin: 10px;
+}
+
+.selector .selection-box{
+  height: 20px;
+  background: #777a;
+  margin: 5px -10px 0 -10px;
+  border-radius: 8px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  transition: 0.25s;
+  color: #fff1;
+}
+
+.selector .selection-box:hover{
+  height: 20px;
+  background: #777a;
+  margin: 5px -10px 0 -10px;
+  border-radius: 8px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  transition: 0.25s;
+  color: #fff5;
+}
+
+.selector input{
+  display: none;
+}
+
+.selector input:checked ~ label .selection-box{
+  background: rgba(0, 146, 204, 0.705);
+  color: #fff;
+}
+
+.path{
+  padding: 5px 10px;
+  background: #000a;
+  border-radius: 5px;
+  margin-left: 5px;
+  cursor: pointer;
+}

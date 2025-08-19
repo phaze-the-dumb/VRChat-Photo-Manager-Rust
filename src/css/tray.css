@@ -1,0 +1,82 @@
+.photo-tray{
+  position: fixed;
+  bottom: -300px;
+  left: 0;
+  width: 100%;
+  height: 300px;
+  background: rgba(43, 43, 43, 0.76);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: #0008 0 0 10px;
+  padding-bottom: 150px;
+}
+
+.photo-tray-close{
+  position: fixed;
+  bottom: 160px;
+  left: 50%;
+  transform: translate(-50%);
+  color: white;
+  background: #8885;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: #0008 0 0 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  width: 50px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 12px;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: 0.25s width;
+}
+
+.photo-tray-close:hover{
+  width: 70px;
+}
+
+.photo-tray-columns{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  color: white;
+  text-align: center;
+}
+
+.photo-tray-column{
+  height: 100%;
+  width: 100%;
+  scrollbar-width: thin;
+  overflow-y: auto;
+  overflow-x: hidden;
+  mask-image: linear-gradient(to bottom, #0000 0%, #000 10%, #000 90%, #0000 100%);
+}
+
+.tray-heading{
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.world-tags{
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.world-tags div{
+  padding: 0 10px;
+  color: #bbb;
+  transition: 0.25s;
+}
+
+.world-tags div:hover{
+  color: #ddd;
+}
+
+.world-name{
+  font-size: 17px;
+}

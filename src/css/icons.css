@@ -1,0 +1,40 @@
+.icon{
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+  filter: invert(100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.icon-small{
+  filter: invert(100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.icon-label{
+  margin-top: -20px;
+  margin-right: -200px;
+  width: 200px;
+  color: white;
+  pointer-events: none;
+  transform: translate(20px, -9px);
+  opacity: 0;
+  transition: 0.25s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.icon:hover ~ .icon-label{
+  opacity: 1;
+  transform: translate(40px, -9px);
+}
+

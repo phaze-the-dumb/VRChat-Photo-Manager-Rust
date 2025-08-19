@@ -100,3 +100,5 @@ v0.2.5:
   - Removed the auto updater
   - Removed account login stuff
   - Fixed app name on windows
+  - Update styles
+  - Fixed filters removing photos without metadata

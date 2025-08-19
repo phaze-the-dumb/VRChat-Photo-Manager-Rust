@@ -1,0 +1,169 @@
+
+.photo-container{
+  width: 100%;
+  height: 100%;
+}
+
+.photo-container-bg{
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  /* filter: blur(100px); */
+}
+
+.single-photo-container{
+  margin: 10px;
+  display: inline-block;
+}
+
+.photo-viewer{
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  background: #0009;
+  opacity: 0;
+  display: none;
+}
+
+.photo-context-menu{
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 10px;
+  border-radius: 5px;
+  background: #555a;
+  color: #aaa;
+  box-shadow: #0005 0 0 10px;
+  opacity: 0;
+}
+
+.photo-context-menu > div{
+  padding: 2px 10px;
+  width: 100;
+  text-align: center;
+  transition: 0.1s;
+}
+
+.photo-context-menu > div:hover{
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.image-container{
+  height: 100%;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  opacity: 0;
+}
+
+.viewer-button{
+  color: white;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50px;
+  font-size: 12px;
+  background: #8885;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  z-index: 7;
+  box-shadow: #0008 0 0 10px;
+}
+
+.viewer-close{
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  width: 35px;
+  height: 35px;
+}
+
+.prev-button{
+  transition: 0.25s;
+  position: fixed;
+  top: 50%;
+  left: 0;
+  color: white;
+  width: 50px;
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.144);
+  border-radius: 0 15px 15px 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: #000 0 0 10px;
+}
+
+.prev-button:hover{
+  background: rgba(255, 255, 255, 0.349);
+}
+
+.next-button{
+  transition: 0.25s;
+  position: fixed;
+  top: 50%;
+  right: 0;
+  color: white;
+  width: 50px;
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.144);
+  border-radius: 15px 0 0 15px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: #000 0 0 10px;
+}
+
+.next-button:hover{
+  background: rgba(255, 255, 255, 0.349);
+}
+
+.control-buttons{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+}
+
+.control-buttons div{
+  margin: 0 20px;
+}
+
+.copy-notif{
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  color: white;
+  transform: translateX(-50%) translateY(-100px);
+  background: #8885;
+  padding: 10px 40px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 50px;
+  box-shadow: #000 0 0 10px;
+  z-index: 12;
+  opacity: 0;
+  pointer-events: none;
+}

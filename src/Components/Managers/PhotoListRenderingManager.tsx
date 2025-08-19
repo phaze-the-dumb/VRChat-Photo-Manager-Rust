@@ -22,7 +22,7 @@ export class PhotoListRenderingManager{
 
     let lastDateString = null;
     let row = new PhotoListRow();
-    row.Height = 100;
+    row.Height = 0;
 
     for (let i = 0; i < window.PhotoManager.FilteredPhotos.length; i++) {
       let photo = window.PhotoManager.FilteredPhotos[i];
