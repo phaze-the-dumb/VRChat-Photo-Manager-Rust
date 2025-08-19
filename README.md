@@ -12,8 +12,6 @@ You can download the debug EXEs [here](https://github.com/phaze-the-dumb/VRChat-
 
 You can find your app version under appllication settings.
 
-(Please note that there are not debug releases for versions: 0.1.0, 0.1.1, 0.1.2, 0.1.3)
-
 ## A photo manager for VRChat.
 
 ![image](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Rust/assets/57566773/c573e27f-52e6-4608-a8ea-a8a83336fbb9)
