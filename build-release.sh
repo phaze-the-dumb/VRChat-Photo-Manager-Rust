@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.2.5
+VERSION=0.2.6
 
 # Linux builds
 NO_STRIP=true pnpm tauri build

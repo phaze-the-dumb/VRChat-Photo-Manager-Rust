@@ -1,7 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod frontend_calls;
-mod photosync;
 mod pngmeta;
 mod util;
 mod worldscraper;
@@ -19,8 +18,6 @@ use tauri::{ Emitter, Manager, State, WindowEvent };
 use tauri_plugin_deep_link::DeepLinkExt;
 
 use crate::frontend_calls::config::get_config_value_string;
-
-// TODO: Linux support
 
 fn main() {
   #[cfg(target_os = "linux")]
@@ -205,7 +202,6 @@ fn main() {
       start_with_win::start_with_win,
       get_user_photos_path::get_user_photos_path,
       change_final_path::change_final_path,
-      sync_photos::sync_photos,
       util::get_version::get_version,
       config::set_config_value_string,
       config::get_config_value_string,

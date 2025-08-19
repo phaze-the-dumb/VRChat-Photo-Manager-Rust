@@ -5,10 +5,10 @@ import { ViewState } from "./Managers/ViewManager";
 import { animate, utils } from "animejs";
 
 let SettingsMenu = () => {
-  let sliderBar: HTMLElement;
+  // let sliderBar: HTMLElement;
   let settingsContainer: HTMLElement;
-  let currentButton = 0;
-  let lastClickedButton = -1;
+  // let currentButton = 0;
+  // let lastClickedButton = -1;
   let finalPathConfirm: HTMLElement;
   let finalPathInput: HTMLElement;
   let finalPathData: string;
@@ -42,135 +42,135 @@ let SettingsMenu = () => {
       animate('.settings', { background: 'rgba(0, 0, 0, 0)', easing: 'linear', duration: 100 });
     }
 
-    let sliderMouseDown = false;
-    let mouseStartX = 0;
+    // let sliderMouseDown = false;
+    // let mouseStartX = 0;
 
-    let width = window.innerWidth;
-    let buttons = [ 370, 680 ];
+    // let width = window.innerWidth;
+    // let buttons = [ 370, 680 ];
 
-    let sliderPos = width / 2 - buttons[currentButton];
-    let sliderScale = width / (buttons[1] - buttons[0]);
+    // let sliderPos = width / 2 - buttons[currentButton];
+    // let sliderScale = width / (buttons[1] - buttons[0]);
 
-    let render = () => {
-      requestAnimationFrame(render);
+    // let render = () => {
+    //   requestAnimationFrame(render);
 
-      if(!sliderMouseDown){
-        sliderPos = sliderPos + (width / 2 - buttons[currentButton] - sliderPos) * 0.25;
-        utils.set(sliderBar, { translateX: sliderPos });
+    //   if(!sliderMouseDown){
+    //     sliderPos = sliderPos + (width / 2 - buttons[currentButton] - sliderPos) * 0.25;
+    //     utils.set(sliderBar, { translateX: sliderPos });
 
-        settingsContainer.style.left = (sliderPos - (width / 2 - buttons[0])) * sliderScale + 'px';
-      }
-    }
+    //     settingsContainer.style.left = (sliderPos - (width / 2 - buttons[0])) * sliderScale + 'px';
+    //   }
+    // }
 
-    render();
-    utils.set(sliderBar, { translateX: sliderPos });
+    // render();
+    // utils.set(sliderBar, { translateX: sliderPos });
 
-    sliderBar.addEventListener('touchstart', ( e: TouchEvent ) => {
-      sliderMouseDown = true;
-      mouseStartX = e.touches[0].clientX;
-    })
+    // sliderBar.addEventListener('touchstart', ( e: TouchEvent ) => {
+    //   sliderMouseDown = true;
+    //   mouseStartX = e.touches[0].clientX;
+    // })
 
-    window.addEventListener('touchmove', ( e: TouchEvent ) => {
-      if(sliderMouseDown){
-        utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
-        settingsContainer.style.left = (sliderPos - (mouseStartX - e.touches[0].clientX) - (width / 2 - buttons[0])) * sliderScale + 'px';
-      }
-    })
+    // window.addEventListener('touchmove', ( e: TouchEvent ) => {
+    //   if(sliderMouseDown){
+    //     utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
+    //     settingsContainer.style.left = (sliderPos - (mouseStartX - e.touches[0].clientX) - (width / 2 - buttons[0])) * sliderScale + 'px';
+    //   }
+    // })
 
-    window.addEventListener('keyup', closeWithKey);
+    // window.addEventListener('keyup', closeWithKey);
 
-    window.addEventListener('touchend', ( e: TouchEvent ) => {
-      if(sliderMouseDown){
-        sliderPos = sliderPos - (mouseStartX - e.touches[0].clientX);
+    // window.addEventListener('touchend', ( e: TouchEvent ) => {
+    //   if(sliderMouseDown){
+    //     sliderPos = sliderPos - (mouseStartX - e.touches[0].clientX);
 
-        utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
-        sliderMouseDown = false;
+    //     utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.touches[0].clientX) });
+    //     sliderMouseDown = false;
 
-        if(Math.abs(mouseStartX - e.touches[0].clientX) > 50){
-          let shortestDistance = 0;
-          let selectedButton = -1;
+    //     if(Math.abs(mouseStartX - e.touches[0].clientX) > 50){
+    //       let shortestDistance = 0;
+    //       let selectedButton = -1;
 
-          buttons.forEach(( pos, indx ) => {
-            let dis = Math.abs(sliderPos - (width / 2 - pos));
+    //       buttons.forEach(( pos, indx ) => {
+    //         let dis = Math.abs(sliderPos - (width / 2 - pos));
 
-            if(selectedButton === -1){
-              shortestDistance = dis;
-              selectedButton = indx;
-            } else if(shortestDistance > dis){
-              shortestDistance = dis;
-              selectedButton = indx;
-            }
-          })
+    //         if(selectedButton === -1){
+    //           shortestDistance = dis;
+    //           selectedButton = indx;
+    //         } else if(shortestDistance > dis){
+    //           shortestDistance = dis;
+    //           selectedButton = indx;
+    //         }
+    //       })
 
-          currentButton = selectedButton;
-        } else if(lastClickedButton != -1){
-          currentButton = lastClickedButton;
-          lastClickedButton = -1
-        }
-      }
-    })
+    //       currentButton = selectedButton;
+    //     } else if(lastClickedButton != -1){
+    //       currentButton = lastClickedButton;
+    //       lastClickedButton = -1
+    //     }
+    //   }
+    // })
 
-    sliderBar.addEventListener('mousedown', ( e: MouseEvent ) => {
-      sliderMouseDown = true;
-      mouseStartX = e.clientX;
-    });
+    // sliderBar.addEventListener('mousedown', ( e: MouseEvent ) => {
+    //   sliderMouseDown = true;
+    //   mouseStartX = e.clientX;
+    // });
 
-    window.addEventListener('mousemove', ( e: MouseEvent ) => {
-      if(sliderMouseDown){
-        utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
-        settingsContainer.style.left = sliderPos - (mouseStartX - e.clientX) + 'px';
-        settingsContainer.style.left = (sliderPos - (mouseStartX - e.clientX) - (width / 2 - buttons[0])) * sliderScale + 'px';
-      }
-    })
+    // window.addEventListener('mousemove', ( e: MouseEvent ) => {
+    //   if(sliderMouseDown){
+    //     utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
+    //     settingsContainer.style.left = sliderPos - (mouseStartX - e.clientX) + 'px';
+    //     settingsContainer.style.left = (sliderPos - (mouseStartX - e.clientX) - (width / 2 - buttons[0])) * sliderScale + 'px';
+    //   }
+    // })
 
-    window.addEventListener('mouseup', ( e: MouseEvent ) => {
-      if(sliderMouseDown){
-        sliderPos = sliderPos - (mouseStartX - e.clientX);
+    // window.addEventListener('mouseup', ( e: MouseEvent ) => {
+    //   if(sliderMouseDown){
+    //     sliderPos = sliderPos - (mouseStartX - e.clientX);
 
-        utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
-        sliderMouseDown = false;
+    //     utils.set(sliderBar, { translateX: sliderPos - (mouseStartX - e.clientX) });
+    //     sliderMouseDown = false;
 
-        if(Math.abs(mouseStartX - e.clientX) > 50){
-          let shortestDistance = 0;
-          let selectedButton = -1;
+    //     if(Math.abs(mouseStartX - e.clientX) > 50){
+    //       let shortestDistance = 0;
+    //       let selectedButton = -1;
 
-          buttons.forEach(( pos, indx ) => {
-            let dis = Math.abs(sliderPos - (width / 2 - pos));
+    //       buttons.forEach(( pos, indx ) => {
+    //         let dis = Math.abs(sliderPos - (width / 2 - pos));
 
-            if(selectedButton === -1){
-              shortestDistance = dis;
-              selectedButton = indx;
-            } else if(shortestDistance > dis){
-              shortestDistance = dis;
-              selectedButton = indx;
-            }
-          })
+    //         if(selectedButton === -1){
+    //           shortestDistance = dis;
+    //           selectedButton = indx;
+    //         } else if(shortestDistance > dis){
+    //           shortestDistance = dis;
+    //           selectedButton = indx;
+    //         }
+    //       })
 
-          currentButton = selectedButton;
-        } else if(lastClickedButton != -1){
-          currentButton = lastClickedButton;
-          lastClickedButton = -1
-        }
-      }
-    })
+    //       currentButton = selectedButton;
+    //     } else if(lastClickedButton != -1){
+    //       currentButton = lastClickedButton;
+    //       lastClickedButton = -1
+    //     }
+    //   }
+    // })
 
-    window.addEventListener('resize', () => {
-      width = window.innerWidth;
-      sliderPos = width / 2 - buttons[currentButton];
-      sliderScale = width / (buttons[1] - buttons[0]);
+    // window.addEventListener('resize', () => {
+    //   width = window.innerWidth;
+    //   sliderPos = width / 2 - buttons[currentButton];
+    //   sliderScale = width / (buttons[1] - buttons[0]);
 
-      utils.set(sliderBar, { translateX: sliderPos  });
-    })
+    //   utils.set(sliderBar, { translateX: sliderPos  });
+    // })
 
-    sliderBar.addEventListener('wheel', ( e: WheelEvent ) => {
-      if(e.deltaY > 0){
-        if(buttons[currentButton + 1])
-          currentButton++;
-      } else{
-        if(buttons[currentButton - 1])
-          currentButton--;
-      }
-    })
+    // sliderBar.addEventListener('wheel', ( e: WheelEvent ) => {
+    //   if(e.deltaY > 0){
+    //     if(buttons[currentButton + 1])
+    //       currentButton++;
+    //   } else{
+    //     if(buttons[currentButton - 1])
+    //       currentButton--;
+    //   }
+    // })
   })
 
   onCleanup(() => {
@@ -212,6 +212,27 @@ let SettingsMenu = () => {
             Start in background
 
             <label for="start-in-bg-check">
+              <div class="selection-box">
+                <div class="icon-small" style={{ margin: '0', display: 'inline-flex' }}>
+                  <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div class="selector">
+            <input type="checkbox" id="minimise-on-close-check" ref={async ( el ) => {
+              el.checked = await invoke('get_config_value_string', { key: 'minimise-on-close' }) === "false" ? false : true;
+            }} onChange={( el ) => {
+              if(el.target.checked){
+                invoke('set_config_value_string', { key: 'minimise-on-close', value: 'true' });
+              } else{
+                invoke('set_config_value_string', { key: 'minimise-on-close', value: 'false' });
+              }
+            }} />
+            Close to tray
+
+            <label for="minimise-on-close-check">
               <div class="selection-box">
                 <div class="icon-small" style={{ margin: '0', display: 'inline-flex' }}>
                   <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
@@ -264,27 +285,6 @@ let SettingsMenu = () => {
             Window Transparency
 
             <label for="transparent-check">
-              <div class="selection-box">
-                <div class="icon-small" style={{ margin: '0', display: 'inline-flex' }}>
-                  <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
-                </div>
-              </div>
-            </label>
-          </div>
-
-          <div class="selector">
-            <input type="checkbox" id="minimise-on-close-check" ref={async ( el ) => {
-              el.checked = await invoke('get_config_value_string', { key: 'minimise-on-close' }) === "false" ? false : true;
-            }} onChange={( el ) => {
-              if(el.target.checked){
-                invoke('set_config_value_string', { key: 'minimise-on-close', value: 'true' });
-              } else{
-                invoke('set_config_value_string', { key: 'minimise-on-close', value: 'false' });
-              }
-            }} />
-            Close to tray
-
-            <label for="minimise-on-close-check">
               <div class="selection-box">
                 <div class="icon-small" style={{ margin: '0', display: 'inline-flex' }}>
                   <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>
@@ -350,12 +350,9 @@ let SettingsMenu = () => {
           <br />
           <p>VRChat Photo Manager supports photos with extra metadata provided by VRCX.</p>
         </div>
-        <div class="settings-block">
-          <p>WIP</p>
-        </div>
       </div>
 
-      <div class="slide-bar-tri"></div>
+      {/* <div class="slide-bar-tri"></div>
       <div class="slide-bar">
         <div class="inner-slide-bar" ref={( el ) => sliderBar = el}>
           <div class="slider-dot"></div>
@@ -373,7 +370,7 @@ let SettingsMenu = () => {
           <div class="slider-dot"></div>
           <div class="slider-dot"></div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
