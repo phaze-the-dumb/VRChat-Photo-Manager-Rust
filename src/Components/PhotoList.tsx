@@ -103,7 +103,8 @@ let PhotoList = () => {
 
       scrollToTopActive = true;
     } else if(scrollToTopActive && scroll < photoContainer.height){
-      animate(scrollToTop, { opacity: 0, translateY: '-10px', complete: () => scrollToTop.style.display = 'none', easing: 'easeInOutQuad', duration: 100 });
+      animate(scrollToTop, { opacity: 0, translateY: '-10px', onComplete: () => scrollToTop.style.display = 'none', easing: 'easeInOutQuad', duration: 100 });
+
       scrollToTopActive = false;
     }
 

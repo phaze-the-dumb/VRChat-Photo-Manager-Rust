@@ -108,3 +108,4 @@ v0.2.6:
   - Added close to tray toggle
   - Fixed "Open in folder" not selecting files on linux
   - Remove all sync stuff
+  - Fixed scroll to top button not animating out
