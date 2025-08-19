@@ -30,17 +30,32 @@ pub fn load_photos(window: tauri::Window, cache: State<Cache> ) {
           if p.metadata().unwrap().is_file() {
             let fname = p.path();
 
-            let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
-            let re2 = Regex::new(
-  r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap();
-            let re3 = Regex::new("VRChat_[0-9]{4}x[0-9]{4}_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}.png").unwrap();
-
             let name = p.file_name();
             let name = name.to_str().unwrap();
 
-            let re3_match = re3.is_match(name);
+            // I know this is janky
+            // i'm sorry
 
-            if re1.is_match(name) || re2.is_match(name) || re3_match {
+            // All regex's are doubled up as some resolutions have shorter names
+
+            // This is an old format VRChat used for naming photos
+            let re3_match =
+              Regex::new("VRChat_[0-9]{4}x[0-9]{4}_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}.png").unwrap().is_match(name) ||
+              Regex::new("VRChat_[0-9]{4}x[0-9]{3}_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}.png").unwrap().is_match(name);
+
+            let re = vec![
+              // This is the current format used by VRChat
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap().is_match(name),
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{3}.png").unwrap().is_match(name),
+
+              // This is the format VRCX uses if you enable renaming photos
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap().is_match(name),
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{3}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap().is_match(name),
+
+              re3_match
+            ];
+
+            if re.iter().any(| &x | x) {
               let path = fname.to_path_buf().clone();
               let metadata = fs::metadata(&path).unwrap();
 
