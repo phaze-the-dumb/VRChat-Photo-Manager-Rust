@@ -99,3 +99,4 @@ v0.2.5:
   - Fixed some icons not fading out when moving to the settings menu
   - Removed the auto updater
   - Removed account login stuff
+  - Fixed app name on windows

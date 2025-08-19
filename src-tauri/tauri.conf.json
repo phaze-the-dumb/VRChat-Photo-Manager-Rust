@@ -15,7 +15,7 @@
       "icons/icon.ico"
     ]
   },
-  "productName": "vrchat-photo-manager",
+  "productName": "VRChat Photo Manager",
   "version": "0.0.1",
   "identifier": "uk.phaz.vrcpm",
   "plugins": {
