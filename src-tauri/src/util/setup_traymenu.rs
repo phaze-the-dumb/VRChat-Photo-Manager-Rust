@@ -1,8 +1,10 @@
 use tauri::{
   menu::{MenuBuilder, MenuItemBuilder},
   tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-  AppHandle, Emitter, Manager,
+  AppHandle, Emitter, Manager, State,
 };
+
+use crate::frontend_calls::config::Config;
 
 #[derive(serde::Serialize, Clone)]
 struct EmptyEvent {}
@@ -31,6 +33,9 @@ pub fn setup_traymenu(handle: &AppHandle) {
     .tooltip("VRChat Photo Manager")
     .on_menu_event(move |app: &AppHandle, event| match event.id().as_ref() {
       "quit" => {
+        let config: State<Config> = app.state();
+        config.save();
+
         std::process::exit(0);
       }
       "hide" => {

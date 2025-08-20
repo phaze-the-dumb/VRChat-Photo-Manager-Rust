@@ -1,6 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, sync::Mutex};
 
 use serde_json::Value;
+use tauri::State;
 
 pub fn get_config_path() -> PathBuf {
   let path = dirs::config_dir()
@@ -17,23 +18,47 @@ pub fn get_config_path() -> PathBuf {
   path
 }
 
+pub struct Config{
+  config: Mutex<Value>
+}
 
-// TODO: Redo all of this just, stop please.
-#[tauri::command]
-pub fn set_config_value_string(key: String, value: String) {
-  let path = get_config_path();
+impl Config{
+  pub fn new() -> Config{
+    let path = get_config_path();
+    let config: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
 
-  let mut config: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
-  config[key] = Value::from(value);
+    Config {
+      config: Mutex::new(config)
+    }
+  }
 
-  fs::write(path, config.to_string()).unwrap();
+  pub fn set( &self, key: String, value: Value ){
+    let mut lock = self.config.lock().unwrap();
+    lock[key] = value;
+  }
+
+  pub fn get( &self, key: String ) -> Value{
+    let lock = self.config.lock().unwrap();
+    lock[key].clone()
+  }
+
+  pub fn save( &self ){
+    let path = get_config_path();
+    let string = serde_json::to_string(&self.config).unwrap();
+
+    fs::write(path, string).unwrap();
+  }
 }
 
 #[tauri::command]
-pub fn get_config_value_string(key: String) -> Option<String> {
-  let config: Value =
-    serde_json::from_str(&fs::read_to_string(get_config_path()).unwrap()).unwrap();
-  let string = config[key].as_str();
+pub fn set_config_value_string( key: String, value: String, config: State<Config> ) {
+  config.set(key, Value::from(value));
+}
+
+#[tauri::command]
+pub fn get_config_value_string( key: String, config: State<Config> ) -> Option<String> {
+  let string = config.get(key);
+  let string = string.as_str();
 
   if string.is_some() {
     Some(string.unwrap().to_owned())
@@ -43,18 +68,12 @@ pub fn get_config_value_string(key: String) -> Option<String> {
 }
 
 #[tauri::command]
-pub fn set_config_value_int(key: String, value: i64) {
-  let path = get_config_path();
-
-  let mut config: Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
-  config[key] = Value::from(value);
-
-  fs::write(path, config.to_string()).unwrap();
+pub fn set_config_value_int( key: String, value: i64, config: State<Config> ) {
+  config.set(key, Value::from(value));
 }
 
 #[tauri::command]
-pub fn get_config_value_int(key: String) -> Option<i64> {
-  let config: Value =
-    serde_json::from_str(&fs::read_to_string(get_config_path()).unwrap()).unwrap();
-  config[key].as_i64()
+pub fn get_config_value_int( key: String, config: State<Config> ) -> Option<i64> {
+  let string = config.get(key);
+  string.as_i64()
 }

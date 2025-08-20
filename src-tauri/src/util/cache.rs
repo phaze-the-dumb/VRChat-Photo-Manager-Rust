@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{ collections::HashMap, sync::Mutex };
 
 pub struct Cache{
   store: Mutex<HashMap<String, String>>,

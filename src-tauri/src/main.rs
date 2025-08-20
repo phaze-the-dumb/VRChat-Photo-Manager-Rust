@@ -17,7 +17,7 @@ use std::{ env, fs, sync::Mutex, thread };
 use tauri::{ Emitter, Manager, State, WindowEvent };
 use tauri_plugin_deep_link::DeepLinkExt;
 
-use crate::frontend_calls::config::get_config_value_string;
+use crate::frontend_calls::config::{get_config_value_string, Config};
 
 fn main() {
   #[cfg(target_os = "linux")]
@@ -154,14 +154,20 @@ fn main() {
     })
     .on_window_event(|window, event| match event {
       WindowEvent::CloseRequested { api,   .. } => {
-        let val = get_config_value_string("minimise-on-close".into());
-        if val.is_some() && val.unwrap() == "false"{ return; }
+        let config: State<Config> = window.state();
+
+        let val = get_config_value_string("minimise-on-close".into(), config.clone());
+        if val.is_some() && val.unwrap() == "false"{
+          config.save();
+          return;
+        }
 
         window.hide().unwrap();
         api.prevent_close();
       }
       _ => {}
     })
+    .manage(Config::new())
     .manage(cache)
     .manage(Mutex::new(clipboard))
     .setup(|app| {
