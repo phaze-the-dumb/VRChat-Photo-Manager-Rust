@@ -112,3 +112,4 @@ v0.2.6:
   - Fixed scroll to top button being ontop of filters menu
   - Fixed photo ordering
   - Fixed automatic updates
+  - Fixed broken legacy named photos

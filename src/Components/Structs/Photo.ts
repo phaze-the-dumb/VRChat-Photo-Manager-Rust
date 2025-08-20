@@ -62,7 +62,11 @@ export class Photo{
     this.date.setMinutes(parseInt(splitTimeString[1]));
     this.date.setSeconds(parseInt(splitTimeString[2]));
 
-    let resSplit = split[3].split('x');
+    let resSplit;
+    if(this.legacy)
+      resSplit = split[0].split('x')
+    else
+      resSplit = split[3].split('x')
 
     let width = parseInt(resSplit[0]);
     let height = parseInt(resSplit[1]);
