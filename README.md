@@ -18,14 +18,12 @@ You can find your app version under appllication settings.
 
 ## A photo manager for VRChat.
 
-![image](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Rust/assets/57566773/c573e27f-52e6-4608-a8ea-a8a83336fbb9)
+<img width="1352" height="739" alt="image" src="https://github.com/user-attachments/assets/bc702ee6-8891-463d-a987-c2db1dc24678" />
 
-Files with VRCX metadata:
+Files with VRCX metadata + Fetches world information from VRChat:
 
-![image](https://github.com/phaze-the-dumb/VRChat-Photo-Manager-Rust/assets/57566773/06f44b67-083f-487e-b8b4-84c87d07604f)
-
-Fetches world information from VRChat:
+<img width="1352" height="739" alt="image" src="https://github.com/user-attachments/assets/aae88c53-aab6-4520-bb89-d6f2bca1c51a" />
 
 Searching for photos taken in specific worlds / with specific users:
 
-![image](https://github.com/user-attachments/assets/ea67c4ef-c7e8-4f93-a29a-74aff5f35903)
+<img width="1352" height="739" alt="image" src="https://github.com/user-attachments/assets/f9af1724-5bb2-4276-bc32-e818dab31750" />
