@@ -1,6 +1,10 @@
 # VRChat Photo Manager (BETA)
 
-Download [here](https://github.com/phaze-the-dumb/VRChat-Photo-Manager/releases/latest)
+Windows users: Download the setup.exe file [here](https://github.com/phaze-the-dumb/VRChat-Photo-Manager/releases/latest)
+
+Linux Users:
+  - I publish .deb, .rpm and .AppImage files [here](https://github.com/phaze-the-dumb/VRChat-Photo-Manager/releases/latest)
+  - I also publish an [AUR](https://aur.archlinux.org/packages/vrchat-photo-manager) package
 
 ## Feedback / Bug Reports
 
