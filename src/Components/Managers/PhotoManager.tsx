@@ -108,6 +108,9 @@ export class PhotoManager{
 
       let photo = this.Photos.find(x => x.path === data.path);
       if(!photo)return console.error('Cannot find photo.', data);
+      // NOTE: this is triggered by multilayer photo layers loading their metadata
+      //       we don't need to store metadata of those photos as they inherit this
+      //       data from the main photo.
 
       this._lastLoaded = photo.index;
 

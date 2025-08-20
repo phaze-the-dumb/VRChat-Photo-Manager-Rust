@@ -1,7 +1,7 @@
 import { For, Show, createEffect, onCleanup, onMount } from "solid-js";
 import { invoke } from '@tauri-apps/api/core';
 import { WorldCache } from "./Structs/WorldCache";
-import { animate, JSAnimation, utils } from "animejs";
+import { animate, createSpring, JSAnimation, utils } from "animejs";
 
 let PhotoViewer = () => {
   let viewer: HTMLElement;
@@ -23,6 +23,8 @@ let PhotoViewer = () => {
   let allowedToOpenTray = false;
 
   let authorProfileButton: HTMLDivElement;
+
+  let photoLayerManager!: HTMLDivElement;
 
   let switchPhotoWithKey = ( e: KeyboardEvent ) => {
     switch(e.key){
@@ -84,7 +86,22 @@ let PhotoViewer = () => {
   }
 
   let copyImage = () => {
-    invoke('copy_image', { path: window.PhotoViewerManager.CurrentPhoto()!.path })
+    let path;
+    let photo = window.PhotoViewerManager.CurrentPhoto()!;
+
+    switch(layerManagerViewing){
+      case LayerManagerView.DEFAULT:
+        path = photo.path;
+        break;
+      case LayerManagerView.ENVIRONMENT:
+        path = photo.environmentLayer!.path;
+        break;
+      case LayerManagerView.PLAYER:
+        path = photo.playerLayer!.path;
+        break;
+    }
+
+    invoke('copy_image', { path })
       .then(() => {
         utils.set('.copy-notif', { translateX: '-50%', translateY: '-100px' });
         animate('.copy-notif', {
@@ -136,6 +153,7 @@ let PhotoViewer = () => {
   onMount(() => {
     utils.set(photoControls, { translateX: '-50%' });
     utils.set(photoTrayCloseBtn, { translateX: '-50%', opacity: 0, scale: '0.75', bottom: '10px' });
+    utils.set(photoLayerManager, { translateY: '20px', opacity: 0, display: 'none' });
 
     window.addEventListener('keyup', switchPhotoWithKey);
 
@@ -153,6 +171,13 @@ let PhotoViewer = () => {
           viewerContextMenu.style.display = 'none';
         }
       })
+    });
+
+    window.CloseAllPopups.push(() => {
+      layerManagerOpen = false;
+      if(layerManagerAnimation)layerManagerAnimation.cancel();
+
+      layerManagerAnimation = animate(photoLayerManager, { translateY: '20px', opacity: 0, duration: 100, onComplete: () => utils.set(photoLayerManager, { display: 'none' }) });
     });
 
     viewerContextMenuButtons[0].onclick = async () => {
@@ -367,14 +392,71 @@ let PhotoViewer = () => {
     )
   }
 
+  enum LayerManagerView{
+    DEFAULT,
+    PLAYER,
+    ENVIRONMENT
+  }
+
+  let layerManagerOpen = false;
+  let layerManagerAnimation: null | JSAnimation = null;
+  let layerManagerViewing = LayerManagerView.DEFAULT;
+
   let toggleLayerManager = () => {
-    
+    if(layerManagerOpen){
+      // Close
+      layerManagerOpen = false;
+      if(layerManagerAnimation)layerManagerAnimation.cancel();
+
+      layerManagerAnimation = animate(photoLayerManager, { translateY: '20px', opacity: 0, duration: 100, onComplete: () => utils.set(photoLayerManager, { display: 'none' }) });
+    } else{
+      // Open
+      layerManagerOpen = true;
+      if(layerManagerAnimation)layerManagerAnimation.cancel();
+
+      utils.set(photoLayerManager, { display: 'block' });
+      layerManagerAnimation = animate(photoLayerManager, { translateY: '0px', opacity: 1, duration: 100 });
+    }
   }
 
   // TODO: Make layers selectable
 
   return (
     <div class="photo-viewer" ref={( el ) => viewer = el}>
+      <div class="photo-layer-manager" ref={photoLayerManager}>
+        <Show when={window.PhotoViewerManager.CurrentPhoto()?.playerLayer}>
+          <div class="photo-layer-manager-layer" onClick={() => {
+            let photo = window.PhotoViewerManager.CurrentPhoto()?.playerLayer;
+            if(!photo)return;
+
+            layerManagerViewing = LayerManagerView.PLAYER;
+
+            imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost/') + photo.path.split('\\').join('/') + "?full";
+            imageViewer.crossOrigin = 'anonymous';
+          }}>Player Layer</div>
+        </Show>
+        <Show when={window.PhotoViewerManager.CurrentPhoto()?.environmentLayer}>
+          <div class="photo-layer-manager-layer" onClick={() => {
+            let photo = window.PhotoViewerManager.CurrentPhoto()?.environmentLayer;
+            if(!photo)return;
+
+            layerManagerViewing = LayerManagerView.ENVIRONMENT;
+
+            imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost/') + photo.path.split('\\').join('/') + "?full";
+            imageViewer.crossOrigin = 'anonymous';
+          }}>Environment Layer</div>
+        </Show>
+        <div class="photo-layer-manager-layer" onClick={() => {
+          let photo = window.PhotoViewerManager.CurrentPhoto();
+          if(!photo)return;
+
+          layerManagerViewing = LayerManagerView.DEFAULT;
+
+          imageViewer.src = (window.OS === "windows" ? "http://photo.localhost/" : 'photo://localhost/') + photo.path.split('\\').join('/') + "?full";
+          imageViewer.crossOrigin = 'anonymous';
+        }}>Default Layer</div>
+      </div>
+
       <div class="photo-context-menu" ref={( el ) => viewerContextMenu = el}>
         <div ref={( el ) => viewerContextMenuButtons.push(el)}>Open file location</div>
         <div ref={( el ) => viewerContextMenuButtons.push(el)}>Copy image</div>

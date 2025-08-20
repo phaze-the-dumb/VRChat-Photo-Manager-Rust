@@ -124,8 +124,8 @@ export class PhotoListRenderingManager{
             let photo = (el as PhotoListPhoto).Photo;
 
             // === DEBUG ===
-            ctx.strokeStyle = '#f00';
-            ctx.strokeRect((rowXPos - row.Width / 2) + canvas.width / 2, currentY - scroll, photo.scaledWidth!, row.Height);
+            // ctx.strokeStyle = '#f00';
+            // ctx.strokeRect((rowXPos - row.Width / 2) + canvas.width / 2, currentY - scroll, photo.scaledWidth!, row.Height);
 
             if(!photo.loaded)
               // If the photo is not loaded, start a new task and load it in that task

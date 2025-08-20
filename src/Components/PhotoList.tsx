@@ -154,7 +154,6 @@ let PhotoList = () => {
     })
 
     window.PhotoListRenderingManager.SetCanvas(photoContainer!);
-
     render();
   });
 

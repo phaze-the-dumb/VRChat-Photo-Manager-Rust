@@ -17,7 +17,7 @@
   left: 50%;
   transform: translate(-50%);
   color: white;
-  background: #8885;
+  background: rgba(43, 43, 43, 0.76);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: #0008 0 0 10px;

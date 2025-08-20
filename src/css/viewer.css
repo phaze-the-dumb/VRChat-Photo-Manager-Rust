@@ -38,7 +38,7 @@
   left: 0;
   padding: 10px;
   border-radius: 5px;
-  background: #555a;
+  background: rgba(43, 43, 43, 0.76);
   color: #aaa;
   box-shadow: #0005 0 0 10px;
   opacity: 0;
@@ -80,7 +80,7 @@
   -webkit-user-select: none;
   cursor: pointer;
   z-index: 7;
-  box-shadow: #0008 0 0 10px;
+  background: rgba(43, 43, 43, 0.76);
 }
 
 .viewer-close{
@@ -157,7 +157,7 @@
   left: 50%;
   color: white;
   transform: translateX(-50%) translateY(-100px);
-  background: #8885;
+  background: rgba(43, 43, 43, 0.76);
   padding: 10px 40px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -166,4 +166,27 @@
   z-index: 12;
   opacity: 0;
   pointer-events: none;
+}
+
+.photo-layer-manager{
+  background: rgba(43, 43, 43, 0.76);
+  color: #fff;
+  padding: 10px;
+  backdrop-filter: blur(10px);
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  border-radius: 10px;
+}
+
+.photo-layer-manager-layer{
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  padding: 5px 20px;
+  transition: 0.1s;
+}
+
+.photo-layer-manager-layer:hover{
+  color: #bbb;
 }

@@ -105,12 +105,15 @@ v0.2.5:
 
 v0.2.6:
   - Fixed photos not being loaded if they're too low resolution
-  - Added close to tray toggle
   - Fixed "Open in folder" not selecting files on linux
-  - Remove all sync stuff
   - Fixed scroll to top button not animating out
   - Fixed scroll to top button being ontop of filters menu
   - Fixed photo ordering
   - Fixed automatic updates
   - Fixed broken legacy named photos
   - Fixed photos being loaded with the wrong resolution
+
+  - Added support for multilayer photos
+  - Added close to tray toggle
+
+  - Remove all sync stuff
