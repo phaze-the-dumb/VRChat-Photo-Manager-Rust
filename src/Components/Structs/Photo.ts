@@ -43,13 +43,24 @@ export class Photo{
     else
       this.dateString = split[1];
 
+    let timeString;
+    if(this.legacy)
+      timeString = split[3];
+    else
+      timeString = split[2];
+
     let splitDateString = this.dateString.split('-');
+    let splitTimeString = timeString.split('-');
 
     this.date = new Date();
 
     this.date.setFullYear(parseInt(splitDateString[0]));
     this.date.setMonth(parseInt(splitDateString[1]));
     this.date.setDate(parseInt(splitDateString[2]));
+
+    this.date.setHours(parseInt(splitTimeString[0]));
+    this.date.setMinutes(parseInt(splitTimeString[1]));
+    this.date.setSeconds(parseInt(splitTimeString[2]));
 
     let resSplit = split[3].split('x');
 

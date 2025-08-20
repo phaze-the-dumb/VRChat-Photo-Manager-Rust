@@ -36,7 +36,9 @@ pub fn load_photos(window: tauri::Window, cache: State<Cache> ) {
             let name = name.to_str().unwrap();
 
             let re1_match = // This is the current format used by VRChat
-              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}.png").unwrap().is_match(name);
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}.png").unwrap().is_match(name) ||
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_Player.png").unwrap().is_match(name) ||
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_Environment.png").unwrap().is_match(name);
 
             let re2_match = // This is the format VRCX uses if you enable renaming photos
               Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap().is_match(name);

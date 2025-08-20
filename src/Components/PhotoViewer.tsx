@@ -272,8 +272,10 @@ let PhotoViewer = () => {
                 let id = doc.getElementsByTagName('xmp:Author')[0]!.innerHTML;
 
                 authorProfileButton!.style.display = 'flex';
-                authorProfileButton!.onclick = () =>
+                authorProfileButton!.onclick = () => {
+                  console.log(id);
                   invoke('open_url', { url: 'https://vrchat.com/home/user/' + id });
+                }
               } catch(e){
                 console.error(e);
                 console.log('Couldn\'t decode metadata')
@@ -286,6 +288,8 @@ let PhotoViewer = () => {
             }
           } else{
             trayButton.style.display = 'none';
+            authorProfileButton!.style.display = 'none';
+
             closeTray();
           }
         }

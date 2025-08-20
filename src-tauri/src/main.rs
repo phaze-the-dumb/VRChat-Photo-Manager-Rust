@@ -98,13 +98,15 @@ fn main() {
             let path = event.paths.first().unwrap();
             let name = path.file_name().unwrap().to_str().unwrap().to_owned();
 
-            let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
-            let re2 = Regex::new(r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
+            let re1_match = // This is the current format used by VRChat
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}.png").unwrap().is_match(&name) ||
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_Player.png").unwrap().is_match(&name) ||
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_Environment.png").unwrap().is_match(&name);
 
-            if
-              re1.is_match(&name) ||
-              re2.is_match(&name)
-            {
+            let re2_match = // This is the format VRCX uses if you enable renaming photos
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap().is_match(&name);
+
+            if re1_match || re2_match{
               sender.send((2, path.strip_prefix(get_photo_path()).unwrap().to_str().unwrap().to_owned())).unwrap();
             }
           },

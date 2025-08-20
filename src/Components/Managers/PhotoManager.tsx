@@ -61,6 +61,7 @@ export class PhotoManager{
       })
 
       this.Photos = MergeSort(this.Photos);
+      console.log(this.Photos);
 
       console.log(this.Photos.length + ' Photos found.');
       if(this.Photos.length === 0 || photoPaths.length > Vars.MAX_PHOTOS_BULK_LOAD){
@@ -116,16 +117,11 @@ export class PhotoManager{
 
       photo.onMetaLoaded = () => this.ReloadFilters();
       photo.loadMeta();
-  
-      if(!window.SyncManager.IsSyncing()){
-        window.SyncManager.TriggerSync();
-      }
     })
-  
+
     listen('photo_remove', ( event: any ) => {
       this.Photos = this.Photos.filter(x => x.path !== event.payload);
-      this.FilteredPhotos = this.FilteredPhotos.filter(x => x.path !== event.payload);
-  
+
       if(event.payload === window.PhotoViewerManager.CurrentPhoto()?.path)
         window.PhotoViewerManager.Close()
 
@@ -168,10 +164,15 @@ export class PhotoManager{
   public ReloadFilters(){
     this.FilteredPhotos = [];
 
+    if(this._filter === ''){
+      this.FilteredPhotos = this.Photos;
+      window.PhotoListRenderingManager.ComputeLayout();
+
+      return;
+    }
+
     switch(this._filterType){
       case FilterType.USER:
-        if(this._filter === '')return this.FilteredPhotos = this.Photos;
-
         this.Photos.map(p => {
           if(p.metadata){
             try{
@@ -187,8 +188,6 @@ export class PhotoManager{
         })
         break;
       case FilterType.WORLD:
-        if(this._filter === '')return this.FilteredPhotos = this.Photos;
-
         this.Photos.map(p => {
           if(p.metadata){
             try{
