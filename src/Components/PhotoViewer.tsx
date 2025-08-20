@@ -419,8 +419,6 @@ let PhotoViewer = () => {
     }
   }
 
-  // TODO: Make layers selectable
-
   return (
     <div class="photo-viewer" ref={( el ) => viewer = el}>
       <div class="photo-layer-manager" ref={photoLayerManager}>
