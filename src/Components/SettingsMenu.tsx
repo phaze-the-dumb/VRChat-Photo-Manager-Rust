@@ -221,18 +221,18 @@ let SettingsMenu = () => {
           </div>
 
           <div class="selector">
-            <input type="checkbox" id="minimise-on-close-check" ref={async ( el ) => {
-              el.checked = await invoke('get_config_value_string', { key: 'minimise-on-close' }) === "false" ? false : true;
+            <input type="checkbox" id="close-to-tray-check" ref={async ( el ) => {
+              el.checked = await invoke('get_config_value_string', { key: 'close-to-tray' }) === "true" ? true : false;
             }} onChange={( el ) => {
               if(el.target.checked){
-                invoke('set_config_value_string', { key: 'minimise-on-close', value: 'true' });
+                invoke('set_config_value_string', { key: 'close-to-tray', value: 'true' });
               } else{
-                invoke('set_config_value_string', { key: 'minimise-on-close', value: 'false' });
+                invoke('set_config_value_string', { key: 'close-to-tray', value: 'false' });
               }
             }} />
             Close to tray
 
-            <label for="minimise-on-close-check">
+            <label for="close-to-tray-check">
               <div class="selection-box">
                 <div class="icon-small" style={{ margin: '0', display: 'inline-flex' }}>
                   <img draggable="false" width="10" height="10" src="/icon/check-solid.svg"></img>

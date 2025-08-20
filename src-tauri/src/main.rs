@@ -156,8 +156,8 @@ fn main() {
       WindowEvent::CloseRequested { api,   .. } => {
         let config: State<Config> = window.state();
 
-        let val = get_config_value_string("minimise-on-close".into(), config.clone());
-        if val.is_some() && val.unwrap() == "false"{
+        let val = get_config_value_string("close-to-tray".into(), config.clone());
+        if val.is_none() || val.unwrap() != "true"{
           config.save();
           return;
         }
