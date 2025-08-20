@@ -23,7 +23,7 @@
   },
   "app": {
     "security": {
-      "csp": "connect-src ipc: http://ipc.localhost"
+      "csp": "connect-src https://api.github.com ipc: http://ipc.localhost"
     },
     "windows": [
       {

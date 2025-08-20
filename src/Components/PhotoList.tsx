@@ -1,4 +1,4 @@
-import { onCleanup, onMount } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { listen } from '@tauri-apps/api/event';
 import { Window } from "@tauri-apps/api/window";
 
@@ -28,6 +28,8 @@ let PhotoList = () => {
   let quitRender: boolean = true;
 
   let currentPopup = ListPopup.NONE;
+
+  let [ updateAvailable, setUpdateAvailable ] = createSignal(false);
 
   Window.getCurrent().isVisible().then(visible => {
     quitRender = !visible;
@@ -158,6 +160,15 @@ let PhotoList = () => {
   });
 
   onMount(() => {
+    // Update Stuff
+    fetch('https://api.github.com/repos/phaze-the-dumb/VRChat-Photo-Manager/releases/latest')
+      .then(data => data.json())
+      .then(async data => {
+        let currentVersion = await invoke('get_version');
+        setUpdateAvailable(data.tag_name !== currentVersion);
+      })
+
+    // Other Stuff
     ctx = photoContainer.getContext('2d')!;
 
     window.PhotoManager.Load();
@@ -258,6 +269,17 @@ let PhotoList = () => {
           </div>
           <div class="icon-label">Settings</div>
         </div>
+
+        <Show when={updateAvailable()}>
+          <div>
+            <div onClick={() => {
+              invoke('open_url', { url: 'https://github.com/phaze-the-dumb/VRChat-Photo-Manager/releases/latest' });
+            }} class="icon">
+              <img draggable="false" style={{ width: "20px", height: "20px" }} src="/icon/download-solid-full.svg"></img>
+            </div>
+            <div class="icon-label">Update Available</div>
+          </div>
+        </Show>
       </div>
 
       <canvas class="photo-container" ref={( el ) => photoContainer = el}></canvas>

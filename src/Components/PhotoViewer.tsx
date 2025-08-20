@@ -1,7 +1,7 @@
 import { For, Show, createEffect, onCleanup, onMount } from "solid-js";
 import { invoke } from '@tauri-apps/api/core';
 import { WorldCache } from "./Structs/WorldCache";
-import { animate, createSpring, JSAnimation, utils } from "animejs";
+import { animate, JSAnimation, utils } from "animejs";
 
 let PhotoViewer = () => {
   let viewer: HTMLElement;

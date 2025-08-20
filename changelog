@@ -109,11 +109,12 @@ v0.2.6:
   - Fixed scroll to top button not animating out
   - Fixed scroll to top button being ontop of filters menu
   - Fixed photo ordering
-  - Fixed automatic updates
   - Fixed broken legacy named photos
   - Fixed photos being loaded with the wrong resolution
 
   - Added support for multilayer photos
   - Added close to tray toggle
+  - Added update available prompt
 
   - Remove all sync stuff
+  - Removed automatic updates
