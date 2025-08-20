@@ -440,12 +440,28 @@ let PhotoViewer = () => {
           </div>
         </div>
 
+        <Show when={window.PhotoViewerManager.CurrentPhoto()?.isMultiLayer}>
+          <div class="viewer-button"
+            onMouseOver={( el ) => animate(el.currentTarget, { width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
+            onMouseLeave={( el ) => animate(el.currentTarget, { width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
+          >
+            <div class="icon-small" style={{ width: '17px', margin: '0' }}>
+              <img draggable="false" src="/icon/layer-group-solid-full.svg"></img>
+            </div>
+          </div>
+        </Show>
+
         <div class="viewer-button"
           onMouseOver={( el ) => animate(el.currentTarget, { width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
           onMouseLeave={( el ) => animate(el.currentTarget, { width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
-          onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("Are you sure you want to delete this photo?", async () => { invoke("delete_photo", {
-            path: window.PhotoViewerManager.CurrentPhoto()?.path
-          });
+          onClick={() => window.ConfirmationBoxManager.SetConfirmationBox("Are you sure you want to delete this photo?", async () => {
+            let photo = window.PhotoViewerManager.CurrentPhoto();
+            if(!photo)return;
+
+            invoke("delete_photo", { path: photo.path });
+
+            if(photo.playerLayer)invoke("delete_photo", { path: photo.playerLayer.path });
+            if(photo.environmentLayer)invoke("delete_photo", { path: photo.environmentLayer.path });
         })}>
           <div class="icon-small" style={{ width: '12px', margin: '0' }}>
             <img draggable="false" src="/icon/trash-solid.svg"></img>

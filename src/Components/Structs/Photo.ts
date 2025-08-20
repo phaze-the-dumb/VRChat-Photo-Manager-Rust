@@ -29,6 +29,12 @@ export class Photo{
   legacy: boolean = false;
   index: number = 0;
 
+  splitPath: string[];
+
+  playerLayer: Photo | null = null;
+  environmentLayer: Photo | null = null;
+  isMultiLayer = false;
+
   public onMetaLoaded: () => void = () => {};
 
   constructor( path: string, isLegacy: boolean = false, i: number ){
@@ -37,6 +43,7 @@ export class Photo{
     this.index = i;
 
     let split = this.path.split('_');
+    this.splitPath = split;
 
     if(this.legacy)
       this.dateString = split[2];

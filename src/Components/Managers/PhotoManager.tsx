@@ -46,6 +46,8 @@ export class PhotoManager{
       if(photoPaths.length <= Vars.MAX_PHOTOS_BULK_LOAD)
         setHasBeenIndexed(true);
 
+      let photoLayers: Photo[] = [];
+
       photoPaths.forEach(( path: string, i: number ) => {
         let photo
 
@@ -54,11 +56,37 @@ export class PhotoManager{
         else
           photo = new Photo(path, false, i);
 
-        this.Photos.push(photo);
+        if(!photo.legacy && photo.splitPath[4]){
+          photoLayers.push(photo);
+        } else
+          this.Photos.push(photo);
 
         if(photoPaths.length <= Vars.MAX_PHOTOS_BULK_LOAD)
           photo.loadMeta();
       })
+
+      photoLayers.forEach(photo => {
+        let type = photo.splitPath[4];
+        photo.splitPath.pop();
+
+        let mainPhotoPath = photo.splitPath.join('_') + '.png';
+        let mainPhoto = this.Photos.find(x => x.path === mainPhotoPath);
+
+        if(!mainPhoto)
+          this.Photos.push(photo);
+        else{
+          mainPhoto.isMultiLayer = true;
+
+          switch(type){
+            case 'Player.png':
+              mainPhoto.playerLayer = photo;
+              break;
+            case 'Environment.png':
+              mainPhoto.environmentLayer = photo;
+              break;
+          }
+        }
+      });
 
       this.Photos = MergeSort(this.Photos);
       console.log(this.Photos);
@@ -76,7 +104,7 @@ export class PhotoManager{
 
     listen('photo_meta_loaded', ( event: any ) => {
       let data: PhotoMetadata = event.payload;
-  
+
       let photo = this.Photos.find(x => x.path === data.path);
       if(!photo)return console.error('Cannot find photo.', data);
 
@@ -111,9 +139,33 @@ export class PhotoManager{
 
     listen('photo_create', async ( event: any ) => {
       let photo = new Photo(event.payload, false, 0);
-      
-      this.Photos.forEach(p => p.index++); // Probably a really dumb way of doing this
-      this.Photos.splice(0, 0, photo);
+
+      if(photo.splitPath[4]){
+        let type = photo.splitPath[4];
+        photo.splitPath.pop();
+
+        let mainPhotoPath = photo.splitPath.join('_') + '.png';
+        let mainPhoto = this.Photos.find(x => x.path === mainPhotoPath);
+
+        if(!mainPhoto){
+          this.Photos.forEach(p => p.index++); // Probably a really dumb way of doing this
+          this.Photos.splice(0, 0, photo);
+        } else{
+          mainPhoto.isMultiLayer = true;
+
+          switch(type){
+            case 'Player.png':
+              mainPhoto.playerLayer = photo;
+              break;
+            case 'Environment.png':
+              mainPhoto.environmentLayer = photo;
+              break;
+          }
+        }
+      } else{
+        this.Photos.forEach(p => p.index++); // Probably a really dumb way of doing this
+        this.Photos.splice(0, 0, photo);
+      }
 
       photo.onMetaLoaded = () => this.ReloadFilters();
       photo.loadMeta();

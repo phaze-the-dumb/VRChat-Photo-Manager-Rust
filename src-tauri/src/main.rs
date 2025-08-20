@@ -15,7 +15,6 @@ use regex::Regex;
 use util::{ cache::Cache, get_photo_path::get_photo_path };
 use std::{ env, fs, sync::Mutex, thread };
 use tauri::{ Emitter, Manager, State, WindowEvent };
-use tauri_plugin_deep_link::DeepLinkExt;
 
 use crate::frontend_calls::config::{get_config_value_string, Config};
 
@@ -114,13 +113,15 @@ fn main() {
             let path = event.paths.first().unwrap();
             let name = path.file_name().unwrap().to_str().unwrap().to_owned();
 
-            let re1 = Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}.png").unwrap();
-            let re2 = Regex::new(r"(?m)/VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{4}x[0-9]{4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png/gm").unwrap();
+            let re1_match = // This is the current format used by VRChat
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}.png").unwrap().is_match(&name) ||
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_Player.png").unwrap().is_match(&name) ||
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_Environment.png").unwrap().is_match(&name);
 
-            if
-              re1.is_match(&name) ||
-              re2.is_match(&name)
-            {
+            let re2_match = // This is the format VRCX uses if you enable renaming photos
+              Regex::new(r"(?m)VRChat_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}.[0-9]{3}_[0-9]{3,4}x[0-9]{3,4}_wrld_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.png").unwrap().is_match(&name);
+
+            if re1_match || re2_match{
               thread::sleep(time::Duration::from_millis(1000));
               sender.send((1, path.strip_prefix(get_photo_path()).unwrap().to_str().unwrap().to_owned())).unwrap();
             }
@@ -146,7 +147,6 @@ fn main() {
     .plugin(tauri_plugin_single_instance::init(| app, _argv, _cwd | {
       app.get_webview_window("main").unwrap().show().unwrap();
     }))
-    .plugin(tauri_plugin_deep_link::init())
     .plugin(tauri_plugin_process::init())
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_shell::init())
@@ -174,8 +174,6 @@ fn main() {
     .manage(Mutex::new(clipboard))
     .setup(|app| {
       let handle = app.handle();
-
-      app.deep_link().register("vrcpm").unwrap();
       util::setup_traymenu::setup_traymenu(handle);
 
       // reads the file update mpsc channel and sends the events to the frontend

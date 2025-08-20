@@ -2,7 +2,6 @@
   width: 40px;
   height: 40px;
   padding: 10px;
-  filter: invert(100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +12,6 @@
 }
 
 .icon-small{
-  filter: invert(100%);
   display: flex;
   align-items: center;
   justify-content: center;

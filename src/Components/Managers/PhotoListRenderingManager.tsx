@@ -5,6 +5,9 @@ import { PhotoListRow } from "../Structs/PhotoListRow";
 
 const MONTHS = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
 
+let multilayerIcon = new Image();
+multilayerIcon.src = '/icon/layer-group-solid-full.svg';
+
 export class PhotoListRenderingManager{
   private _layout: PhotoListRow[] = [];
   private _canvas!: HTMLCanvasElement;
@@ -136,6 +139,9 @@ export class PhotoListRenderingManager{
               // Photo is already loaded so we should draw it on the application
               ctx.globalAlpha = photo.frames / 100;
               ctx.drawImage(photo.image!, (rowXPos  - row.Width / 2) + canvas.width / 2, currentY - scroll, photo.scaledWidth!, photo.scaledHeight!);
+
+              if(photo.isMultiLayer)
+                ctx.drawImage(multilayerIcon, ((rowXPos  - row.Width / 2) + canvas.width / 2) + 5, (currentY - scroll) + 5, 20, 20);
 
               if(photo.frames < 100)
                 photo.frames += 10;
