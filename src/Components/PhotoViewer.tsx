@@ -367,6 +367,12 @@ let PhotoViewer = () => {
     )
   }
 
+  let toggleLayerManager = () => {
+    
+  }
+
+  // TODO: Make layers selectable
+
   return (
     <div class="photo-viewer" ref={( el ) => viewer = el}>
       <div class="photo-context-menu" ref={( el ) => viewerContextMenu = el}>
@@ -442,6 +448,7 @@ let PhotoViewer = () => {
 
         <Show when={window.PhotoViewerManager.CurrentPhoto()?.isMultiLayer}>
           <div class="viewer-button"
+            onClick={toggleLayerManager}
             onMouseOver={( el ) => animate(el.currentTarget, { width: '40px', height: '40px', 'margin-left': '15px', 'margin-right': '15px', 'margin-top': '-10px' })}
             onMouseLeave={( el ) => animate(el.currentTarget, { width: '30px', height: '30px', 'margin-left': '20px', 'margin-right': '20px', 'margin-top': '0px' })}
           >

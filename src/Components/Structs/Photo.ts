@@ -75,18 +75,18 @@ export class Photo{
     else
       resSplit = split[3].split('x')
 
-    let width = parseInt(resSplit[0]);
-    let height = parseInt(resSplit[1]);
+    // let width = parseInt(resSplit[0]);
+    // let height = parseInt(resSplit[1]);
 
-    if(!isNaN(width) || !isNaN(height)){
-      this.width = width;
-      this.height = height;
-  
-      let scale = Vars.PHOTO_HEIGHT / this.height;
-  
-      this.scaledWidth = this.width * scale;
-      this.scaledHeight = Vars.PHOTO_HEIGHT;
-    }
+    // if(!isNaN(width) || !isNaN(height)){
+    //   this.width = width;
+    //   this.height = height;
+
+    //   let scale = Vars.PHOTO_HEIGHT / this.height;
+
+    //   this.scaledWidth = this.width * scale;
+    //   this.scaledHeight = Vars.PHOTO_HEIGHT;
+    // }
   }
 
   loadMeta(){

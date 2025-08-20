@@ -11,8 +11,6 @@ struct PhotosLoadedResponse {
   size: usize,
 }
 
-// TODO: Multi-layer photos
-
 #[tauri::command]
 pub fn load_photos(window: tauri::Window, cache: State<Cache> ) {
   let base_dir = cache.get("photo-path".into()).unwrap();

@@ -89,9 +89,10 @@ export class PhotoManager{
       });
 
       this.Photos = MergeSort(this.Photos);
-      console.log(this.Photos);
+      console.log(this.Photos[0]);
 
       console.log(this.Photos.length + ' Photos found.');
+
       if(this.Photos.length === 0 || photoPaths.length > Vars.MAX_PHOTOS_BULK_LOAD){
         console.log('No photos found or over bulk load limit, Skipping loading stage.');
 
@@ -128,6 +129,8 @@ export class PhotoManager{
   
       photo.metaLoaded = true;
       photo.onMetaLoaded();
+
+      window.PhotoListRenderingManager.ComputeLayout();
 
       if(this._amountLoaded === this.Photos.length - 1 && !this.HasFirstLoaded){
         this.FilteredPhotos = this.Photos;

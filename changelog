@@ -113,3 +113,4 @@ v0.2.6:
   - Fixed photo ordering
   - Fixed automatic updates
   - Fixed broken legacy named photos
+  - Fixed photos being loaded with the wrong resolution
